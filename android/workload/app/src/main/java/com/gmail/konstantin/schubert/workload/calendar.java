@@ -1,9 +1,15 @@
 package com.gmail.konstantin.schubert.workload;
 
 import android.app.Activity;
+
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.GridView;
+import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
 
 public class calendar extends Activity {
@@ -12,6 +18,17 @@ public class calendar extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
+
+        GridView gridview = (GridView) findViewById(R.id.gridview);
+        gridview.setAdapter(new WeekButtonAdapter(this));
+
+        gridview.setOnItemClickListener(new OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View v,
+                                    int position, long id) {
+                Toast.makeText(calendar.this, "" + position,
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 
@@ -37,3 +54,4 @@ public class calendar extends Activity {
         return super.onOptionsItemSelected(item);
     }
 }
+
