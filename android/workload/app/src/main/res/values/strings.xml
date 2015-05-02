@@ -7,6 +7,6 @@
     <string name="action_my_statistics">Statistics</string>
     <string name="action_privacy_agreement">Privacy Agreement</string>
     <string name="action_logout">Logout</string>
-
     <string name="title_activity_calendar">Time Monitor</string>
+    <string name="shibboleth_authenticator">Shibboleth TU Dresden</string>
 </resources>
