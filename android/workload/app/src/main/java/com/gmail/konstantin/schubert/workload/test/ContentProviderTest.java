@@ -1,22 +1,23 @@
-package com.gmail.konstantin.schubert.workload;
+package com.gmail.konstantin.schubert.workload.test;
 
 import android.content.ContentValues;
 import android.net.Uri;
+import android.test.InstrumentationTestCase;
 import android.test.ProviderTestCase2;
 import android.test.mock.MockContentResolver;
 import android.util.Log;
 
-/**
- * Created by kon on 01/05/15.
- */
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
+
 public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider>{
+
 
     private static final String TAG = ContentProviderTest.class.getSimpleName();
 
     MockContentResolver mMockResolver;
     ContentValues mTestLectureEntry;
 
-    ContentProviderTest(){
+    public ContentProviderTest(){
         super(SurveyContentProvider.class, SurveyContentProvider.CONTENT_PROVIDER_AUTHORITY );
     }
 
@@ -26,6 +27,7 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         Log.d(TAG, "setUp:");
         mMockResolver = getMockContentResolver();
         mTestLectureEntry = getMockLectureEntry();
+
     }
 
     @Override
@@ -35,8 +37,17 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
     }
 
     public void testLectureInsert__inserts_a_valid_lecture_record(){
-        Uri uri = mMockResolver.insert(Uri.parse(SurveyContentProvider.CONTENT_PROVIDER_AUTHORITY+"/menu/lectures/active/"), getMockLectureEntry());
+        Uri uri = mMockResolver.insert(Uri.parse(SurveyContentProvider.AUTHORITY+"/menu/lectures/active/"), getMockLectureEntry());
+        assertEquals(true, false);
     }
+
+    public void test() throws Exception {
+        //small example test case
+        final int expected = 1;
+        final int reality = 5;
+        assertEquals(expected, reality);
+    }
+
 
     private static ContentValues getMockLectureEntry(){
         ContentValues v = new ContentValues(5);

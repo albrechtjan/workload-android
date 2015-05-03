@@ -3,6 +3,7 @@ package com.gmail.konstantin.schubert.workload;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -11,14 +12,15 @@ import android.net.Uri;
 public class SurveyContentProvider extends ContentProvider{
 
 
-    public static final String CONTENT_PROVIDER_AUTHORITY = "de.tu-dresden.zqa.survey";
+    public static final String AUTHORITY = "de.tu-dresden.zqa.survey";
     private MainDatabaseHelper mOpenHelper;
     private SQLiteDatabase db;
+
     private static final String DBNAME = "survey_database";
     private static int DATABASE_VERSION = 1;
     private static final String SQL_CREATE_LECTURES = "CREATE TABLE " +
-            "lectures " +                       // Table's name
-            "(" +                           // The columns in the table
+            "lectures " +
+            "(" +
             " _ID INTEGER PRIMARY KEY, " +
             " NAME TEXT" +
             " SEMESTER TEXT" +
@@ -36,6 +38,12 @@ public class SurveyContentProvider extends ContentProvider{
             " STATUS TEXT" +
             " OPERATION TEXT" +
             ")";
+    private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+    static {
+        sURIMatcher.addURI(AUTHORITY, "/get-table" + "/*", TABLE_REQUEST_CODE);
+        sURIMatcher.addURI(AUTHORITY, "/get-row" + "/*", ROW_REQUEST_CODE);
+        sURIMatcher.addURI(AUTHORITY, "/search" + "/*", TABLE_SEARCH_REQUEST_CODE);
+    }
 
 
 
@@ -50,7 +58,6 @@ public class SurveyContentProvider extends ContentProvider{
              * repository and SQLite reports that it doesn't exist.
              */
         public void onCreate(SQLiteDatabase db) {
-
             // Creates the main table
             db.execSQL(SQL_CREATE_LECTURES);
             db.execSQL(SQL_CREATE_WORKENTRIES);
