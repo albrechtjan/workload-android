@@ -27,7 +27,7 @@
         </service>
         
         <provider
-            android:authorities="com.gmail.konstantin.schubert.android.datasync.provider"
+            android:authorities="de.tu-dresden.zqa.survey"
             android:name="com.gmail.konstantin.schubert.workload.SurveyContentProvider"
             android:exported="false"
             android:syncable="true">

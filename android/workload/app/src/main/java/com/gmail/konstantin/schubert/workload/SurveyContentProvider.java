@@ -18,6 +18,17 @@ public class SurveyContentProvider extends ContentProvider{
 
     private static final String DBNAME = "survey_database";
     private static int DATABASE_VERSION = 1;
+    private static final int LECTURES = 300;
+    private static final int LECTURES_ID = 301;
+    private static final int ENTRIES = 400;
+    private static final int ENTRIES_ID = 401;
+
+    // there is no point in trying to match the API in the database model
+    // because the API is designed to work for certain perspectives on the same data
+    // if we want to store data in the database we need to bring it back to a table format
+    // Then, when accessing the Content Provider, we need to prepare it again for the
+    // view/activity that requests it
+
     private static final String SQL_CREATE_LECTURES = "CREATE TABLE " +
             "lectures " +
             "(" +
@@ -34,15 +45,40 @@ public class SurveyContentProvider extends ContentProvider{
             " _ID INTEGER PRIMARY KEY, " +
             " HOURS_IN_LECTURE TEXT" +
             " HOURS_FOR_HOMEWORK TEXT" +
-            "HOURS_STUDYING TEXT" +
+            "YEAR INT" +
+            "WEEK INT" +
+            "LECTURE_ID INTEGER" +
             " STATUS TEXT" +
             " OPERATION TEXT" +
             ")";
-    private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+    private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
-        sURIMatcher.addURI(AUTHORITY, "/get-table" + "/*", TABLE_REQUEST_CODE);
-        sURIMatcher.addURI(AUTHORITY, "/get-row" + "/*", ROW_REQUEST_CODE);
-        sURIMatcher.addURI(AUTHORITY, "/search" + "/*", TABLE_SEARCH_REQUEST_CODE);
+        sURIMatcher.addURI(AUTHORITY, "/lectures/", LECTURES);
+        sURIMatcher.addURI(AUTHORITY, "/lectures/#", LECTURES_ID);
+        //I probably should not try to make the database give the lectures for a
+        // given week, instead I should just grab all active lectures, and check them all
+        // if they are in a given week. That should be sufficiently efficient.
+        sURIMatcher.addURI(AUTHORITY,"/entries/",ENTRIES);
+        sURIMatcher.addURI(AUTHORITY,"/entries/#",ENTRIES_ID);
+    }
+
+    @Override
+    public Uri insert(Uri uri, ContentValues values){
+        int uriType = sURIMatcher.match(uri);
+        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
+        long id;
+        switch (uriType) {
+            case LECTURES:
+                id = database.insert("lectures", null, values);
+                break;
+            case ENTRIES:
+                id = database.insert("workentries",null,values);
+            default:
+                throw new IllegalArgumentException("Unknown URI: " + uri);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        return Uri.parse(uri + String.valueOf(id));
+
     }
 
 
@@ -95,12 +131,6 @@ public class SurveyContentProvider extends ContentProvider{
         return null;
     }
 
-    @Override
-    public Uri insert(Uri uri, ContentValues values){
-        db = mOpenHelper.getWritableDatabase();
-        return null;
-
-    }
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs){

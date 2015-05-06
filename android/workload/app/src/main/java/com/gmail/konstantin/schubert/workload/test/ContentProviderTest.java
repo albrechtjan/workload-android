@@ -18,7 +18,7 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
     ContentValues mTestLectureEntry;
 
     public ContentProviderTest(){
-        super(SurveyContentProvider.class, SurveyContentProvider.CONTENT_PROVIDER_AUTHORITY );
+        super(SurveyContentProvider.class, SurveyContentProvider.AUTHORITY );
     }
 
     @Override
@@ -37,17 +37,8 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
     }
 
     public void testLectureInsert__inserts_a_valid_lecture_record(){
-        Uri uri = mMockResolver.insert(Uri.parse(SurveyContentProvider.AUTHORITY+"/menu/lectures/active/"), getMockLectureEntry());
-        assertEquals(true, false);
+        Uri uri = mMockResolver.insert(Uri.parse("content://"+SurveyContentProvider.AUTHORITY+"/lectures/"), getMockLectureEntry());
     }
-
-    public void test() throws Exception {
-        //small example test case
-        final int expected = 1;
-        final int reality = 5;
-        assertEquals(expected, reality);
-    }
-
 
     private static ContentValues getMockLectureEntry(){
         ContentValues v = new ContentValues(5);
@@ -58,6 +49,8 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         v.put("OPERATION", "NONE");
         return v;
     }
+
+
 
 
 }
