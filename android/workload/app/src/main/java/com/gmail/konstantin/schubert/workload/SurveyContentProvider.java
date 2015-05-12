@@ -1,12 +1,14 @@
 package com.gmail.konstantin.schubert.workload;
 
 import android.content.ContentProvider;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
 public class SurveyContentProvider extends ContentProvider{
@@ -32,24 +34,24 @@ public class SurveyContentProvider extends ContentProvider{
     private static final String SQL_CREATE_LECTURES = "CREATE TABLE " +
             "lectures " +
             "(" +
-            " _ID INTEGER PRIMARY KEY, " +
-            " NAME TEXT" +
-            " SEMESTER TEXT" +
-            " ISACTIVE BOOL" +
-            " STATUS TEXT" +
-            " OPERATION TEXT" +
+            "_ID INTEGER PRIMARY KEY, " +
+            "NAME TEXT, " +
+            "SEMESTER TEXT, " +
+            "ISACTIVE BOOL, " +
+            "STATUS TEXT, " +
+            "OPERATION TEXT" +
             ")";
     private static final String SQL_CREATE_WORKENTRIES = "CREATE TABLE " +
             "workentries " +                       // Table's name
             "(" +                           // The columns in the table
-            " _ID INTEGER PRIMARY KEY, " +
-            " HOURS_IN_LECTURE TEXT" +
-            " HOURS_FOR_HOMEWORK TEXT" +
-            "YEAR INT" +
-            "WEEK INT" +
-            "LECTURE_ID INTEGER" +
-            " STATUS TEXT" +
-            " OPERATION TEXT" +
+            "_ID INTEGER PRIMARY KEY, " +
+            "HOURS_IN_LECTURE TEXT, " +
+            "HOURS_FOR_HOMEWORK TEXT," +
+            "YEAR INT, " +
+            "WEEK INT, " +
+            "LECTURE_ID INTEGER, " +
+            "STATUS TEXT, " +
+            "OPERATION TEXT" +
             ")";
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
@@ -82,32 +84,6 @@ public class SurveyContentProvider extends ContentProvider{
     }
 
 
-
-    protected static final class MainDatabaseHelper extends SQLiteOpenHelper {
-
-        MainDatabaseHelper(Context context) {
-            super(context, DBNAME, null, 1);
-        }
-
-        /*
-             * Creates the data repository. This is called when the provider attempts to open the
-             * repository and SQLite reports that it doesn't exist.
-             */
-        public void onCreate(SQLiteDatabase db) {
-            // Creates the main table
-            db.execSQL(SQL_CREATE_LECTURES);
-            db.execSQL(SQL_CREATE_WORKENTRIES);
-        }
-
-
-
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
-
-        }
-
-
-    }
-
     @Override
     public boolean onCreate(){
 
@@ -122,13 +98,33 @@ public class SurveyContentProvider extends ContentProvider{
     }
 
     @Override
-    public Cursor query(
-            Uri uri,
-            String[] projection,
-            String selection,
-            String[] selectionArgs,
-            String sortOrder){
-        return null;
+    public Cursor query( Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder){
+
+        int uriType = sURIMatcher.match(uri);
+        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
+        long id;
+        SQLiteQueryBuilder qBuilder = new SQLiteQueryBuilder();
+        switch (uriType) {
+            case LECTURES:
+                qBuilder.setTables("lectures");
+                break;
+            case LECTURES_ID:
+                qBuilder.setTables("lectures");
+                qBuilder.appendWhere("_ID=" + String.valueOf(ContentUris.parseId(uri)));
+                break;
+            case ENTRIES:
+                qBuilder.setTables("workentries");
+                break;
+            case ENTRIES_ID:
+                qBuilder.setTables("workentries");
+                qBuilder.appendWhere("_ID=" + String.valueOf(ContentUris.parseId(uri)));
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown URI: " + uri);
+        }
+        Cursor cursor = qBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        return cursor;
     }
 
 
@@ -143,6 +139,32 @@ public class SurveyContentProvider extends ContentProvider{
             String selection,
             String[] selectionArgs){
         return 0;
+    }
+
+
+    protected static final class MainDatabaseHelper extends SQLiteOpenHelper {
+
+        MainDatabaseHelper(Context context) {
+            super(context, DBNAME, null, 1);
+        }
+
+
+
+        /*
+             * Creates the data repository. This is called when the provider attempts to open the
+             * repository and SQLite reports that it doesn't exist.
+             */
+        public void onCreate(SQLiteDatabase db) {
+            // Creates the main table
+            db.execSQL(SQL_CREATE_LECTURES);
+            db.execSQL(SQL_CREATE_WORKENTRIES);
+        }
+
+
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
+
+        }
+
     }
 
 }

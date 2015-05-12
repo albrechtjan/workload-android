@@ -1,6 +1,8 @@
 package com.gmail.konstantin.schubert.workload.test;
 
 import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.test.ProviderTestCase2;
@@ -37,7 +39,14 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
     }
 
     public void testLectureInsert__inserts_a_valid_lecture_record(){
-        Uri uri = mMockResolver.insert(Uri.parse("content://"+SurveyContentProvider.AUTHORITY+"/lectures/"), getMockLectureEntry());
+        Uri uri = mMockResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), getMockLectureEntry());
+        Log.d(TAG,"inserted values with mock-resolver. Resulting uri is "+ uri.toString());
+        Cursor cursor = mMockResolver.query(uri, null, null, null, null);
+        Log.d(TAG, DatabaseUtils.dumpCursorToString(cursor));
+        assertEquals(1, cursor.getColumnCount());
+
+
+
     }
 
     private static ContentValues getMockLectureEntry(){
