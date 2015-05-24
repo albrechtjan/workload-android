@@ -41,10 +41,15 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
     public void testLectureInsert__inserts_a_valid_lecture_record(){
         Uri uri = mMockResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), getMockLectureEntry());
         Log.d(TAG,"inserted values with mock-resolver. Resulting uri is "+ uri.toString());
-        Cursor cursor = mMockResolver.query(uri, null, null, null, null);
-        Log.d(TAG, DatabaseUtils.dumpCursorToString(cursor));
-        assertEquals(1, cursor.getColumnCount());
 
+        //get cursor for full DB
+        Cursor cursor = mMockResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), null, null, null, null);
+        Log.d(TAG, "Full DB dump:"+ DatabaseUtils.dumpCursorToString(cursor));
+
+        //get cursor for entry that was just added
+        cursor = mMockResolver.query(uri, null, null, null, null);
+        Log.d(TAG, DatabaseUtils.dumpCursorToString(cursor));
+        assertEquals(1, cursor.getCount()); // make sure we retrieved exactly one row with the call
 
 
     }
