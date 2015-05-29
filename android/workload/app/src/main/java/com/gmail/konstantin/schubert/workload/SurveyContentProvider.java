@@ -10,8 +10,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.util.Log;
 
 public class SurveyContentProvider extends ContentProvider{
+
+    private static final String TAG = SurveyContentProvider.class.getSimpleName();
 
 
     public static final String AUTHORITY = "de.tu-dresden.zqa.survey";
@@ -45,13 +48,15 @@ public class SurveyContentProvider extends ContentProvider{
             "workentries " +                       // Table's name
             "(" +                           // The columns in the table
             "_ID INTEGER PRIMARY KEY, " +
-            "HOURS_IN_LECTURE TEXT, " +
-            "HOURS_FOR_HOMEWORK TEXT," +
+            "HOURS_IN_LECTURE REAL, " +
+            "HOURS_FOR_HOMEWORK REAL," +
+            "HOURS_STUDYING REAL," +
             "YEAR INT, " +
             "WEEK INT, " +
-            "LECTURE_ID INTEGER, " +
+            "LECTURE_ID INTEGER, "+
             "STATUS TEXT, " +
-            "OPERATION TEXT" +
+            "OPERATION TEXT, " +
+            "FOREIGN KEY(LECTURE_ID) REFERENCES lectures(_ID)" +
             ")";
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
@@ -60,8 +65,8 @@ public class SurveyContentProvider extends ContentProvider{
         //I probably should not try to make the database give the lectures for a
         // given week, instead I should just grab all active lectures, and check them all
         // if they are in a given week. That should be sufficiently efficient.
-        sURIMatcher.addURI(AUTHORITY,"/entries/",ENTRIES);
-        sURIMatcher.addURI(AUTHORITY,"/entries/#",ENTRIES_ID);
+        sURIMatcher.addURI(AUTHORITY,"/workentries/",ENTRIES);
+        sURIMatcher.addURI(AUTHORITY,"/workentries/#",ENTRIES_ID);
     }
 
     @Override
@@ -101,7 +106,7 @@ public class SurveyContentProvider extends ContentProvider{
     public Cursor query( Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder){
 
         int uriType = sURIMatcher.match(uri);
-        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
+        SQLiteDatabase database = mOpenHelper.getReadableDatabase();
         long id;
         SQLiteQueryBuilder qBuilder = new SQLiteQueryBuilder();
         switch (uriType) {
@@ -156,8 +161,12 @@ public class SurveyContentProvider extends ContentProvider{
              */
         public void onCreate(SQLiteDatabase db) {
             // Creates the main table
+            Log.d(TAG, "creating database: "+SQL_CREATE_LECTURES);
             db.execSQL(SQL_CREATE_LECTURES);
+            Log.d(TAG, "created lecture database");
+            Log.d(TAG, "creating database: "+SQL_CREATE_WORKENTRIES);
             db.execSQL(SQL_CREATE_WORKENTRIES);
+            Log.d(TAG, "created workload entry database");
         }
 
 

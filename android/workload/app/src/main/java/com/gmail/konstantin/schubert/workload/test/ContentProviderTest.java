@@ -51,6 +51,23 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         Log.d(TAG, DatabaseUtils.dumpCursorToString(cursor));
         assertEquals(1, cursor.getCount()); // make sure we retrieved exactly one row with the call
 
+    }
+
+    //TODO:Because the testWorkloadEntryInsert test can only succeed when after the first thest has succeeded, I should probably have one real test function that calls the other two functions in the right order
+    public void testWorkloadentryInsert__inserts_a_valid_workload_record(){
+        Uri uri = mMockResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), getMockWorkloadEntry());
+        Log.d(TAG,"inserted values with mock-resolver. Resulting uri is "+ uri.toString());
+
+
+        //get cursor for full DB
+        Cursor cursor = mMockResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, null, null, null);
+        Log.d(TAG, "Full DB dump:"+ DatabaseUtils.dumpCursorToString(cursor));
+
+        //get cursor for entry that was just added
+        cursor = mMockResolver.query(uri, null, null, null, null);
+        Log.d(TAG, DatabaseUtils.dumpCursorToString(cursor));
+        assertEquals(1, cursor.getCount()); // make sure we retrieved exactly one row with the call
+
 
     }
 
@@ -64,6 +81,20 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         return v;
     }
 
+    private static ContentValues getMockWorkloadEntry(){
+        ContentValues v = new ContentValues(7);
+        v.put("HOURS_IN_LECTURE", 2.3);
+        v.put("HOURS_FOR_HOMEWORK", 2.3);
+        v.put("HOURS_STUDYING", 2.5);
+        v.put("YEAR", 2015);
+        v.put("WEEK", 12);
+        v.put("LECTURE_ID",1);
+        v.put("LECTURE_ID", 3);
+        v.put("STATUS", "IDLE");
+        v.put("OPERATION", "NONE");
+        return v;
+
+    }
 
 
 
