@@ -11,6 +11,9 @@ import android.util.Log;
 
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
+import java.util.Random;
+import java.util.UUID;
+
 public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider>{
 
 
@@ -67,9 +70,11 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
 
     }
 
+
+
     private static ContentValues getMockLectureEntry(){
         ContentValues v = new ContentValues(5);
-        v.put("NAME", "Testlecture");
+        v.put("NAME", "Lecture" + UUID.randomUUID().toString());
         v.put("SEMESTER", "SS2015");
         v.put("ISACTIVE", true);
         v.put("STATUS", "IDLE");
@@ -77,14 +82,25 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         return v;
     }
 
-    private static ContentValues getMockWorkloadEntry(){
+    private  int getIDOfRandomLecture(){
+        //query the database for all lecture IDs
+        String[] projection = {"_ID"};
+        Cursor cursor = mMockResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), projection, null, null, null);
+        //choose one randomly
+        Random rand = new Random();
+        int randomRowIndex = rand.nextInt(cursor.getCount());
+        cursor.moveToPosition(randomRowIndex);
+        return cursor.getInt(0);
+    }
+
+    private ContentValues getMockWorkloadEntry(){
         ContentValues v = new ContentValues(7);
         v.put("HOURS_IN_LECTURE", 2.3);
         v.put("HOURS_FOR_HOMEWORK", 2.3);
         v.put("HOURS_STUDYING", 2.5);
         v.put("YEAR", 2015);
         v.put("WEEK", 12);
-        v.put("LECTURE_ID",1);
+        v.put("LECTURE_ID", getIDOfRandomLecture());
         v.put("STATUS", "IDLE");
         v.put("OPERATION", "NONE");
         return v;
