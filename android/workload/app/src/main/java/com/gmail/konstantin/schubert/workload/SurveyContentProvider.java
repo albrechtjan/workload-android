@@ -44,6 +44,7 @@ public class SurveyContentProvider extends ContentProvider{
             "STATUS TEXT, " +
             "OPERATION TEXT" +
             ")";
+
     private static final String SQL_CREATE_WORKENTRIES = "CREATE TABLE " +
             "workentries " +                       // Table's name
             "(" +                           // The columns in the table
@@ -58,6 +59,7 @@ public class SurveyContentProvider extends ContentProvider{
             "OPERATION TEXT, " +
             "FOREIGN KEY(LECTURE_ID) REFERENCES lectures(_ID)" +
             ")";
+
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
         sURIMatcher.addURI(AUTHORITY, "/lectures/", LECTURES);
@@ -80,6 +82,7 @@ public class SurveyContentProvider extends ContentProvider{
                 break;
             case ENTRIES:
                 id = database.insert("workentries",null,values);
+                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }

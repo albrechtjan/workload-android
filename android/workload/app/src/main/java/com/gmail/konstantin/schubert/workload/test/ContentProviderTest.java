@@ -38,36 +38,32 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         Log.d(TAG, "tearDown:");
     }
 
-    public void testLectureInsert__inserts_a_valid_lecture_record(){
+    public void testDatabase__inserts_records(){
         Uri uri = mMockResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), getMockLectureEntry());
-        Log.d(TAG,"inserted values with mock-resolver. Resulting uri is "+ uri.toString());
+        Log.d(TAG,"inserted lecture values with mock-resolver. Resulting uri is "+ uri.toString());
 
         //get cursor for full DB
         Cursor cursor = mMockResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), null, null, null, null);
-        Log.d(TAG, "Full DB dump:"+ DatabaseUtils.dumpCursorToString(cursor));
+        Log.d(TAG, "Full table dump:"+ DatabaseUtils.dumpCursorToString(cursor));
 
         //get cursor for entry that was just added
         cursor = mMockResolver.query(uri, null, null, null, null);
         Log.d(TAG, DatabaseUtils.dumpCursorToString(cursor));
         assertEquals(1, cursor.getCount()); // make sure we retrieved exactly one row with the call
 
-    }
 
-    //TODO:Because the testWorkloadEntryInsert test can only succeed when after the first thest has succeeded, I should probably have one real test function that calls the other two functions in the right order
-    public void testWorkloadentryInsert__inserts_a_valid_workload_record(){
-        Uri uri = mMockResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), getMockWorkloadEntry());
-        Log.d(TAG,"inserted values with mock-resolver. Resulting uri is "+ uri.toString());
+        uri = mMockResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), getMockWorkloadEntry());
+        Log.d(TAG,"inserted workload values with mock-resolver. Resulting uri is "+ uri.toString());
 
 
         //get cursor for full DB
-        Cursor cursor = mMockResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, null, null, null);
-        Log.d(TAG, "Full DB dump:"+ DatabaseUtils.dumpCursorToString(cursor));
+        cursor = mMockResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, null, null, null);
+        Log.d(TAG, "Full table dump:"+ DatabaseUtils.dumpCursorToString(cursor));
 
         //get cursor for entry that was just added
         cursor = mMockResolver.query(uri, null, null, null, null);
         Log.d(TAG, DatabaseUtils.dumpCursorToString(cursor));
         assertEquals(1, cursor.getCount()); // make sure we retrieved exactly one row with the call
-
 
     }
 
@@ -89,7 +85,6 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         v.put("YEAR", 2015);
         v.put("WEEK", 12);
         v.put("LECTURE_ID",1);
-        v.put("LECTURE_ID", 3);
         v.put("STATUS", "IDLE");
         v.put("OPERATION", "NONE");
         return v;
