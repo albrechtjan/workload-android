@@ -7,9 +7,7 @@ import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.os.Bundle;
 
-/**
- * Created by kon on 01/05/15.
- */
+
 public class Authenticator extends AbstractAccountAuthenticator{
     public Authenticator(Context context){
         super(context);

@@ -34,29 +34,80 @@ public class SurveyContentProvider extends ContentProvider{
     // Then, when accessing the Content Provider, we need to prepare it again for the
     // view/activity that requests it
 
+
+    // http://android-restful-pattern.blogspot.de/
+    //https://stackoverflow.com/questions/9112658/google-io-rest-design-pattern-finished-contentprovider-and-stuck-now
+//
+//    Database columns used to store transitional state, with valid values where indicated:
+//    status: http method or new row
+//      GET - query
+//      POST - insert
+//      PUT - update
+//      DELETE - delete
+//      NEW - a new row retrieve by a GET request
+//    operation: the transactional state
+//      0 - PENDING
+//      1 - RETRY
+//      2 - IN_PROGRESS
+//      3 - COMPLETE
+//    result: HTTP status code TODO:Add this!!!!
+
+    public static class DB_STRINGS_LECTURE{
+        public static final String _ID = "_ID";
+        public static final String NAME = "NAME";
+        public static final String STARTYEAR = "STARTYEAR";
+        public static final String STARTWEEK = "STARTWEEK";
+        public static final String ENDYEAR = "ENDYEAR";
+        public static final String ENDWEEK = "ENDWEEK";
+        public static final String SEMESTER = "SEMESTER";
+        public static final String ISACTIVE = "ISACTIVE";
+        public static final String STATUS = "STATUS";
+        public static final String OPERATION = "OPERATION";
+
+    }
+
+    public static class DB_STRINGS_WORKENTRY{
+        public static final String _ID = "_ID";
+        public static final String HOURS_IN_LECTURE = "HOURS_IN_LECTURE";
+        public static final String HOURS_FOR_HOMEWORK = "HOURS_FOR_HOMEWORK";
+        public static final String HOURS_STUDYING = "HOURS_STUDYING";
+        public static final String YEAR = "YEAR";
+        public static final String WEEK = "WEEK";
+        public static final String LECTURE_ID = "LECTURE_ID";
+        public static final String STATUS = "STATUS";
+        public static final String OPERATION = "OPERATION";
+
+    }
+
     private static final String SQL_CREATE_LECTURES = "CREATE TABLE " +
             "lectures " +
             "(" +
-            "_ID INTEGER PRIMARY KEY, " +
-            "NAME TEXT, " +
-            "SEMESTER TEXT, " +
-            "ISACTIVE BOOL, " +
-            "STATUS TEXT, " +
-            "OPERATION TEXT" +
+            DB_STRINGS_LECTURE._ID + " INTEGER PRIMARY KEY, " +
+            DB_STRINGS_LECTURE.NAME + " TEXT, " +
+            DB_STRINGS_LECTURE.STARTYEAR + " INT, " +
+            DB_STRINGS_LECTURE.STARTWEEK + " INT, " +
+            DB_STRINGS_LECTURE.ENDYEAR + " INT, " +
+            DB_STRINGS_LECTURE.ENDWEEK + " INT, " +
+            DB_STRINGS_LECTURE.SEMESTER + " TEXT, " +
+            DB_STRINGS_LECTURE.ISACTIVE + " BOOL, " +
+            DB_STRINGS_LECTURE.STATUS + " TEXT, " +
+            DB_STRINGS_LECTURE.OPERATION + " TEXT" +
             ")";
+
+
 
     private static final String SQL_CREATE_WORKENTRIES = "CREATE TABLE " +
             "workentries " +                       // Table's name
             "(" +                           // The columns in the table
-            "_ID INTEGER PRIMARY KEY, " +
-            "HOURS_IN_LECTURE REAL, " +
-            "HOURS_FOR_HOMEWORK REAL," +
-            "HOURS_STUDYING REAL," +
-            "YEAR INT, " +
-            "WEEK INT, " +
-            "LECTURE_ID INTEGER, "+
-            "STATUS TEXT, " +
-            "OPERATION TEXT, " +
+            DB_STRINGS_WORKENTRY._ID + " INTEGER PRIMARY KEY, " +
+            DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE + " REAL, " +
+            DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK + " REAL," +
+            DB_STRINGS_WORKENTRY.HOURS_STUDYING + " REAL," +
+            DB_STRINGS_WORKENTRY.YEAR + " INT, " +
+            DB_STRINGS_WORKENTRY.WEEK + " INT, " +
+            DB_STRINGS_WORKENTRY.LECTURE_ID + " INTEGER, "+
+            DB_STRINGS_WORKENTRY.STATUS + " TEXT, " +
+            DB_STRINGS_WORKENTRY.OPERATION + " TEXT, " +
             "FOREIGN KEY(LECTURE_ID) REFERENCES lectures(_ID)" +
             ")";
 

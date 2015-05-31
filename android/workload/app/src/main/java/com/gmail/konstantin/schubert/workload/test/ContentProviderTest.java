@@ -20,7 +20,6 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
     private static final String TAG = ContentProviderTest.class.getSimpleName();
 
     MockContentResolver mMockResolver;
-    ContentValues mTestLectureEntry;
 
     public ContentProviderTest(){
         super(SurveyContentProvider.class, SurveyContentProvider.AUTHORITY );
@@ -31,7 +30,6 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         super.setUp();
         Log.d(TAG, "setUp:");
         mMockResolver = getMockContentResolver();
-        mTestLectureEntry = getMockLectureEntry();
 
     }
 
@@ -73,9 +71,43 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
 
 
     private static ContentValues getMockLectureEntry(){
-        ContentValues v = new ContentValues(5);
+        ContentValues v = new ContentValues(9);
+        v.put("NAME", "LectureOne" );
+        v.put("SEMESTER", "SS2015");
+        v.put("STARTYEAR", 2015);
+        v.put("STARTWEEK", 10);
+        v.put("ENDYEAR", 2015);
+        v.put("ENDWEEK", 40);
+        v.put("ISACTIVE", true);
+        v.put("STATUS", "IDLE");
+        v.put("OPERATION", "NONE");
+        return v;
+    }
+
+
+    private ContentValues getMockWorkloadEntry(){
+        ContentValues v = new ContentValues(8);
+        v.put("HOURS_IN_LECTURE", 2.3);
+        v.put("HOURS_FOR_HOMEWORK", 2.3);
+        v.put("HOURS_STUDYING", 2.5);
+        v.put("YEAR", 2015);
+        v.put("WEEK", 12);
+        v.put("LECTURE_ID", 1);
+        v.put("STATUS", "IDLE");
+        v.put("OPERATION", "NONE");
+        return v;
+
+    }
+
+
+    private static ContentValues getRandomMockLectureEntry(){
+        ContentValues v = new ContentValues(9);
         v.put("NAME", "Lecture" + UUID.randomUUID().toString());
         v.put("SEMESTER", "SS2015");
+        v.put("STARTYEAR", 2015);
+        v.put("STARTWEEK", 10);
+        v.put("ENDYEAR", 2015);
+        v.put("ENDWEEK", 40);
         v.put("ISACTIVE", true);
         v.put("STATUS", "IDLE");
         v.put("OPERATION", "NONE");
@@ -93,11 +125,13 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         return cursor.getInt(0);
     }
 
-    private ContentValues getMockWorkloadEntry(){
-        ContentValues v = new ContentValues(7);
-        v.put("HOURS_IN_LECTURE", 2.3);
-        v.put("HOURS_FOR_HOMEWORK", 2.3);
-        v.put("HOURS_STUDYING", 2.5);
+
+    private ContentValues getRandomMockWorkloadEntry(){
+        ContentValues v = new ContentValues(8);
+        Random rand = new Random();
+        v.put("HOURS_IN_LECTURE", rand.nextInt(200)/10.);
+        v.put("HOURS_FOR_HOMEWORK", rand.nextInt(200)/10.);
+        v.put("HOURS_STUDYING", rand.nextInt(200)/10.);
         v.put("YEAR", 2015);
         v.put("WEEK", 12);
         v.put("LECTURE_ID", getIDOfRandomLecture());
@@ -106,7 +140,5 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         return v;
 
     }
-
-
 
 }

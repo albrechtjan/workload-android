@@ -7,15 +7,23 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 
-public class WeekButtonAdapter extends BaseAdapter {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+public class WeekButtonAdapter extends MyBaseAdapter {
     private Context mContext;
 
-    public WeekButtonAdapter(Context c) {
-        mContext = c;
+    public WeekButtonAdapter(Context context) {
+        super(context);
+        mContext = context;
     }
 
     public int getCount() {
-        return 25;
+        List<Lecture> lectures = getLectureList(true);
+        List<Week> weeks = getWeeks(lectures);
+        return weeks.size();
     }
 
     public Object getItem(int position) {
@@ -26,7 +34,7 @@ public class WeekButtonAdapter extends BaseAdapter {
         return 0;
     }
 
-    // create a new ImageView for each item referenced by the Adapter
+
     public View getView(int position, View convertView, ViewGroup parent) {
         Button weekButton;
         if (convertView == null) {
@@ -40,5 +48,35 @@ public class WeekButtonAdapter extends BaseAdapter {
         }
 
         return weekButton;
+    }
+
+    private List<Week> getWeeks(List<Lecture> lectures){
+        Week week = firstWeek(lectures);
+        List<Week> weeks = new LinkedList<Week>();
+        while(week.compareTo(lastWeek(lectures))<=0){
+            weeks.add(week.copy());
+            week.addWeeks(1);
+        }
+
+        return weeks;
+    }
+
+
+
+    private Week firstWeek(List<Lecture> lectures){
+        List<Week> startWeeks = new ArrayList<Week>();
+        for(Lecture lecture : lectures){
+            startWeeks.add(lecture.startWeek);
+        }
+        return Collections.min(startWeeks);
+    }
+
+    private Week lastWeek(List<Lecture> lectures){
+        List<Week> endWeeks = new ArrayList<Week>();
+        for(Lecture lecture : lectures){
+            endWeeks.add(lecture.endWeek);
+        }
+        return Collections.min(endWeeks);
+
     }
 }
