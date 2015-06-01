@@ -64,7 +64,7 @@ public class WeekButtonAdapter extends MyBaseAdapter {
 
 
     private Week firstWeek(List<Lecture> lectures){
-        List<Week> startWeeks = new ArrayList<Week>();
+        List<Week> startWeeks = new ArrayList<>();
         for(Lecture lecture : lectures){
             startWeeks.add(lecture.startWeek);
         }
@@ -72,7 +72,7 @@ public class WeekButtonAdapter extends MyBaseAdapter {
     }
 
     private Week lastWeek(List<Lecture> lectures){
-        List<Week> endWeeks = new ArrayList<Week>();
+        List<Week> endWeeks = new ArrayList<>();
         for(Lecture lecture : lectures){
             endWeeks.add(lecture.endWeek);
         }

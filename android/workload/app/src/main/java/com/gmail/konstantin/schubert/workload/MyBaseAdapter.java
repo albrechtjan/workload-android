@@ -3,7 +3,9 @@ package com.gmail.konstantin.schubert.workload;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
+import android.util.Log;
 import android.widget.BaseAdapter;
 
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ abstract public class MyBaseAdapter extends BaseAdapter{
 
     private final Context sContext;
     private ContentResolver mContentResolver;
+    private static final String TAG = MyBaseAdapter.class.getSimpleName();
 
 
     public MyBaseAdapter(Context context){
@@ -26,6 +29,8 @@ abstract public class MyBaseAdapter extends BaseAdapter{
     public List<Lecture> getLectureList( boolean onlyActive){
         //TODO: Implement filter to only active lectures.
         Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), null, null, null, null);
+        String cursorDump = DatabaseUtils.dumpCursorToString(cursor);
+        Log.d(TAG, "Full table dump:" + DatabaseUtils.dumpCursorToString(cursor));
         List<Lecture> lectures = new ArrayList<Lecture>();
         while (cursor.moveToNext()){
             int _ID= cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE._ID));

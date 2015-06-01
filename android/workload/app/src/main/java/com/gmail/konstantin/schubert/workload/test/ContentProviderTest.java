@@ -70,7 +70,7 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
 
 
 
-    private static ContentValues getMockLectureEntry(){
+    public static ContentValues getMockLectureEntry(){
         ContentValues v = new ContentValues(9);
         v.put("NAME", "LectureOne" );
         v.put("SEMESTER", "SS2015");
@@ -85,7 +85,7 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
     }
 
 
-    private ContentValues getMockWorkloadEntry(){
+    public static ContentValues getMockWorkloadEntry(){
         ContentValues v = new ContentValues(8);
         v.put("HOURS_IN_LECTURE", 2.3);
         v.put("HOURS_FOR_HOMEWORK", 2.3);
@@ -100,7 +100,7 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
     }
 
 
-    private static ContentValues getRandomMockLectureEntry(){
+    public static ContentValues getRandomMockLectureEntry(){
         ContentValues v = new ContentValues(9);
         v.put("NAME", "Lecture" + UUID.randomUUID().toString());
         v.put("SEMESTER", "SS2015");
