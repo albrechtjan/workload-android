@@ -14,9 +14,11 @@ public class Week implements Comparable<Week>{
         mCalendar.set(Calendar.WEEK_OF_YEAR, weeknumber);
     }
 
+    public Week getNextWeek(){
+        Week newWeek = this.copy();
 
-    public void addWeeks(int weeksToAdd){
-        mCalendar.add(Calendar.WEEK_OF_YEAR, weeksToAdd);
+        newWeek.mCalendar.add(Calendar.WEEK_OF_YEAR, 1);
+        return newWeek;
     }
 
     public int year(){
@@ -28,7 +30,7 @@ public class Week implements Comparable<Week>{
     }
 
     public Week copy(){
-        return new Week(mCalendar.YEAR, mCalendar.WEEK_OF_YEAR);
+        return new Week(mCalendar.get(mCalendar.YEAR), mCalendar.get(mCalendar.WEEK_OF_YEAR));
     }
 
     @Override

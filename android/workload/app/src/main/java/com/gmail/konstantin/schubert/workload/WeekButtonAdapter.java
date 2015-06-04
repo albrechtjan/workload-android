@@ -1,6 +1,8 @@
 package com.gmail.konstantin.schubert.workload;
 
 import android.content.Context;
+import android.database.ContentObserver;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -14,15 +16,21 @@ import java.util.List;
 
 public class WeekButtonAdapter extends MyBaseAdapter {
     private Context mContext;
+    private ContentObserver mContentObserver;
+//    private List<Week> mWeeks; TODO: Check if this variable could give any performance improvements
+    private List<Lecture> mLectures;
+
+
+    TODD: http://www.grokkingandroid.com/use-contentobserver-to-listen-to-changes/
 
     public WeekButtonAdapter(Context context) {
         super(context);
         mContext = context;
+        mLectures = getLectureList(true);
     }
 
     public int getCount() {
-        List<Lecture> lectures = getLectureList(true);
-        List<Week> weeks = getWeeks(lectures);
+        List<Week> weeks = getWeeks(mLectures);
         return weeks.size();
     }
 
@@ -46,16 +54,19 @@ public class WeekButtonAdapter extends MyBaseAdapter {
         } else {
             weekButton = (Button) convertView;
         }
-
+        List<Week> weeks = getWeeks(mLectures);
+        weekButton.setText(String.valueOf(weeks.get(position).week()));
         return weekButton;
     }
 
     private List<Week> getWeeks(List<Lecture> lectures){
-        Week week = firstWeek(lectures);
+        Week week = firstWeek(lectures).copy();
         List<Week> weeks = new LinkedList<Week>();
         while(week.compareTo(lastWeek(lectures))<=0){
-            weeks.add(week.copy());
-            week.addWeeks(1);
+            weeks.add(week);
+            week = week.getNextWeek();
+            int test = week.week();
+            int test2 = week.year();
         }
 
         return weeks;
@@ -67,6 +78,7 @@ public class WeekButtonAdapter extends MyBaseAdapter {
         List<Week> startWeeks = new ArrayList<>();
         for(Lecture lecture : lectures){
             startWeeks.add(lecture.startWeek);
+            Log.d("BBBSS", "added startweek of" + lecture.startWeek.week());
         }
         return Collections.min(startWeeks);
     }
@@ -75,8 +87,9 @@ public class WeekButtonAdapter extends MyBaseAdapter {
         List<Week> endWeeks = new ArrayList<>();
         for(Lecture lecture : lectures){
             endWeeks.add(lecture.endWeek);
+            Log.d("BBBSS", "added endweek of" + lecture.startWeek.week());
         }
-        return Collections.min(endWeeks);
+        return Collections.max(endWeeks);
 
     }
 }
