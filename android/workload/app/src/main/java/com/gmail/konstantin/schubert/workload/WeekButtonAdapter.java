@@ -2,7 +2,10 @@ package com.gmail.konstantin.schubert.workload;
 
 import android.content.Context;
 import android.database.ContentObserver;
+import android.net.Uri;
+import android.os.Handler;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -14,24 +17,35 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import static android.widget.GridView.*;
+
 public class WeekButtonAdapter extends MyBaseAdapter {
     private Context mContext;
     private ContentObserver mContentObserver;
-//    private List<Week> mWeeks; TODO: Check if this variable could give any performance improvements
+    private List<Week> mWeeks;
     private List<Lecture> mLectures;
+    private final WeekObserver sWeekObserver;
 
-
-    TODD: http://www.grokkingandroid.com/use-contentobserver-to-listen-to-changes/
 
     public WeekButtonAdapter(Context context) {
         super(context);
         mContext = context;
         mLectures = getLectureList(true);
+        mWeeks = getWeeks(mLectures);
+        sWeekObserver = new WeekObserver(new Handler(), this);
+        //TODO: Check if this works
+        mContext.getContentResolver().registerContentObserver(
+                Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"),
+                false,
+                sWeekObserver);
+    }
+
+    public void updateLectureList(){
+        this.mLectures = getLectureList(true);
     }
 
     public int getCount() {
-        List<Week> weeks = getWeeks(mLectures);
-        return weeks.size();
+        return mWeeks.size();
     }
 
     public Object getItem(int position) {
@@ -44,29 +58,29 @@ public class WeekButtonAdapter extends MyBaseAdapter {
 
 
     public View getView(int position, View convertView, ViewGroup parent) {
+
+
+        LayoutInflater inflater = (LayoutInflater) mContext
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         Button weekButton;
         if (convertView == null) {
             // if it's not recycled, initialize some attributes
-            // TODO: Use an XML layout for the button
-            weekButton = new Button(mContext);
-            weekButton.setLayoutParams(new GridView.LayoutParams(85, 85));
-            weekButton.setPadding(2, 2, 2, 2);
+            weekButton = (Button) inflater.inflate(R.layout.week_button, null);
         } else {
             weekButton = (Button) convertView;
         }
-        List<Week> weeks = getWeeks(mLectures);
-        weekButton.setText(String.valueOf(weeks.get(position).week()));
+
+        weekButton.setText(String.valueOf(mWeeks.get(position).week()));
         return weekButton;
     }
 
     private List<Week> getWeeks(List<Lecture> lectures){
         Week week = firstWeek(lectures).copy();
         List<Week> weeks = new LinkedList<Week>();
-        while(week.compareTo(lastWeek(lectures))<=0){
+        final Week last = lastWeek(lectures);
+        while(week.compareTo(last)<=0){
             weeks.add(week);
             week = week.getNextWeek();
-            int test = week.week();
-            int test2 = week.year();
         }
 
         return weeks;
@@ -92,4 +106,25 @@ public class WeekButtonAdapter extends MyBaseAdapter {
         return Collections.max(endWeeks);
 
     }
+
+    class WeekObserver extends ContentObserver {
+        final WeekButtonAdapter weekButtonAdapter;
+
+        public WeekObserver(Handler handler, WeekButtonAdapter weekButtonAdapter) {
+            super(handler);
+            this.weekButtonAdapter = weekButtonAdapter;
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            this.onChange(selfChange, null);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            weekButtonAdapter.updateLectureList();
+            weekButtonAdapter.notifyDataSetChanged();
+        }
+    }
+
 }

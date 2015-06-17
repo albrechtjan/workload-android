@@ -24,13 +24,6 @@ public class calendar extends Activity {
         GridView gridview = (GridView) findViewById(R.id.gridview);
         gridview.setAdapter(new WeekButtonAdapter(this));
 
-        gridview.setOnItemClickListener(new OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v,
-                                    int position, long id) {
-                Toast.makeText(calendar.this, "" + position,
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
 

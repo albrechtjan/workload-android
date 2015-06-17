@@ -12,13 +12,16 @@
         android:id="@+id/gridview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:columnWidth="70dp"
+        android:columnWidth="@dimen/week_button_size"
         android:numColumns="auto_fit"
-        android:verticalSpacing="10dp"
-        android:horizontalSpacing="10dp"
-        android:stretchMode="columnWidth"
+        android:verticalSpacing="@dimen/activity_vertical_margin"
+        android:horizontalSpacing="@dimen/activity_horizontal_margin"
+        android:stretchMode="spacingWidthUniform"
         android:gravity="center"
         />
 
 
 </RelativeLayout>
+
+
+
