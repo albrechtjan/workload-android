@@ -1,6 +1,7 @@
 package com.gmail.konstantin.schubert.workload;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
@@ -13,9 +14,11 @@ import android.widget.Button;
 import android.widget.GridView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import static android.widget.GridView.*;
 
@@ -40,8 +43,10 @@ public class WeekButtonAdapter extends MyBaseAdapter {
                 sWeekObserver);
     }
 
-    public void updateLectureList(){
+    public void updateMembers(){
+
         this.mLectures = getLectureList(true);
+        this.mWeeks = getWeeks(this.mLectures);
     }
 
     public int getCount() {
@@ -62,15 +67,31 @@ public class WeekButtonAdapter extends MyBaseAdapter {
 
         LayoutInflater inflater = (LayoutInflater) mContext
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        Button weekButton;
+        final WeekButton weekButton;
         if (convertView == null) {
             // if it's not recycled, initialize some attributes
-            weekButton = (Button) inflater.inflate(R.layout.week_button, null);
+            weekButton = (WeekButton) inflater.inflate(R.layout.week_button, null);
         } else {
-            weekButton = (Button) convertView;
+            weekButton = (WeekButton) convertView;
         }
 
-        weekButton.setText(String.valueOf(mWeeks.get(position).week()));
+        weekButton.setWeek(mWeeks.get(position));
+
+        Calendar firstDay = weekButton.getWeek().firstDay();
+        String firstDayString = firstDay.get(Calendar.DAY_OF_MONTH) + ". " + firstDay.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.UK);
+        Calendar lastDay = weekButton.getWeek().lastDay();
+        String lastDayString = lastDay.get(Calendar.DAY_OF_MONTH) + ". " + lastDay.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.UK);
+        weekButton.setText(firstDayString + "\n-\n" +lastDayString);
+        weekButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                Intent intent = new Intent(mContext, SelectLecture.class);
+                intent.putExtra(SelectLecture.MESSAGE_YEAR, weekButton.getWeek().year());
+                intent.putExtra(SelectLecture.MESSAGE_WEEK, weekButton.getWeek().week());
+                mContext.startActivity(intent);
+            }
+        });
+
         return weekButton;
     }
 
@@ -122,7 +143,7 @@ public class WeekButtonAdapter extends MyBaseAdapter {
 
         @Override
         public void onChange(boolean selfChange, Uri uri) {
-            weekButtonAdapter.updateLectureList();
+            weekButtonAdapter.updateMembers();
             weekButtonAdapter.notifyDataSetChanged();
         }
     }

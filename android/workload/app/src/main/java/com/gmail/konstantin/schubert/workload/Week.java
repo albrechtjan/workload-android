@@ -9,6 +9,7 @@ import java.util.Comparator;
 public class Week implements Comparable<Week>{
 
     Calendar mCalendar = Calendar.getInstance();
+
     public Week(int year,int weeknumber){
         mCalendar.set(Calendar.YEAR, year);
         mCalendar.set(Calendar.WEEK_OF_YEAR, weeknumber);
@@ -19,6 +20,18 @@ public class Week implements Comparable<Week>{
 
         newWeek.mCalendar.add(Calendar.WEEK_OF_YEAR, 1);
         return newWeek;
+    }
+
+    public Calendar firstDay(){
+        Calendar c = (Calendar) mCalendar.clone();
+        c.set(Calendar.DAY_OF_WEEK, c.getFirstDayOfWeek());
+        return c;
+    }
+
+    public Calendar lastDay(){
+        Calendar c = this.firstDay();
+        c.add(Calendar.DAY_OF_MONTH,6);
+        return c;
     }
 
     public int year(){

@@ -2,17 +2,16 @@ package com.gmail.konstantin.schubert.workload;
 
 import android.app.Activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
 
 
 public class calendar extends Activity {
+
 
 
 
@@ -48,5 +47,6 @@ public class calendar extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+
 }
 

@@ -9,4 +9,5 @@
     <string name="action_logout">Logout</string>
     <string name="title_activity_calendar">Time Monitor</string>
     <string name="shibboleth_authenticator">Shibboleth TU Dresden</string>
+    <string name="title_activity_select_lecture">SelectLecture</string>
 </resources>
