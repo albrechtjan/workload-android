@@ -16,9 +16,7 @@ import android.widget.ListAdapter;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Created by kon on 27.06.15.
- */
+
 public class SelectLectureAdapter extends MyBaseAdapter  { //BaseAdapter already implements Listadapter
 
     //TODO: Check which of these members can move up into MyBaseAdapter
@@ -29,9 +27,9 @@ public class SelectLectureAdapter extends MyBaseAdapter  { //BaseAdapter already
     public SelectLectureAdapter(Context context, Week week) {
         super(context);
         mContext = context;
-        this.updateMembers();
-        this.mWeek = week;
-
+        mWeek = week;
+        //mWeek and mContext must be initialized before updateMembers is called!
+        updateMembers();
     }
 
     public View getView(int position, View convertView, ViewGroup parent){
@@ -67,7 +65,7 @@ public class SelectLectureAdapter extends MyBaseAdapter  { //BaseAdapter already
 
     protected void updateMembers(){
         //TODO: Limit this from all Lectures to the lectures in this mWeek
-        mLecturesThisWeek = this.getLectureList(true);
+        mLecturesThisWeek = this.getLecturesInWeek(mWeek, true);
     };
 
 

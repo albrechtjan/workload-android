@@ -36,6 +36,17 @@ abstract public class MyBaseAdapter extends BaseAdapter{
                 sLectureObserver);
     }
 
+    protected List<Lecture> getLecturesInWeek(Week thatWeek, boolean onlyActive){
+        // gets lectures that are active in 'thatWeek'
+        List<Lecture> allLectures = getLectureList(onlyActive);
+        List<Lecture> lecturesThatWeek = new ArrayList<Lecture>();
+        for (Lecture lecture : allLectures){
+            if (lecture.startWeek.compareTo(thatWeek)<=0 && thatWeek.compareTo(lecture.endWeek)<=0) {
+                lecturesThatWeek.add(lecture);
+            }
+        }
+        return lecturesThatWeek;
+    }
 
 
     protected List<Lecture> getLectureList( boolean onlyActive){
