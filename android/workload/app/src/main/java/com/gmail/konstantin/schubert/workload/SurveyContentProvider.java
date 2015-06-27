@@ -53,7 +53,7 @@ public class SurveyContentProvider extends ContentProvider{
 //    result: HTTP status code TODO:Add this!!!!
 
     public static class DB_STRINGS_LECTURE{
-        public static final String _ID = "_ID";
+        public static final String _ID = "_id";
         public static final String NAME = "NAME";
         public static final String STARTYEAR = "STARTYEAR";
         public static final String STARTWEEK = "STARTWEEK";
@@ -67,7 +67,7 @@ public class SurveyContentProvider extends ContentProvider{
     }
 
     public static class DB_STRINGS_WORKENTRY{
-        public static final String _ID = "_ID";
+        public static final String _ID = "_id";
         public static final String HOURS_IN_LECTURE = "HOURS_IN_LECTURE";
         public static final String HOURS_FOR_HOMEWORK = "HOURS_FOR_HOMEWORK";
         public static final String HOURS_STUDYING = "HOURS_STUDYING";
@@ -108,7 +108,7 @@ public class SurveyContentProvider extends ContentProvider{
             DB_STRINGS_WORKENTRY.LECTURE_ID + " INTEGER, "+
             DB_STRINGS_WORKENTRY.STATUS + " TEXT, " +
             DB_STRINGS_WORKENTRY.OPERATION + " TEXT, " +
-            "FOREIGN KEY(LECTURE_ID) REFERENCES lectures(_ID)" +
+            "FOREIGN KEY("+DB_STRINGS_WORKENTRY.LECTURE_ID+") REFERENCES lectures("+DB_STRINGS_LECTURE._ID+")" +
             ")";
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);

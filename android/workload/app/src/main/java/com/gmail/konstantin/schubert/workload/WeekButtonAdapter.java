@@ -36,7 +36,7 @@ public class WeekButtonAdapter extends MyBaseAdapter {
         mLectures = getLectureList(true);
         mWeeks = getWeeks(mLectures);
         sWeekObserver = new WeekObserver(new Handler(), this);
-        //TODO: Check if this works
+        //TODO: Check if this works: The mLectures and the mWeeks attributes must both be updated when the content provider has a change. And the view must be notfied, so it can update!!!!
         mContext.getContentResolver().registerContentObserver(
                 Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"),
                 false,
@@ -96,6 +96,10 @@ public class WeekButtonAdapter extends MyBaseAdapter {
     }
 
     private List<Week> getWeeks(List<Lecture> lectures){
+        if(lectures.isEmpty()){
+            // if there are not lectures, then the list of weeks is empty as well.
+            return new LinkedList<Week>();
+        }
         Week week = firstWeek(lectures).copy();
         List<Week> weeks = new LinkedList<Week>();
         final Week last = lastWeek(lectures);

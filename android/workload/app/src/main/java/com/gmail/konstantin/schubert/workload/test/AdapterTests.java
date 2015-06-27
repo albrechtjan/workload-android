@@ -26,7 +26,7 @@ public class AdapterTests extends AndroidTestCase{
         super.setUp();
         this.mBaseAdapter = new WeekButtonAdapter(mContext);
 
-        mContentResolver = mContext.getContentResolver();
+        mContentResolver = mContext.getContentResolver(); // I am not inheriting from ProviderTestCase and thus cannot get a mock content resolver
         //TODO: put more entries
         mContentResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), ContentProviderTest.getRandomMockLectureEntry());
         //TODO: Make this one random and create a check that prevents entries for a certain week to be entered twice. Or maybe we should then in the content provider switch from insert to update?
