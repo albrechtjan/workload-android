@@ -20,8 +20,6 @@ public class SelectLecture extends ListActivity {
     public final static String MESSAGE_YEAR = "com.gmail.konstantin.schubert.workload.YEAR";
     public final static String MESSAGE_WEEK = "com.gmail.konstantin.schubert.workload.WEEK";
     private Week mWeek;
-    Cursor mCursor;
-
 
 
     @Override
@@ -31,26 +29,9 @@ public class SelectLecture extends ListActivity {
 
         Intent launchIntent = getIntent();
         Integer year = launchIntent.getIntExtra(MESSAGE_YEAR, -1);
-        Integer weeknumber = launchIntent.getIntExtra(MESSAGE_WEEK, -1);
-        Week mWeek  = new Week(year,weeknumber);
-
-        //TODO: restrict to lectures that happen in this week.
-        mCursor = this.getContentResolver().query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), null, null, null, null);
-        // TODO:Put a managed wrapper around the retrieved cursor so we don't have to worry about requerying or closing it as the activity changes state.
-        startManagingCursor(mCursor);
-        //TODO: Write separate class file for an adapter that implements the ListAdapter and inherits form MyBaseAdaper
-        Log.d(TAG, "Full table dump:" + DatabaseUtils.dumpCursorToString(mCursor));
-//        // Now create a new list adapter bound to the cursor.
-//        // SimpleListAdapter is designed for binding to a Cursor.
-        ListAdapter adapter = new SimpleCursorAdapter(
-                this, // Context.
-                android.R.layout.two_line_list_item,  // Specify the row template to use (here, two columns bound to the two retrieved cursor
-                mCursor,                                   // Pass in the cursor to bind to.
-                new String[] {SurveyContentProvider.DB_STRINGS_LECTURE.NAME, SurveyContentProvider.DB_STRINGS_LECTURE._ID},           // Array of cursor columns to bind to.
-                new int[] {android.R.id.text1, android.R.id.text2});  // Parallel array of which template objects to bind to those columns.
-
-//         Bind to our new adapter.
-        setListAdapter(adapter);
+        Integer weekNumber = launchIntent.getIntExtra(MESSAGE_WEEK, -1);
+        this.mWeek  = new Week(year,weekNumber);
+        setListAdapter(new SelectLectureAdapter(this, mWeek));
     }
 
     @Override

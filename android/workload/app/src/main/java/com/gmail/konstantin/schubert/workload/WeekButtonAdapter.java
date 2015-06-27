@@ -24,26 +24,18 @@ import static android.widget.GridView.*;
 
 public class WeekButtonAdapter extends MyBaseAdapter {
     private Context mContext;
-    private ContentObserver mContentObserver;
     private List<Week> mWeeks;
     private List<Lecture> mLectures;
-    private final WeekObserver sWeekObserver;
+
 
 
     public WeekButtonAdapter(Context context) {
         super(context);
         mContext = context;
-        mLectures = getLectureList(true);
-        mWeeks = getWeeks(mLectures);
-        sWeekObserver = new WeekObserver(new Handler(), this);
-        //TODO: Check if this works: The mLectures and the mWeeks attributes must both be updated when the content provider has a change. And the view must be notfied, so it can update!!!!
-        mContext.getContentResolver().registerContentObserver(
-                Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"),
-                false,
-                sWeekObserver);
+        this.updateMembers();
     }
 
-    public void updateMembers(){
+    protected void updateMembers(){
 
         this.mLectures = getLectureList(true);
         this.mWeeks = getWeeks(this.mLectures);
@@ -54,10 +46,12 @@ public class WeekButtonAdapter extends MyBaseAdapter {
     }
 
     public Object getItem(int position) {
+        //TODO: Figure out if I can really return 0 here.
         return null;
     }
 
     public long getItemId(int position) {
+        //TODO: figure out what this method is good for
         return 0;
     }
 
@@ -65,11 +59,11 @@ public class WeekButtonAdapter extends MyBaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
 
 
-        LayoutInflater inflater = (LayoutInflater) mContext
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final WeekButton weekButton;
         if (convertView == null) {
             // if it's not recycled, initialize some attributes
+            //TODO: Use View.inflate instead of the LayoutInflater
             weekButton = (WeekButton) inflater.inflate(R.layout.week_button, null);
         } else {
             weekButton = (WeekButton) convertView;
@@ -132,24 +126,5 @@ public class WeekButtonAdapter extends MyBaseAdapter {
 
     }
 
-    class WeekObserver extends ContentObserver {
-        final WeekButtonAdapter weekButtonAdapter;
-
-        public WeekObserver(Handler handler, WeekButtonAdapter weekButtonAdapter) {
-            super(handler);
-            this.weekButtonAdapter = weekButtonAdapter;
-        }
-
-        @Override
-        public void onChange(boolean selfChange) {
-            this.onChange(selfChange, null);
-        }
-
-        @Override
-        public void onChange(boolean selfChange, Uri uri) {
-            weekButtonAdapter.updateMembers();
-            weekButtonAdapter.notifyDataSetChanged();
-        }
-    }
 
 }

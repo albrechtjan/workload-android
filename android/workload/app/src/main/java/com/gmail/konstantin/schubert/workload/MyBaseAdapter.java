@@ -2,9 +2,11 @@ package com.gmail.konstantin.schubert.workload;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.BaseAdapter;
 
@@ -19,15 +21,24 @@ abstract public class MyBaseAdapter extends BaseAdapter{
     private final Context sContext;
     private ContentResolver mContentResolver;
     private static final String TAG = MyBaseAdapter.class.getSimpleName();
+    private final LectureObserver sLectureObserver;
 
 
     public MyBaseAdapter(Context context){
         this.sContext = context;
         this.mContentResolver = context.getContentResolver();
+
+        sLectureObserver = new LectureObserver(new Handler(), this);
+        //TODO: Check if this works: The mLectures and the mWeeks attributes must both be updated when the content provider has a change. And the view must be notfied, so it can update!!!!
+        sContext.getContentResolver().registerContentObserver(
+                Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"),
+                false,
+                sLectureObserver);
     }
 
-    public List<Lecture> getLectureList( boolean onlyActive){
-        //TODO: Implement filter to only active lectures.
+
+
+    protected List<Lecture> getLectureList( boolean onlyActive){
         Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), null, null, null, null);
         String cursorDump = DatabaseUtils.dumpCursorToString(cursor);
         Log.d(TAG, "Full table dump:" + DatabaseUtils.dumpCursorToString(cursor));
@@ -46,12 +57,14 @@ abstract public class MyBaseAdapter extends BaseAdapter{
             );
             boolean isActive = ( cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE)) == 1); //TODO: Figure out if and why there is no boolean method.
             Lecture newLecture = new Lecture(_ID, name, semester, startWeek, endWeek, isActive);
-            lectures.add(newLecture);
+            if (!onlyActive || (onlyActive&&isActive)) {
+                lectures.add(newLecture);
+            }
         }
         return lectures;
     }
 
-    public List<WorkloadEntry> getWorkloadEntryList(Lecture lecture){
+    protected List<WorkloadEntry> getWorkloadEntryList(Lecture lecture){
         /* Gets the workload entries for a given lecture.
         * If passed null it will get the entries for all lectures.
         * */
@@ -74,5 +87,26 @@ abstract public class MyBaseAdapter extends BaseAdapter{
         return workloadEntries;
     }
 
+    protected abstract void updateMembers();
+
+    class LectureObserver extends ContentObserver {
+        final MyBaseAdapter myBaseAdapter;
+
+        public LectureObserver(Handler handler, MyBaseAdapter myBaseAdapter) {
+            super(handler);
+            this.myBaseAdapter = myBaseAdapter;
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            this.onChange(selfChange, null);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            myBaseAdapter.updateMembers();
+            myBaseAdapter.notifyDataSetChanged();
+        }
+    }
 
 }
