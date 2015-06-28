@@ -50,6 +50,7 @@ public class EnterWorkload extends ListActivity {
     }
     @Override
     protected void onPause(){
+        super.onPause();
         //TODO: Save to Workload Entry
         //TODO: In Accordance to the online world, save 0 if nothing else is entered.
     }
