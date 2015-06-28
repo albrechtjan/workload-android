@@ -3,43 +3,55 @@ package com.gmail.konstantin.schubert.workload;
 
 import android.app.ListActivity;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.DatabaseUtils;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Contacts;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ListAdapter;
-import android.widget.SimpleCursorAdapter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-public class SelectLecture extends ListActivity {
-    private static final String TAG = SelectLecture.class.getSimpleName();
+public class EnterWorkload extends ListActivity {
     public final static String MESSAGE_YEAR = "com.gmail.konstantin.schubert.workload.YEAR";
     public final static String MESSAGE_WEEK = "com.gmail.konstantin.schubert.workload.WEEK";
+    public final static String MESSAGE_LECTURE = "com.gmail.konstantin.schubert.workload.LECTURE";
+
+    public final static int ROW_HOURS_ATTENDING = 0;
+    public final static int ROW_HOURS_HOMEWORK = 1;
+    public final static int ROW_HOURS_STUDYING =2;
+    public final static List<String> ROW_TITLES = Arrays.asList("attending", "homework", "studying");
+
+
+    //TODO: Figure out if a ListActivity is really what we want here.
+
     private Week mWeek;
+    private int lectureId;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_lecture);
-
         Intent launchIntent = getIntent();
         Integer year = launchIntent.getIntExtra(MESSAGE_YEAR, -1);
         Integer weekNumber = launchIntent.getIntExtra(MESSAGE_WEEK, -1);
+        Integer lectureId = launchIntent.getIntExtra(MESSAGE_LECTURE,-1);
         this.mWeek  = new Week(year,weekNumber);
-        setListAdapter(new SelectLectureAdapter(this, mWeek));
-        setTitle("Choose a lecture");
+        setListAdapter(new EnterWorkloadAdaper(this, mWeek, lectureId));
+        setTitle("Enter your hours");
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+    @Override
+    protected void onPause(){
+        //TODO: Save to Workload Entry
+        //TODO: In Accordance to the online world, save 0 if nothing else is entered.
     }
 
     @Override

@@ -9,7 +9,8 @@
         android:theme="@style/MaterialTheme" >
         <activity
             android:name=".calendar"
-            android:label="@string/title_activity_calendar" >
+            android:label="@string/title_activity_calendar"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -36,11 +37,18 @@
 
         <activity
             android:name=".SelectLecture"
-            android:label="@string/title_activity_select_lecture"
-            android:parentActivityName=".calendar" >
+            android:parentActivityName=".calendar"
+            android:launchMode="singleTop">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.gmail.konstantin.schubert.workload.calendar" />
+        </activity>
+        <activity
+            android:name=".EnterWorkload"
+            android:parentActivityName=".SelectLecture">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.gmail.konstantin.schubert.workload.SelectLecture" />
         </activity>
     </application>
 

@@ -1,20 +1,16 @@
 package com.gmail.konstantin.schubert.workload;
 
 import android.content.Context;
-import android.database.ContentObserver;
-import android.database.DatabaseUtils;
-import android.net.Uri;
-import android.os.Handler;
-import android.util.Log;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
+
 
 import java.util.List;
-import java.util.Objects;
+
 
 
 public class SelectLectureAdapter extends MyBaseAdapter  { //BaseAdapter already implements Listadapter
@@ -32,7 +28,7 @@ public class SelectLectureAdapter extends MyBaseAdapter  { //BaseAdapter already
         updateMembers();
     }
 
-    public View getView(int position, View convertView, ViewGroup parent){
+    public View getView(final int position, View convertView, ViewGroup parent){
         LinearLayout lectureRow; //A button for the lecture wrapped in a LinearLayout
         if (convertView!=null) {
             lectureRow = (LinearLayout) convertView;
@@ -44,6 +40,19 @@ public class SelectLectureAdapter extends MyBaseAdapter  { //BaseAdapter already
 
         Button lectureButton = (Button) lectureRow.getChildAt(0);
         lectureButton.setText(mLecturesThisWeek.get(position).name);
+
+
+        lectureButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                Intent intent = new Intent(mContext, EnterWorkload.class);
+                intent.putExtra(EnterWorkload.MESSAGE_YEAR, mWeek.year());
+                intent.putExtra(EnterWorkload.MESSAGE_WEEK, mWeek.week());
+                intent.putExtra(EnterWorkload.MESSAGE_LECTURE, mLecturesThisWeek.get(position)._ID);
+                mContext.startActivity(intent);
+            }
+        });
+
 
         return lectureRow;
     }

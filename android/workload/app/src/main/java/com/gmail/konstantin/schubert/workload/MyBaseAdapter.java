@@ -13,9 +13,7 @@ import android.widget.BaseAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * implements functionality shared by the various Adapters in this app
- */
+
 abstract public class MyBaseAdapter extends BaseAdapter{
 
     private final Context sContext;

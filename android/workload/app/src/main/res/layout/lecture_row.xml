@@ -6,7 +6,8 @@ android:orientation="vertical" >
 
 <Button android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:text="Lecture Name"/>
+    android:text="Lecture Name"
+    android:backgroundTint="@color/primary_brightish"/>
 
 
 </LinearLayout>
