@@ -42,32 +42,26 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
         EditText editText = (EditText) lectureRow.getChildAt(1);
         //TODO:Load and set default value
 
-        editText.addTextChangedListener(new WorkloadTextWatcher(position, this));
 
 
         class WorkloadTextWatcher implements TextWatcher {
             public final int fWatchedPosition;
-//            public final MyBaseAdapter;
+            public final EnterWorkloadAdaper fAdapter;
 
-            WorkloadTextWatcher(int position, int adapter){
+            WorkloadTextWatcher(int position, EnterWorkloadAdaper adapter){
                 this.fWatchedPosition = position;
+                this.fAdapter = adapter;
             }
-
             public void afterTextChanged(Editable s) {
-
-//                mAdapter.updateMembers();
+                //TODO: use fAdapter to save stuff to database!
             }
-
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
-
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
         }
 
-
-
+        editText.addTextChangedListener(new WorkloadTextWatcher(position, this));
 
         return lectureRow;
     }
