@@ -14,20 +14,18 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 
-
-
 public class EnterWorkloadAdaper extends MyBaseAdapter  {
 
 
     private Context mContext;
     private final Week sWeek;
-    private final int sLectureId;
+    private final Lecture sLecture;
 
     public EnterWorkloadAdaper(Context context, Week week, int lectureId) {
         super(context);
         mContext = context;
         sWeek = week;
-        sLectureId = lectureId;
+        sLecture = getLectureById(lectureId);
         updateMembers();
     }
 
@@ -40,8 +38,18 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
         TextView textView = (TextView) lectureRow.getChildAt(0);
         textView.setText(EnterWorkload.ROW_TITLES.get(position));
         EditText editText = (EditText) lectureRow.getChildAt(1);
-        //TODO:Load and set default value
-
+        WorkloadEntry workloadEntry = getOrCreateWorkloadEntry(sLecture,sWeek);
+        switch (position){
+            case EnterWorkload.ROW_HOURS_ATTENDING:
+                editText.setText(String.valueOf(workloadEntry.getHoursInLecture()));
+                break;
+            case EnterWorkload.ROW_HOURS_HOMEWORK:
+                editText.setText(String.valueOf(workloadEntry.getHoursForHomework()));
+                break;
+            case EnterWorkload.ROW_HOURS_STUDYING:
+                editText.setText(String.valueOf(workloadEntry.getHoursStudying()));
+                break;
+        }
 
 
         class WorkloadTextWatcher implements TextWatcher {

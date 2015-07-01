@@ -1,6 +1,7 @@
 package com.gmail.konstantin.schubert.workload;
 
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.database.Cursor;
@@ -28,7 +29,7 @@ abstract public class MyBaseAdapter extends BaseAdapter{
 
         sLectureObserver = new LectureObserver(new Handler(), this);
         //TODO: Check if this works: The mLectures and the mWeeks attributes must both be updated when the content provider has a change. And the view must be notfied, so it can update!!!!
-        sContext.getContentResolver().registerContentObserver(
+        mContentResolver.registerContentObserver(
                 Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"),
                 false,
                 sLectureObserver);
@@ -46,6 +47,13 @@ abstract public class MyBaseAdapter extends BaseAdapter{
         return lecturesThatWeek;
     }
 
+    protected Lecture getLectureById(Integer lectureId){
+        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/#"+String.valueOf(lectureId)),  null, null, null, null);
+        return buildLectureFromCursor(cursor);
+    }
+
+
+
 
     protected List<Lecture> getLectureList( boolean onlyActive){
         Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), null, null, null, null);
@@ -53,24 +61,24 @@ abstract public class MyBaseAdapter extends BaseAdapter{
         Log.d(TAG, "Full table dump:" + DatabaseUtils.dumpCursorToString(cursor));
         List<Lecture> lectures = new ArrayList<Lecture>();
         while (cursor.moveToNext()){
-            int _ID= cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE._ID));
-            String name = cursor.getString( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.NAME) );
-            String semester = cursor.getString( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.SEMESTER) );
-            Week startWeek = new Week(
-                    cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.STARTYEAR)),
-                    cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.STARTWEEK))
-            );
-            Week endWeek = new Week(
-                    cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.ENDYEAR)),
-                    cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.ENDWEEK))
-            );
-            boolean isActive = ( cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE)) == 1); //TODO: Figure out if and why there is no boolean method.
-            Lecture newLecture = new Lecture(_ID, name, semester, startWeek, endWeek, isActive);
-            if (!onlyActive || (onlyActive&&isActive)) {
+            Lecture newLecture = buildLectureFromCursor(cursor);
+            if (!onlyActive || (onlyActive&&newLecture.isActive)) {
                 lectures.add(newLecture);
             }
         }
         return lectures;
+    }
+
+
+    protected WorkloadEntry getOrCreateWorkloadEntry(Lecture lecture, Week week){
+        String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture._ID);
+        where += SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(week.year());
+        where += SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(week.week());
+        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, where, null, null);
+        if (cursor.getCount()==0){
+            mContentResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), ContentValues );
+        }
+        return buildWorkloadEntryFromCursor(cursor);
     }
 
     protected List<WorkloadEntry> getWorkloadEntryList(Lecture lecture){
@@ -79,19 +87,14 @@ abstract public class MyBaseAdapter extends BaseAdapter{
         * */
         String where = null;
         if (lecture != null){
-            where = SurveyContentProvider.DB_STRINGS_WORKENTRY._ID + "=" + String.valueOf(lecture._ID);
+            where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture._ID);
         }
         Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, where, null, null);
         List<WorkloadEntry> workloadEntries = new ArrayList<WorkloadEntry>();
         while (cursor.moveToNext()){
-            int _ID = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY._ID));
-            int year = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR));
-            int week = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK));
-            int lecture_id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID));
-            float hoursInLecture = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE));
-            float hoursForHomework = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK));
-            float hoursStudying = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_STUDYING));
-            WorkloadEntry newWorkloadEntry = new WorkloadEntry(_ID, year, week, lecture_id, hoursInLecture, hoursForHomework, hoursStudying );
+
+            WorkloadEntry newWorkloadEntry = buildWorkloadEntryFromCursor(cursor);
+            workloadEntries.add(newWorkloadEntry);
         }
         return workloadEntries;
     }
@@ -116,6 +119,38 @@ abstract public class MyBaseAdapter extends BaseAdapter{
             myBaseAdapter.updateMembers();
             myBaseAdapter.notifyDataSetChanged();
         }
+    }
+
+    private WorkloadEntry buildWorkloadEntryFromCursor(Cursor cursor){
+        int _ID = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY._ID));
+        Week week = new Week(
+                cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR)),
+                cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK))
+        );
+        int lecture_id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID));
+        float hoursInLecture = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE));
+        float hoursForHomework = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK));
+        float hoursStudying = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_STUDYING));
+        return new WorkloadEntry(_ID, week, lecture_id, hoursInLecture, hoursForHomework, hoursStudying );
+
+    }
+
+    private Lecture buildLectureFromCursor(Cursor cursor){
+
+        int _ID= cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE._ID));
+        String name = cursor.getString( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.NAME) );
+        String semester = cursor.getString( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.SEMESTER) );
+        Week startWeek = new Week(
+                cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.STARTYEAR)),
+                cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.STARTWEEK))
+        );
+        Week endWeek = new Week(
+                cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.ENDYEAR)),
+                cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.ENDWEEK))
+        );
+        boolean isActive = ( cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE)) == 1); //TODO: Figure out if and why there is no boolean method.
+        return new Lecture(_ID, name, semester, startWeek, endWeek, isActive);
+
     }
 
 }

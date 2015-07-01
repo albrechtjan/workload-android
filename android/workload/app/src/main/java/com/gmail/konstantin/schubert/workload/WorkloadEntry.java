@@ -6,11 +6,21 @@ public class WorkloadEntry {
 
     // since all variables are final, make them public
     public final int _ID;
-    public final int year;
-    public final int week;
+    public final Week week;
     public final int lecture_id;
+
+
     /* I decided against passing an actual lecture object here since these might have multiple instances for a certain index
      * Maybe one day I will use a pattern that enforces only one instance per ID and then I change this. */
+    public WorkloadEntry(int _ID, Week week, int lecture_id, float hoursInLecture, float hoursForHomework, float hoursStudying){ //use a dict here to make method signatures more future-proof?
+        this._ID = _ID;
+        this.week = week;
+        this.lecture_id = lecture_id;
+        this.hoursInLecture = hoursInLecture;
+        this.hoursForHomework = hoursForHomework;
+        this.hoursStudying = hoursStudying;
+    }
+
 
     public float getHoursInLecture() {
         return hoursInLecture;
@@ -40,15 +50,5 @@ public class WorkloadEntry {
     private float hoursInLecture;
     private float hoursForHomework;
     private float hoursStudying;
-
-    public WorkloadEntry(int _ID, int year, int week, int lecture_id, float hoursInLecture, float hoursForHomework, float hoursStudying){ //use a dict here to make method signatures more future-proof?
-        this._ID = _ID;
-        this.year = year;
-        this.week = week;
-        this.lecture_id = lecture_id;
-        this.hoursInLecture = hoursInLecture;
-        this.hoursForHomework = hoursForHomework;
-        this.hoursStudying = hoursStudying;
-    }
 
 }
