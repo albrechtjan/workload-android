@@ -18,6 +18,7 @@ public class Lecture {
         this.semester = semester;
         this.startWeek = startWeek;
         this.endWeek = endWeek;
+        this.isActive = isActive;
     }
 
 

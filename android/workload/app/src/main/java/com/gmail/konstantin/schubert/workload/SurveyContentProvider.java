@@ -100,14 +100,14 @@ public class SurveyContentProvider extends ContentProvider{
             "workentries " +                       // Table's name
             "(" +                           // The columns in the table
             DB_STRINGS_WORKENTRY._ID + " INTEGER PRIMARY KEY, " +
-            DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE + " REAL, " +
-            DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK + " REAL," +
-            DB_STRINGS_WORKENTRY.HOURS_STUDYING + " REAL," +
+            DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE + " REAL DEFAULT 0," +
+            DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK + " REAL DEFAULT 0," +
+            DB_STRINGS_WORKENTRY.HOURS_STUDYING + " REAL DEFAULT 0," +
             DB_STRINGS_WORKENTRY.YEAR + " INT, " +
             DB_STRINGS_WORKENTRY.WEEK + " INT, " +
             DB_STRINGS_WORKENTRY.LECTURE_ID + " INTEGER, "+
-            DB_STRINGS_WORKENTRY.STATUS + " TEXT, " +
-            DB_STRINGS_WORKENTRY.OPERATION + " TEXT, " +
+            DB_STRINGS_WORKENTRY.STATUS + " TEXT DEFAULT 'IDLE', " +
+            DB_STRINGS_WORKENTRY.OPERATION + " TEXT DEFAULT 'NONE', " +
             "FOREIGN KEY("+DB_STRINGS_WORKENTRY.LECTURE_ID+") REFERENCES lectures("+DB_STRINGS_LECTURE._ID+")" +
             ")";
 
@@ -161,7 +161,6 @@ public class SurveyContentProvider extends ContentProvider{
 
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getReadableDatabase();
-        long id;
         SQLiteQueryBuilder qBuilder = new SQLiteQueryBuilder();
         switch (uriType) {
             case LECTURES:
@@ -183,6 +182,7 @@ public class SurveyContentProvider extends ContentProvider{
         }
         Cursor cursor = qBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        int count = cursor.getCount();
         return cursor;
     }
 

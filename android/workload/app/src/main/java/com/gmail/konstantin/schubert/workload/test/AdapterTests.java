@@ -12,7 +12,7 @@ import com.gmail.konstantin.schubert.workload.MyBaseAdapter;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.WeekButtonAdapter;
 
-@TargetApi(18)
+
 public class AdapterTests extends AndroidTestCase{
 
     MyBaseAdapter mBaseAdapter;
@@ -37,10 +37,14 @@ public class AdapterTests extends AndroidTestCase{
         Log.d(TAG, "Full table dump:" + DatabaseUtils.dumpCursorToString(cursor));
         Log.d(TAG, "setUp done:");
 
+
+         cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, null, null, null);
+        cursorDump = DatabaseUtils.dumpCursorToString(cursor);
+        Log.d(TAG, "Full table dump:" + DatabaseUtils.dumpCursorToString(cursor));
+        Log.d(TAG, "setUp done:");
     }
 
     public void testWeekButtonAdapter__test_GetCount(){
-
         int numberOfWeeks = mBaseAdapter.getCount();
         assertTrue(numberOfWeeks>0);
     }

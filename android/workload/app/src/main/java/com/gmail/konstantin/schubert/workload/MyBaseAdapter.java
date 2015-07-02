@@ -48,7 +48,8 @@ abstract public class MyBaseAdapter extends BaseAdapter{
     }
 
     protected Lecture getLectureById(Integer lectureId){
-        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/#"+String.valueOf(lectureId)),  null, null, null, null);
+        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lectureId)),  null, null, null, null);
+        cursor.moveToFirst();
         return buildLectureFromCursor(cursor);
     }
 
@@ -71,13 +72,19 @@ abstract public class MyBaseAdapter extends BaseAdapter{
 
 
     protected WorkloadEntry getOrCreateWorkloadEntry(Lecture lecture, Week week){
-        String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture._ID);
-        where += SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(week.year());
+        String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture._ID)+" AND ";
+        where += SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(week.year())+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(week.week());
         Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, where, null, null);
         if (cursor.getCount()==0){
-            mContentResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), ContentValues );
+            ContentValues contentValues = new ContentValues(3);
+            contentValues.put("YEAR", week.year());
+            contentValues.put("WEEK", week.week());
+            contentValues.put("LECTURE_ID", lecture._ID);
+            mContentResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), contentValues);
+            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, where, null, null);
         }
+        cursor.moveToFirst();
         return buildWorkloadEntryFromCursor(cursor);
     }
 
