@@ -45,7 +45,8 @@
         </activity>
         <activity
             android:name=".EnterWorkload"
-            android:parentActivityName=".SelectLecture">
+            android:parentActivityName=".SelectLecture"
+            android:windowSoftInputMode="adjustPan">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.gmail.konstantin.schubert.workload.SelectLecture" />
