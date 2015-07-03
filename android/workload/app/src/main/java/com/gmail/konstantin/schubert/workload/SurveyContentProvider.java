@@ -192,12 +192,32 @@ public class SurveyContentProvider extends ContentProvider{
         return 0;
     }
 
-    public int update(
-            Uri uri,
-            ContentValues values,
-            String selection,
-            String[] selectionArgs){
-        return 0;
+    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs){
+
+        int uriType = sURIMatcher.match(uri);
+        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
+        String table;
+        switch (uriType) {
+            case LECTURES_ID:
+                if (selection != null){
+                    throw new IllegalArgumentException("Do not pass selection to update query when also passing ID");
+                }
+                table = "lectures";
+                selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
+                break;
+            case ENTRIES_ID:
+                if (selection != null){
+                    throw new IllegalArgumentException("Do not pass selection to update query when also passing ID");
+                }
+                table = "workentries";
+                selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown or invalid uri. Note that with update, you MUST supply an ID: " + uri);
+        }
+        database.update(table, values, selection, selectionArgs);
+        getContext().getContentResolver().notifyChange(uri, null);
+        return 1;
     }
 
 
@@ -206,8 +226,6 @@ public class SurveyContentProvider extends ContentProvider{
         MainDatabaseHelper(Context context) {
             super(context, DBNAME, null, 1);
         }
-
-
 
         /*
              * Creates the data repository. This is called when the provider attempts to open the

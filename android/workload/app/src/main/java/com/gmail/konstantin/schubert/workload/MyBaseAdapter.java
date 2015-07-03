@@ -78,9 +78,9 @@ abstract public class MyBaseAdapter extends BaseAdapter{
         Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, where, null, null);
         if (cursor.getCount()==0){
             ContentValues contentValues = new ContentValues(3);
-            contentValues.put("YEAR", week.year());
-            contentValues.put("WEEK", week.week());
-            contentValues.put("LECTURE_ID", lecture._ID);
+            contentValues.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR, week.year());
+            contentValues.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK, week.week());
+            contentValues.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID, lecture._ID);
             mContentResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), contentValues);
             cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, where, null, null);
         }
@@ -104,6 +104,14 @@ abstract public class MyBaseAdapter extends BaseAdapter{
             workloadEntries.add(newWorkloadEntry);
         }
         return workloadEntries;
+    }
+
+    protected void updateWorkloadEntryInDB(WorkloadEntry entry){
+        ContentValues values = new ContentValues();
+        values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK, entry.getHoursForHomework());
+        values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE, entry.getHoursInLecture());
+        values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_STUDYING, entry.getHoursStudying());
+        int updated = mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/" + String.valueOf(entry._ID)), values, null, null);
     }
 
     protected abstract void updateMembers();

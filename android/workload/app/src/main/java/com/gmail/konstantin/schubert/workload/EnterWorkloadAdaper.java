@@ -20,12 +20,14 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
     private Context mContext;
     private final Week sWeek;
     private final Lecture sLecture;
+    private WorkloadEntry mWorkloadEntry;
 
     public EnterWorkloadAdaper(Context context, Week week, int lectureId) {
         super(context);
         mContext = context;
         sWeek = week;
         sLecture = getLectureById(lectureId);
+        mWorkloadEntry = getOrCreateWorkloadEntry(sLecture,sWeek);
         updateMembers();
     }
 
@@ -38,16 +40,15 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
         TextView textView = (TextView) lectureRow.getChildAt(0);
         textView.setText(EnterWorkload.ROW_TITLES.get(position));
         EditText editText = (EditText) lectureRow.getChildAt(1);
-        WorkloadEntry workloadEntry = getOrCreateWorkloadEntry(sLecture,sWeek);
         switch (position){
             case EnterWorkload.ROW_HOURS_ATTENDING:
-                editText.setText(String.valueOf(workloadEntry.getHoursInLecture()));
+                editText.setText(String.valueOf(mWorkloadEntry.getHoursInLecture()));
                 break;
             case EnterWorkload.ROW_HOURS_HOMEWORK:
-                editText.setText(String.valueOf(workloadEntry.getHoursForHomework()));
+                editText.setText(String.valueOf(mWorkloadEntry.getHoursForHomework()));
                 break;
             case EnterWorkload.ROW_HOURS_STUDYING:
-                editText.setText(String.valueOf(workloadEntry.getHoursStudying()));
+                editText.setText(String.valueOf(mWorkloadEntry.getHoursStudying()));
                 break;
         }
 
@@ -61,7 +62,20 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
                 this.fAdapter = adapter;
             }
             public void afterTextChanged(Editable s) {
-                //TODO: use fAdapter to save stuff to database!
+                if (!s.toString().isEmpty()) {
+                    Float hours = Float.valueOf(s.toString());
+                    switch (position) {
+                        case EnterWorkload.ROW_HOURS_ATTENDING:
+                            fAdapter.mWorkloadEntry.setHoursInLecture(hours);
+                            break;
+                        case EnterWorkload.ROW_HOURS_STUDYING:
+                            fAdapter.mWorkloadEntry.setHoursStudying(hours);
+                            break;
+                        case EnterWorkload.ROW_HOURS_HOMEWORK:
+                            fAdapter.mWorkloadEntry.setHoursForHomework(hours);
+                            break;
+                    }
+                }
             }
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
@@ -88,10 +102,12 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
         return 0;
     }
 
+    public void saveWorkload() {
+        updateWorkloadEntryInDB(mWorkloadEntry);
+    }
 
     protected void updateMembers(){
-
+        mWorkloadEntry = getOrCreateWorkloadEntry(sLecture,sWeek);
     };
-
 
 }
