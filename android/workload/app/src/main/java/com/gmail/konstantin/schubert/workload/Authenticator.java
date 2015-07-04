@@ -11,6 +11,9 @@ import android.os.Bundle;
 public class Authenticator extends AbstractAccountAuthenticator{
     public Authenticator(Context context){
         super(context);
+//        https://stackoverflow.com/questions/3606596/android-start-activity-from-service
+//        make sure that the authenticator really only asks the user to log in when it is used
+//        it should never ask to log in when the app is not running, that is just mean
     }
 
     @Override
@@ -27,7 +30,7 @@ public class Authenticator extends AbstractAccountAuthenticator{
         String s2,
         String [] strings,
         Bundle bundle)
-        // for now ignore attempts to confirm credentials
+        // for now ignore attempts to add Account
         throws NetworkErrorException{
             return null;
         }

@@ -1,7 +1,10 @@
 package com.gmail.konstantin.schubert.workload;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -11,15 +14,20 @@ import android.widget.GridView;
 
 
 public class calendar extends Activity {
+    //https://developer.android.com/training/sync-adapters/creating-sync-adapter.html
+    //"...The best place to call the method is in the onCreate() method of your app's opening activity..."
+    public static final String ACCOUNT_TYPE = "de.tu-dresden.zqa.survey";
+    public static final String ACCOUNT = "dummyaccount";
+    Account mAccount;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
-
         GridView gridview = (GridView) findViewById(R.id.gridview);
         gridview.setAdapter(new WeekButtonAdapter(this));
+        mAccount = CreateSyncAccount(this);
 
     }
 
@@ -44,6 +52,31 @@ public class calendar extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Create a new dummy account for the sync adapter
+     *
+     * @param context The application context
+     */
+    public static Account CreateSyncAccount(Context context) {
+        // Create the account type and default account
+        Account newAccount = new Account(
+                ACCOUNT, ACCOUNT_TYPE);
+        // Get an instance of the Android account manager
+        AccountManager accountManager =
+                (AccountManager) context.getSystemService(
+                        ACCOUNT_SERVICE);
+
+        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
+
+        } else {
+            /*
+             * The account exists or some other error occurred. Log this, report it,
+             * or handle it internally.
+             */
+        }
+        return newAccount;
     }
 
 }
