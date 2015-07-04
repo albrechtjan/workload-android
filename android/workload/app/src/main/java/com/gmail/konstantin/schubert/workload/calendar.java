@@ -16,10 +16,10 @@ import android.widget.GridView;
 public class calendar extends Activity {
     //https://developer.android.com/training/sync-adapters/creating-sync-adapter.html
     //"...The best place to call the method is in the onCreate() method of your app's opening activity..."
-    public static final String ACCOUNT_TYPE = "de.tu-dresden.zqa.survey";
-    public static final String ACCOUNT = "dummyaccount";
-    Account mAccount;
 
+    public static final String ACCOUNT_TYPE = "tu-dresden.de";
+    public static final String ACCOUNT = "default_account";
+    Account mAccount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -37,6 +37,7 @@ public class Authenticator extends AbstractAccountAuthenticator{
 
 
     // Ignore attempts to confirm credentials
+    // Ignore attempts to confirm credentials
     @Override
     public Bundle confirmCredentials(
             AccountAuthenticatorResponse r,

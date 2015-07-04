@@ -3,6 +3,7 @@ package com.gmail.konstantin.schubert.workload;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.util.Log;
 
 /**
  * Define a Service that returns an IBinder for the
@@ -24,6 +25,7 @@ public class SyncService extends Service {
          * Set the sync adapter as syncable
          * Disallow parallel syncs
          */
+        Log.d("SyncService", "BAAAAAAA");
         synchronized (sSyncAdapterLock) {
             if (sSyncAdapter == null) {
                 sSyncAdapter = new SyncAdapter(getApplicationContext(), true);
@@ -37,7 +39,6 @@ public class SyncService extends Service {
      */
     @Override
     public IBinder onBind(Intent intent) {
-
         return sSyncAdapter.getSyncAdapterBinder();
     }
 }

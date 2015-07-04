@@ -1,5 +1,6 @@
 package com.gmail.konstantin.schubert.workload;
 
+
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -15,7 +16,6 @@ import android.util.Log;
 public class SurveyContentProvider extends ContentProvider{
 
     private static final String TAG = SurveyContentProvider.class.getSimpleName();
-
 
     public static final String AUTHORITY = "de.tu-dresden.zqa.survey";
     private MainDatabaseHelper mOpenHelper;
@@ -38,19 +38,23 @@ public class SurveyContentProvider extends ContentProvider{
     // http://android-restful-pattern.blogspot.de/
     //https://stackoverflow.com/questions/9112658/google-io-rest-design-pattern-finished-contentprovider-and-stuck-now
 //
-//    Database columns used to store transitional state, with valid values where indicated:
-//    status: http method or new row
-//      GET - query
-//      POST - insert
-//      PUT - update
-//      DELETE - delete
-//      NEW - a new row retrieve by a GET request
-//    operation: the transactional state
-//      0 - PENDING
-//      1 - RETRY
-//      2 - IN_PROGRESS
-//      3 - COMPLETE
-//    result: HTTP status code TODO:Add this!!!!
+
+
+    public static class SYNC_OPERATION {
+        public static final int NONE  = 0;
+        public static final int GET = 1;
+        public static final int PUT = 2;
+        public static final int UPDATE = 3;
+        public static final int DELETE = 4;
+    }
+
+    public static class SYNC_STATUS{
+        public static final int IDLE = 0;
+        public static final int PENDING = 1 ;
+        public static final int TRANSACTING = 2;
+        public static final int  RETRY = 3;
+    }
+
 
     public static class DB_STRINGS_LECTURE{
         public static final String _ID = "_id";
@@ -90,8 +94,8 @@ public class SurveyContentProvider extends ContentProvider{
             DB_STRINGS_LECTURE.ENDWEEK + " INT, " +
             DB_STRINGS_LECTURE.SEMESTER + " TEXT, " +
             DB_STRINGS_LECTURE.ISACTIVE + " BOOL, " +
-            DB_STRINGS_LECTURE.STATUS + " TEXT, " +
-            DB_STRINGS_LECTURE.OPERATION + " TEXT" +
+            DB_STRINGS_LECTURE.STATUS + " INT DEFAULT 0, " +
+            DB_STRINGS_LECTURE.OPERATION + "  INT DEFAULT 0, " +
             ")";
 
 
@@ -106,8 +110,8 @@ public class SurveyContentProvider extends ContentProvider{
             DB_STRINGS_WORKENTRY.YEAR + " INT, " +
             DB_STRINGS_WORKENTRY.WEEK + " INT, " +
             DB_STRINGS_WORKENTRY.LECTURE_ID + " INTEGER, "+
-            DB_STRINGS_WORKENTRY.STATUS + " TEXT DEFAULT 'IDLE', " +
-            DB_STRINGS_WORKENTRY.OPERATION + " TEXT DEFAULT 'NONE', " +
+            DB_STRINGS_WORKENTRY.STATUS + " INT DEFAULT 0, " +
+            DB_STRINGS_WORKENTRY.OPERATION + " INT DEFAULT 0, " +
             "FOREIGN KEY("+DB_STRINGS_WORKENTRY.LECTURE_ID+") REFERENCES lectures("+DB_STRINGS_LECTURE._ID+")" +
             ")";
 
@@ -122,16 +126,57 @@ public class SurveyContentProvider extends ContentProvider{
         sURIMatcher.addURI(AUTHORITY,"/workentries/#",ENTRIES_ID);
     }
 
+
+
+    @Override
+    public boolean onCreate(){
+
+        mOpenHelper = new MainDatabaseHelper(getContext());
+
+        return true;
+    }
+
+
+    public Uri update_status(Uri uri_with_id, int status){
+        // changes the status of the row without triggering a sync
+        //TODO: remove duplicate code with update()
+
+        ContentValues values = new ContentValues();
+        values.put(DB_STRINGS_WORKENTRY.STATUS, status);
+        int uriType = sURIMatcher.match(uri_with_id);
+
+        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
+        long id;
+        switch (uriType) {
+            case LECTURES_ID:
+                id = database.insert("lectures", null, values);
+                break;
+            case ENTRIES_ID:
+                id = database.insert("workentries",null,values);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown URI: " + uri_with_id);
+        }
+        getContext().getContentResolver().notifyChange(uri_with_id, null);
+        return uri_with_id;
+
+    }
+
+
+
     @Override
     public Uri insert(Uri uri, ContentValues values){
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
+
         long id;
         switch (uriType) {
             case LECTURES:
+                values.put(DB_STRINGS_LECTURE.OPERATION,SYNC_OPERATION.PUT);
                 id = database.insert("lectures", null, values);
                 break;
             case ENTRIES:
+                values.put(DB_STRINGS_WORKENTRY.OPERATION,SYNC_OPERATION.PUT);
                 id = database.insert("workentries",null,values);
                 break;
             default:
@@ -143,13 +188,6 @@ public class SurveyContentProvider extends ContentProvider{
     }
 
 
-    @Override
-    public boolean onCreate(){
-
-        mOpenHelper = new MainDatabaseHelper(getContext());
-
-        return true;
-    }
 
     @Override
     public String getType(Uri uri){
@@ -194,6 +232,9 @@ public class SurveyContentProvider extends ContentProvider{
 
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs){
 
+        values.put(DB_STRINGS_WORKENTRY.OPERATION,"UPDATE");
+        values.put(DB_STRINGS_WORKENTRY.STATUS,"TRANSACTING");
+
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
         String table;
@@ -204,6 +245,8 @@ public class SurveyContentProvider extends ContentProvider{
                 }
                 table = "lectures";
                 selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
+                values.put(DB_STRINGS_LECTURE.OPERATION, SYNC_OPERATION.PUT);
+                values.put(DB_STRINGS_LECTURE.STATUS,SYNC_STATUS.PENDING);
                 break;
             case ENTRIES_ID:
                 if (selection != null){
@@ -211,6 +254,8 @@ public class SurveyContentProvider extends ContentProvider{
                 }
                 table = "workentries";
                 selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
+                values.put(DB_STRINGS_WORKENTRY.OPERATION, SYNC_OPERATION.PUT);
+                values.put(DB_STRINGS_WORKENTRY.STATUS,SYNC_STATUS.PENDING);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown or invalid uri. Note that with update, you MUST supply an ID: " + uri);
@@ -247,5 +292,7 @@ public class SurveyContentProvider extends ContentProvider{
         }
 
     }
+
+
 
 }

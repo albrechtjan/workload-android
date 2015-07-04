@@ -7,9 +7,9 @@
     <string name="action_privacy_agreement">Privacy Agreement</string>
     <string name="action_logout">Logout</string>
     <string name="title_activity_calendar">Time Monitor</string>
-    <string name="shibboleth_authenticator">Survey TU Dresden</string>
+    <string name="shibboleth_authenticator">TU Dresden</string>
     <string name="title_activity_select_lecture">SelectLecture</string>
     <string name="title_activity_enter_workload">EnterWorkload</string>
     <string name="content_provider_authority">de.tu-dresden.zqa.survey</string>
-    <string name="account_type">de.tu-dresden.zqa.survey</string>
+    <string name="account_type">tu-dresden.de</string>
 </resources>

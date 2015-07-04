@@ -3,23 +3,14 @@
     package="com.gmail.konstantin.schubert.workload" >
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
-    <!--<uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />-->
-    <!--<uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />-->
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/MaterialTheme" >
-        <activity
-            android:name=".calendar"
-            android:label="@string/title_activity_calendar"
-            android:launchMode="singleTop">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
 
         <service android:name=".AuthenticatorService" >
             <intent-filter>
@@ -31,12 +22,34 @@
                 android:resource="@xml/authenticator" />
         </service>
 
+        <service
+            android:name="com.gmail.konstantin.schubert.workload.SyncService"
+            android:exported="true"
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/syncadapter" />
+        </service>
         <provider
             android:name=".SurveyContentProvider"
             android:authorities="de.tu-dresden.zqa.survey"
             android:exported="false"
             android:syncable="true" >
         </provider>
+
+        <activity
+            android:name=".calendar"
+            android:label="@string/title_activity_calendar"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".SelectLecture"
@@ -55,16 +68,6 @@
                 android:value="com.gmail.konstantin.schubert.workload.SelectLecture" />
         </activity>
 
-        <service
-            android:name="com.gmail.konstantin.schubert.workload.SyncService"
-            android:exported="true"
-            android:process=":sync">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter"/>
-            </intent-filter>
-            <meta-data android:name="android.content.SyncAdapter"
-                android:resource="@xml/syncadapter" />
-        </service>
     </application>
 
 </manifest>

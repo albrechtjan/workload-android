@@ -79,8 +79,6 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         v.put("ENDYEAR", 2015);
         v.put("ENDWEEK", 40);
         v.put("ISACTIVE", true);
-        v.put("STATUS", "IDLE");
-        v.put("OPERATION", "NONE");
         return v;
     }
 
@@ -93,8 +91,6 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         v.put("YEAR", 2015);
         v.put("WEEK", 12);
         v.put("LECTURE_ID", 1);
-        v.put("STATUS", "IDLE");
-        v.put("OPERATION", "NONE");
         return v;
 
     }
@@ -109,8 +105,6 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         v.put("ENDYEAR", 2015);
         v.put("ENDWEEK", 40);
         v.put("ISACTIVE", true);
-        v.put("STATUS", "IDLE");
-        v.put("OPERATION", "NONE");
         return v;
     }
 
@@ -135,8 +129,6 @@ public class ContentProviderTest extends ProviderTestCase2<SurveyContentProvider
         v.put("YEAR", 2015);
         v.put("WEEK", 12);
         v.put("LECTURE_ID", getIDOfRandomLecture());
-        v.put("STATUS", "IDLE");
-        v.put("OPERATION", "NONE");
         return v;
 
     }
