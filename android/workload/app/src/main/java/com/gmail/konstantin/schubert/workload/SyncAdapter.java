@@ -37,6 +37,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         super(context, autoInitialize, allowParallelSyncs);
         mContentResolver = context.getContentResolver();
 
+        if (BuildConfig.DEBUG) {
+            android.os.Debug.waitForDebugger();
+        }
+
     }
 
 
@@ -47,6 +51,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private void incremental_download(){
         Log.d(TAG,"Increlental download");
+        // even with the incremental download of changes, it might be that the change has originated with us, so we have to be careful not to insert things twice
 
     }
 
@@ -60,16 +65,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // TODO: what do we do if no extras are passed????
         int sync_task = extras.getInt("SYNC_MODUS");
         switch (sync_task){
-            case SYNC_TASK.FULL_DOWNLOAD:
+            case SYNC_TASK.FULL_DOWNLOAD: {
                 full_download();
                 break;
-            case SYNC_TASK.INCREMENTAL_DOWNLOAD:
+            }
+            case SYNC_TASK.INCREMENTAL_DOWNLOAD: {
                 incremental_download();
                 break;
-            case SYNC_TASK.PUSH_CHANGES:
+            }
+            case SYNC_TASK.PUSH_CHANGES: {
                 push_changes();
                 break;
+            }
+            default: {
+                incremental_download();
+                //doing a gentle update
+            }
         }
-
     }
 }
