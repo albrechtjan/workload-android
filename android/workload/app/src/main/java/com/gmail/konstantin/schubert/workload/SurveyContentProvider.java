@@ -1,16 +1,20 @@
 package com.gmail.konstantin.schubert.workload;
 
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SyncRequest;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
 
 public class SurveyContentProvider extends ContentProvider{
@@ -28,6 +32,13 @@ public class SurveyContentProvider extends ContentProvider{
     private static final int ENTRIES = 400;
     private static final int ENTRIES_ID = 401;
 
+
+
+    public static final String ACCOUNT_TYPE = "tu-dresden.de";
+    public static final String ACCOUNT = "default_account";
+    Account mAccount;
+
+
     // there is no point in trying to match the API in the database model
     // because the API is designed to work for certain perspectives on the same data
     // if we want to store data in the database we need to bring it back to a table format
@@ -35,17 +46,17 @@ public class SurveyContentProvider extends ContentProvider{
     // view/activity that requests it
 
 
-    // http://android-restful-pattern.blogspot.de/
-    //https://stackoverflow.com/questions/9112658/google-io-rest-design-pattern-finished-contentprovider-and-stuck-now
-//
 
 
     public static class SYNC_OPERATION {
         public static final int NONE  = 0;
-        public static final int GET = 1;
-        public static final int PUT = 2;
-        public static final int UPDATE = 3;
-        public static final int DELETE = 4;
+        public static final int GET = 1;  // == query
+        public static final int PUT = 2;  // == update
+        public static final int POST = 3; // == insert
+        public static final int DELETE = 4; // == delete
+        // What if something is deleted on the server? How are we ever going to learn about it, undless we do a full download?
+        // Honestly, I think the easiest way is to simply not delete anything, just mark rows as deleted.
+        // That's unless a user deletes all his entries.
     }
 
     public static class SYNC_STATUS{
@@ -132,7 +143,7 @@ public class SurveyContentProvider extends ContentProvider{
     public boolean onCreate(){
 
         mOpenHelper = new MainDatabaseHelper(getContext());
-
+        mAccount = CreateSyncAccount(getContext());
         return true;
     }
 
@@ -172,11 +183,11 @@ public class SurveyContentProvider extends ContentProvider{
         long id;
         switch (uriType) {
             case LECTURES:
-                values.put(DB_STRINGS_LECTURE.OPERATION,SYNC_OPERATION.PUT);
+                values.put(DB_STRINGS_LECTURE.OPERATION,SYNC_OPERATION.POST);
                 id = database.insert("lectures", null, values);
                 break;
             case ENTRIES:
-                values.put(DB_STRINGS_WORKENTRY.OPERATION,SYNC_OPERATION.PUT);
+                values.put(DB_STRINGS_WORKENTRY.OPERATION,SYNC_OPERATION.POST);
                 id = database.insert("workentries",null,values);
                 break;
             default:
@@ -220,7 +231,11 @@ public class SurveyContentProvider extends ContentProvider{
         }
         Cursor cursor = qBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
-        int count = cursor.getCount();
+        //TODO: Understand if setNotificationUri does also trigger a server sync and make sure not to double sync
+
+        Bundle syncBundle = new Bundle();
+        syncBundle.putInt("SYNC_MODUS",SyncAdapter.SYNC_TASK.FULL_DOWNLOAD);
+        getContext().getContentResolver().requestSync(mAccount,AUTHORITY, syncBundle);
         return cursor;
     }
 
@@ -262,8 +277,24 @@ public class SurveyContentProvider extends ContentProvider{
         }
         database.update(table, values, selection, selectionArgs);
         getContext().getContentResolver().notifyChange(uri, null);
+
+        Bundle syncBundle = new Bundle();
+        syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.PUSH_CHANGES);
+        getContext().getContentResolver().requestSync(mAccount, AUTHORITY, syncBundle);
         return 1;
     }
+//
+//    7. Be aware of ContentResolver.notifyChange()
+//
+//    One tricky thing. ContentResolver.notifyChange() is a function used by ContentProviders to notify Android that the local database has been changed. This serves two functions, first,
+//   it will cause cursors following that contenturi to update, and in turn requery and invalidate and redraw a ListView, etc...
+ //   TODO: are my view adapters written in a way so the view updates automatically?
+//   It's very magical, the database changes and your ListView just updates automatically.
+// Awesome. Also, when the database changes, Android will request Sync for you,
+// TODO: Figure out why this doesn't happen for me yet
+// even outside your normal schedule, so that those changes get taken off the device and synced to the server as rapidly as possible. Also awesome.
+//
+//    There's one edge case though. If you pull from the server, and push an update into the ContentProvider, it will dutifully call notifyChange() and android will go, "Oh, database changes, better put them on the server!" (Doh!) Well written ContentProviders will have some tests to see if the changes came from the network or from the user, and will set the boolean syncToNetwork flag false if so, to prevent this wasteful double-sync. If you're feeding data into a ContentProvider, it behooves you to figure out how to get this working -- Otherwise you'll end up always performing two syncs when only one is needed
 
 
     protected static final class MainDatabaseHelper extends SQLiteOpenHelper {
@@ -291,6 +322,29 @@ public class SurveyContentProvider extends ContentProvider{
 
         }
 
+    }
+
+
+
+
+    public static Account CreateSyncAccount(Context context) {
+        // Create the account type and default account
+        Account newAccount = new Account(
+                ACCOUNT, ACCOUNT_TYPE);
+        // Get an instance of the Android account manager
+        AccountManager accountManager =
+                (AccountManager) context.getSystemService(
+                        context.ACCOUNT_SERVICE);
+
+        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
+
+        } else {
+            /*
+             * The account exists or some other error occurred. Log this, report it,
+             * or handle it internally.
+             */
+        }
+        return newAccount;
     }
 
 
