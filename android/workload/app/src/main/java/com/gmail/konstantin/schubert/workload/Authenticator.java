@@ -30,13 +30,14 @@ public class Authenticator extends AbstractAccountAuthenticator{
         String s2,
         String [] strings,
         Bundle bundle)
-        // for now ignore attempts to add Account
+        // Until I am comfortable handling the users credentials in the app,
+        // I will keep ignoring their attempts to add an account
         throws NetworkErrorException{
             return null;
         }
 
 
-    // Ignore attempts to confirm credentials
+
     // Ignore attempts to confirm credentials
     @Override
     public Bundle confirmCredentials(
@@ -45,18 +46,28 @@ public class Authenticator extends AbstractAccountAuthenticator{
             Bundle bundle) throws NetworkErrorException {
         return null;
     }
-    // Getting an authentication token is not supported
+
     @Override
     public Bundle getAuthToken(
             AccountAuthenticatorResponse r,
             Account account,
             String s,
             Bundle bundle) throws NetworkErrorException {
-        throw new UnsupportedOperationException();
+//Many servers support some notion of an authentication token, which can be used to authenticate a request to the server without sending the user's actual password.
+// (Auth tokens are normally created with a separate request which does include the user's credentials.)
+// AccountManager can generate auth tokens for applications, so the application doesn't need to handle passwords directly.
+// Auth tokens are normally reusable and CACHED BY THE ACCOUNT MANAGER!!!!!!!, but must be refreshed periodically.
+// It's the responsibility of applications to invalidate auth tokens when they
+// stop working so the AccountManager knows it needs to regenerate them.
+
+    //TODO:      we do not need to cached, just get an auth token!!!
+        return Bundle.EMPTY;
     }
 
     @Override
     public String getAuthTokenLabel(String s){
+
+
         // not yet implemented
         throw new UnsupportedOperationException();
     }

@@ -106,7 +106,7 @@ public class SurveyContentProvider extends ContentProvider{
             DB_STRINGS_LECTURE.SEMESTER + " TEXT, " +
             DB_STRINGS_LECTURE.ISACTIVE + " BOOL, " +
             DB_STRINGS_LECTURE.STATUS + " INT DEFAULT 0, " +
-            DB_STRINGS_LECTURE.OPERATION + "  INT DEFAULT 0, " +
+            DB_STRINGS_LECTURE.OPERATION + "  INT DEFAULT 0" +
             ")";
 
 
