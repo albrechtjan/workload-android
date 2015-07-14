@@ -32,13 +32,10 @@ public class SyncService extends Service {
             }
         }
     }
-    /**
-     * Return an object that allows the system to invoke
-     * the sync adapter.
-     *
-     */
+
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d("SyncService", "SyncService was bound");
         return sSyncAdapter.getSyncAdapterBinder();
     }
 }

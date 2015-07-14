@@ -4,6 +4,7 @@ package com.gmail.konstantin.schubert.workload;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -44,8 +45,6 @@ public class SurveyContentProvider extends ContentProvider{
     // if we want to store data in the database we need to bring it back to a table format
     // Then, when accessing the Content Provider, we need to prepare it again for the
     // view/activity that requests it
-
-
 
 
     public static class SYNC_OPERATION {
@@ -141,9 +140,9 @@ public class SurveyContentProvider extends ContentProvider{
 
     @Override
     public boolean onCreate(){
-
         mOpenHelper = new MainDatabaseHelper(getContext());
         mAccount = CreateSyncAccount(getContext());
+        ContentResolver.setIsSyncable (mAccount, AUTHORITY,1);
         return true;
     }
 
@@ -235,7 +234,7 @@ public class SurveyContentProvider extends ContentProvider{
 
         Bundle syncBundle = new Bundle();
         syncBundle.putInt("SYNC_MODUS",SyncAdapter.SYNC_TASK.FULL_DOWNLOAD);
-        getContext().getContentResolver().requestSync(mAccount,AUTHORITY, syncBundle);
+        ContentResolver.requestSync(mAccount,AUTHORITY, syncBundle);
         return cursor;
     }
 
@@ -280,7 +279,7 @@ public class SurveyContentProvider extends ContentProvider{
 
         Bundle syncBundle = new Bundle();
         syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.PUSH_CHANGES);
-        getContext().getContentResolver().requestSync(mAccount, AUTHORITY, syncBundle);
+        ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         return 1;
     }
 //

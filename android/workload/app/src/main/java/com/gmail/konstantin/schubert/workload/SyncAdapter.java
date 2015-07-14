@@ -28,9 +28,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     static AccountManager sAccountManager;
 
     public SyncAdapter(Context context, boolean autoInitialize) {
-        super(context, autoInitialize);
-        Log.d(TAG,"Initialized");
-        mContentResolver = context.getContentResolver();
+        //for backwards compatibility
+        this(context,autoInitialize,false);
     }
 
     public SyncAdapter(
@@ -38,11 +37,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             boolean autoInitialize,
             boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
-        android.os.Debug.waitForDebugger();
+        Log.d(TAG,"Initialized");
         mContentResolver = context.getContentResolver();
         sAccountManager = AccountManager.get(getContext());
-
-
+        Log.d(TAG, "got account manager" + sAccountManager.getClass().getCanonicalName());
 
     }
 
@@ -77,8 +75,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }else{
             Log.w(TAG, "accountmanager is not null");
         }
-        Log.d(TAG,"test");
-        Log.d(TAG, sAccountManager.getClass().getCanonicalName());
         Account[] accounts = sAccountManager.getAccountsByType("tu-dresden.de");
         // I would like to change ths account type identifier, but I need to do it at least also in the SurveyContentProvider and maybe also other places.
         // Better create a resource for it, but at a time when I am running and continously testing.
