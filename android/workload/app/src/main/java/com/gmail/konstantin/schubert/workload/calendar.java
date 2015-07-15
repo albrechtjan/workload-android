@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,9 +15,6 @@ import android.widget.GridView;
 
 
 public class calendar extends Activity {
-    //https://developer.android.com/training/sync-adapters/creating-sync-adapter.html
-    //"...The best place to call the method is in the onCreate() method of your app's opening activity..."
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

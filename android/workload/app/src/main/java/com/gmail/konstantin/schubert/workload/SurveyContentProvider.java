@@ -142,6 +142,7 @@ public class SurveyContentProvider extends ContentProvider{
     public boolean onCreate(){
         mOpenHelper = new MainDatabaseHelper(getContext());
         mAccount = CreateSyncAccount(getContext());
+        //TODO:Figure out why this is not working
         ContentResolver.setIsSyncable (mAccount, AUTHORITY,1);
         return true;
     }
@@ -302,18 +303,10 @@ public class SurveyContentProvider extends ContentProvider{
             super(context, DBNAME, null, 1);
         }
 
-        /*
-             * Creates the data repository. This is called when the provider attempts to open the
-             * repository and SQLite reports that it doesn't exist.
-             */
+
         public void onCreate(SQLiteDatabase db) {
-            // Creates the main table
-            Log.d(TAG, "creating database: "+SQL_CREATE_LECTURES);
             db.execSQL(SQL_CREATE_LECTURES);
-            Log.d(TAG, "created lecture database");
-            Log.d(TAG, "creating database: "+SQL_CREATE_WORKENTRIES);
             db.execSQL(SQL_CREATE_WORKENTRIES);
-            Log.d(TAG, "created workload entry database");
         }
 
 

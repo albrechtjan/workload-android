@@ -2,6 +2,7 @@ package com.gmail.konstantin.schubert.workload;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerFuture;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -69,22 +70,24 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 // Auth tokens are normally reusable and cached by the account manager, but must be refreshed periodically.
 // It's the responsibility of applications to INVALIDATE AUTH TOKENS WHEN THEY STOP WORKING !!!!!
 //so the AccountManager knows it needs to regenerate them.
-        Log.d(TAG,"start");
-        if (sAccountManager == null) {
-            Log.w(TAG, "maccoutmanager is definitely null");
-        }else{
-            Log.w(TAG, "accountmanager is not null");
-        }
+
         Account[] accounts = sAccountManager.getAccountsByType("tu-dresden.de");
         // I would like to change ths account type identifier, but I need to do it at least also in the SurveyContentProvider and maybe also other places.
         // Better create a resource for it, but at a time when I am running and continously testing.
-        sAccountManager.getAuthToken(accounts[0], "session_ID_token", Bundle.EMPTY, true, null, null);
+//        android.os.Debug.waitForDebugger();
+
+        AccountManagerFuture<Bundle> future =  sAccountManager.getAuthToken(accounts[0], "session_ID_token", Bundle.EMPTY, true, null, null);
         // For now let's just create a notification when login is needed.
         // TODO: In future force user to login directly via callback thread if no login ever happened before.
         //Assuming there is only one account of this type, maybe we should check this?
         // which activity should we pass?
 
         try {
+            // this block the thread until the results are there
+            Bundle bundle = future.getResult();
+            String authToken = bundle.getString(AccountManager.KEY_ACCOUNT_NAME);
+            Log.d(TAG, "We have an auth token!!"+authToken);
+
             Log.d(TAG, "Performing sync");
             // TODO: what do we do if no extras are passed????
             int sync_task = extras.getInt("SYNC_MODUS");
@@ -106,10 +109,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     //doing a gentle update
                 }
             }
-            throw new AuthenticationException(); // just for fun, always throw
-        }
-        catch (AuthenticationException e){
-            sAccountManager.invalidateAuthToken("tu-dresden.de", "session_ID_token<-??????");
+
+        }catch (Exception e){
+            Log.e(TAG,"Authentication did not work");
         }
     }
+
 }
