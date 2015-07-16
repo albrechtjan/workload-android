@@ -81,7 +81,7 @@ public class Authenticator extends AbstractAccountAuthenticator{
             // We are currently unwilling to store passwords and currently unable to login without user interaction.
             // Thus we must create an Intent that launches the web-view, allows the user to log in an then
 
-            Intent intent = new Intent(mContext,????.class);
+            Intent intent = new Intent(mContext,WebLoginActivity.class);
             intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,accountAuthenticatorResponse);
         //                The activity needs to return the final result when it is complete so the Intent should contain the AccountAuthenticatorResponse as KEY_ACCOUNT_MANAGER_RESPONSE. The activity must then call onResult(Bundle) or onError(int, String) when it is complete.
 

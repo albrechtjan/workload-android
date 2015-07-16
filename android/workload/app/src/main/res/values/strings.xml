@@ -12,4 +12,5 @@
     <string name="title_activity_enter_workload">EnterWorkload</string>
     <string name="content_provider_authority">de.tu-dresden.zqa.survey</string>
     <string name="account_type">tu-dresden.de</string>
+    <string name="title_activity_web_login">Shibboleth Login</string>
 </resources>
