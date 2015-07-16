@@ -8,7 +8,6 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SyncRequest;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -16,7 +15,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+
+import com.gmail.konstantin.schubert.workload.sync.SyncAdapter;
 
 public class SurveyContentProvider extends ContentProvider{
 
@@ -234,7 +234,7 @@ public class SurveyContentProvider extends ContentProvider{
         //TODO: Understand if setNotificationUri does also trigger a server sync and make sure not to double sync
 
         Bundle syncBundle = new Bundle();
-        syncBundle.putInt("SYNC_MODUS",SyncAdapter.SYNC_TASK.FULL_DOWNLOAD);
+        syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD);
         ContentResolver.requestSync(mAccount,AUTHORITY, syncBundle);
         return cursor;
     }

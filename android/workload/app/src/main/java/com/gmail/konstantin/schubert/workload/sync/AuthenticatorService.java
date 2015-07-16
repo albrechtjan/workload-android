@@ -1,4 +1,4 @@
-package com.gmail.konstantin.schubert.workload;
+package com.gmail.konstantin.schubert.workload.sync;
 
 import android.app.Service;
 import android.content.Intent;

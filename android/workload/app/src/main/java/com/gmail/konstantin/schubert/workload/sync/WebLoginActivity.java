@@ -1,4 +1,4 @@
-package com.gmail.konstantin.schubert.workload;
+package com.gmail.konstantin.schubert.workload.sync;
 
 
 import android.app.Activity;
@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.WebView;
+
+import com.gmail.konstantin.schubert.workload.R;
 
 
 public class WebLoginActivity extends Activity {

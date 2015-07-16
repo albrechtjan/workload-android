@@ -1,4 +1,4 @@
-package com.gmail.konstantin.schubert.workload;
+package com.gmail.konstantin.schubert.workload.sync;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -10,8 +10,6 @@ import android.content.Context;
 import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
-
-import org.apache.http.auth.AuthenticationException;
 
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {

@@ -1,4 +1,4 @@
-package com.gmail.konstantin.schubert.workload;
+package com.gmail.konstantin.schubert.workload.sync;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
