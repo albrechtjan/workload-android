@@ -3,13 +3,21 @@ package com.gmail.konstantin.schubert.workload.sync;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+
+import com.gmail.konstantin.schubert.workload.R;
 
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
@@ -75,38 +83,47 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 //        android.os.Debug.waitForDebugger();
 
         AccountManagerFuture<Bundle> future =  sAccountManager.getAuthToken(accounts[0], "session_ID_token", Bundle.EMPTY, true, null, null);
-        // For now let's just create a notification when login is needed.
-        // TODO: In future force user to login directly via callback thread if no login ever happened before.
-        //Assuming there is only one account of this type, maybe we should check this?
-        // which activity should we pass?
+        // I have been overengineering this. For now it is absolutely fine to launch the notification every time.
+        // (Maybe we can make it a bit nicer, but that's not priority.)
+        // If one day I want to run the sync continously in background, I need to think of some logic about when I want
+        // to notify the user-and when not.
+
+
 
         try {
-            // this block the thread until the results are there
             Bundle bundle = future.getResult();
             String authToken = bundle.getString(AccountManager.KEY_ACCOUNT_NAME);
-            Log.d(TAG, "We have an auth token!!"+authToken);
-
-            Log.d(TAG, "Performing sync");
-            // TODO: what do we do if no extras are passed????
-            int sync_task = extras.getInt("SYNC_MODUS");
-            switch (sync_task) {
-                case SYNC_TASK.FULL_DOWNLOAD: {
-                    full_download();
-                    break;
-                }
-                case SYNC_TASK.INCREMENTAL_DOWNLOAD: {
-                    incremental_download();
-                    break;
-                }
-                case SYNC_TASK.PUSH_CHANGES: {
-                    push_changes();
-                    break;
-                }
-                default: {
-                    incremental_download();
-                    //doing a gentle update
+            Intent intent = bundle.getParcelable(AccountManager.KEY_INTENT);
+            if (authToken != null) {
+                Log.d(TAG, "We have an auth token!!" + authToken);
+                Log.d(TAG, "Performing sync");
+                // TODO: what do we do if no extras are passed????
+                int sync_task = extras.getInt("SYNC_MODUS");
+                switch (sync_task) {
+                    case SYNC_TASK.FULL_DOWNLOAD: {
+                        full_download();
+                        break;
+                    }
+                    case SYNC_TASK.INCREMENTAL_DOWNLOAD: {
+                        incremental_download();
+                        break;
+                    }
+                    case SYNC_TASK.PUSH_CHANGES: {
+                        push_changes();
+                        break;
+                    }
+                    default: {
+                        incremental_download();
+                        //doing a gentle update
+                    }
                 }
             }
+            else if (intent != null) {
+                //if the calendar is empty and the user has never logged in before, tell him to log in
+
+            }
+
+
 
         }catch (Exception e){
             Log.e(TAG,"Authentication did not work");
