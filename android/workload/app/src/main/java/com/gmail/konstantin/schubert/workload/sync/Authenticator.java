@@ -10,9 +10,20 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import java.net.HttpCookie;
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class Authenticator extends AbstractAccountAuthenticator{
+
     private static final String TAG = Authenticator.class.getSimpleName();
+
+    //the following (parts of) key names also work as bundle keys for the httpcookie
+    public static final String NAME_PART_COOKIE_SHIBBOLETH = "_shibsession_"; // + additional (random?) string. This seems to be the shibboleth session ID, as opposed to the django session ID
+    public static final String NAME_COOKIE_DJANGO = "csrftoken";
+    public static final String NAME_COOKIE_CSRF = "sessionid";
+
     Context mContext;
 
     public Authenticator(Context context){
@@ -57,38 +68,34 @@ public class Authenticator extends AbstractAccountAuthenticator{
 
     @Override
     public Bundle getAuthToken(
-            AccountAuthenticatorResponse accountAuthenticatorResponse,
-            Account account,
-            String s,
-            Bundle bundle) throws NetworkErrorException {
+        AccountAuthenticatorResponse accountAuthenticatorResponse,
+        Account account,
+        String authTokenType,
+        Bundle bundle) throws NetworkErrorException {
         Log.d(TAG,"called: getAuthToken");
 
-//        The standard pattern for implementing any of the abstract methods is the following:
-//
-//        If the supplied arguments are enough for the authenticator to fully satisfy the request then it will do so and return a Bundle that contains the results.
-//                If the authenticator needs information from the user to satisfy the request then it will create an Intent to an activity that will prompt the user for the information and then carry out the request. This intent must be returned in a Bundle as key KEY_INTENT.
-//                The activity needs to return the final result when it is complete so the Intent should contain the AccountAuthenticatorResponse as KEY_ACCOUNT_MANAGER_RESPONSE. The activity must then call onResult(Bundle) or onError(int, String) when it is complete.
-//        If the authenticator cannot synchronously process the request and return a result then it may choose to return null and then use the AccountManagerResponse to send the result when it has completed the request.
-
-//Many servers support some notion of an authentication token, which can be used to authenticate a request to the server without sending the user's actual password.
-// (Auth tokens are normally created with a separate request which does include the user's credentials.)
-// AccountManager can generate auth tokens for applications, so the application doesn't need to handle passwords directly.
-// Auth tokens are normally reusable and CACHED BY THE ACCOUNT MANAGER!!!!!!!, but must be refreshed periodically.
-// It's the responsibility of applications to invalidate auth tokens when they
-// stop working so the AccountManager knows it needs to regenerate them.
+        // about the authTokenType:
+        // In principle we are dealing, in the current setup, with 3 auth tokens: NAME_PART_COOKIE_SHIBBOLETH, NAME_COOKIE_DJANGO, NAME_COOKIE_CSRF.
+        // What I am doing currently is that I am defining a single auth token as the bundle that
+        // contains these three. Of course it would be much, much cleaner to let the AccountManager manage these 3
+        // independently. But then, getAuthToken would have to be called 3 times and thus 3 intents would be issued
+        // for login. The user would have to log in 3 times and ... at this point it is clear that this makes not sense.
+        // A realistic alternative would be to launch the intent only once and to cache the auth tokens in the Authenticator.
+        // But since it is the AccountManager's job to cache the tokens and since he is the one being notified when they are
+        // invalid, this would in my yes break the design in a much more sever way than encapsulating the 3 tokens into
+        // a single one ever would.
 
 
-            // We are currently unwilling to store passwords and currently unable to login without user interaction.
-            // Thus we must create an Intent that launches the web-view, allows the user to log in an then
+        // We are currently unwilling to store passwords and currently unable to login without user interaction.
+        // Thus we must create an Intent that launches the web-view, allows the user to log in an then
 
-            Intent intent = new Intent(mContext,WebLoginActivity.class);
-            intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,accountAuthenticatorResponse);
-        //                The activity needs to return the final result when it is complete so the Intent should contain the AccountAuthenticatorResponse as KEY_ACCOUNT_MANAGER_RESPONSE. The activity must then call onResult(Bundle) or onError(int, String) when it is complete.
+        Intent intent = new Intent(mContext,WebLoginActivity.class);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,accountAuthenticatorResponse);
 
-            Bundle intentBundle = new Bundle();
-            intentBundle.putParcelable(AccountManager.KEY_INTENT,intent);
+        Bundle intentBundle = new Bundle();
+        intentBundle.putParcelable(AccountManager.KEY_INTENT,intent);
 
-            return intentBundle;
+        return intentBundle;
     }
 
     @Override
@@ -114,6 +121,27 @@ public class Authenticator extends AbstractAccountAuthenticator{
             Account account, String[] strings) throws NetworkErrorException {
             Log.d(TAG,"called: hasFeatures");
         throw new UnsupportedOperationException();
+    }
+
+    public static Map<String,HttpCookie> getCookiesFromCookieString(String cookieString){
+        // Looks for the necessary cookies in the cookieString. Returns them in a map if it finds them.
+        // Returns null if at least one cookie is missing
+        Map<String,HttpCookie> cookies = new HashMap<>();
+        for (String key : new String[]{Authenticator.NAME_COOKIE_CSRF, Authenticator.NAME_COOKIE_DJANGO, Authenticator.NAME_PART_COOKIE_SHIBBOLETH}) {
+            Boolean found = false;
+            for (String cookieSubString : cookieString.split(";")) {
+                if (cookieSubString.contains(key)) {
+                    cookies.put(key, HttpCookie.parse(cookieSubString).get(0));
+                    found = true;
+                }
+            }
+            if (!found) {
+                // There was a key we need but we did not find it in the cookies.
+                return null;
+            }
+        }
+        return cookies;
+
     }
 
 

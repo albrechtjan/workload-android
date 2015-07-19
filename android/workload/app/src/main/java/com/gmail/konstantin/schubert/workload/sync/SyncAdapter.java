@@ -3,10 +3,6 @@ package com.gmail.konstantin.schubert.workload.sync;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -14,10 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import com.gmail.konstantin.schubert.workload.R;
 
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
@@ -79,21 +73,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         Account[] accounts = sAccountManager.getAccountsByType("tu-dresden.de");
         // I would like to change ths account type identifier, but I need to do it at least also in the SurveyContentProvider and maybe also other places.
-        // Better create a resource for it, but at a time when I am running and continously testing.
+        // Better create a resource for it, but at a time when I am running and continuously testing.
 //        android.os.Debug.waitForDebugger();
 
         AccountManagerFuture<Bundle> future =  sAccountManager.getAuthToken(accounts[0], "session_ID_token", Bundle.EMPTY, true, null, null);
-        // I have been overengineering this. For now it is absolutely fine to launch the notification every time.
+        // I have been over engineering this. For now it is absolutely fine to launch the notification every time.
         // (Maybe we can make it a bit nicer, but that's not priority.)
-        // If one day I want to run the sync continously in background, I need to think of some logic about when I want
+        // If one day I want to run the sync continuously in background, I need to think of some logic about when I want
         // to notify the user-and when not.
 
 
 
         try {
             Bundle bundle = future.getResult();
-            String authToken = bundle.getString(AccountManager.KEY_ACCOUNT_NAME);
+            String authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
             Intent intent = bundle.getParcelable(AccountManager.KEY_INTENT);
+            android.os.Debug.waitForDebugger();
             if (authToken != null) {
                 Log.d(TAG, "We have an auth token!!" + authToken);
                 Log.d(TAG, "Performing sync");
