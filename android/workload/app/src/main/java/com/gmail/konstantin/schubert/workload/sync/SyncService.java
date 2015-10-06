@@ -15,9 +15,7 @@ public class SyncService extends Service {
     private static SyncAdapter sSyncAdapter = null;
     // Object to use as a thread-safe lock
     private static final Object sSyncAdapterLock = new Object();
-    /*
-     * Instantiate the sync adapter object.
-     */
+
     @Override
     public void onCreate() {
         /*
@@ -25,7 +23,6 @@ public class SyncService extends Service {
          * Set the sync adapter as syncable
          * Disallow parallel syncs
          */
-        Log.d("SyncService", "BAAAAAAA");
         synchronized (sSyncAdapterLock) {
             if (sSyncAdapter == null) {
                 sSyncAdapter = new SyncAdapter(getApplicationContext(), true);

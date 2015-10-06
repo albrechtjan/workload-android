@@ -53,9 +53,9 @@ public class SurveyContentProvider extends ContentProvider{
         public static final int PUT = 2;  // == update
         public static final int POST = 3; // == insert
         public static final int DELETE = 4; // == delete
-        // What if something is deleted on the server? How are we ever going to learn about it, undless we do a full download?
         // Honestly, I think the easiest way is to simply not delete anything, just mark rows as deleted.
-        // That's unless a user deletes all his entries.
+        // That's unless something disappears remotely that can only deleted remotely, such as a lecture in the list of
+        //  available lectures
     }
 
     public static class SYNC_STATUS{
@@ -77,7 +77,6 @@ public class SurveyContentProvider extends ContentProvider{
         public static final String ISACTIVE = "ISACTIVE";
         public static final String STATUS = "STATUS";
         public static final String OPERATION = "OPERATION";
-
     }
 
     public static class DB_STRINGS_WORKENTRY{
@@ -176,24 +175,34 @@ public class SurveyContentProvider extends ContentProvider{
 
 
     @Override
-    public Uri insert(Uri uri, ContentValues values){
+    public Uri insert(Uri uri, ContentValues values) {
+        return insert(uri, values, true);
+    }
+    public Uri insert(Uri uri, ContentValues values, Boolean performSync){
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
 
         long id;
         switch (uriType) {
             case LECTURES:
-                values.put(DB_STRINGS_LECTURE.OPERATION,SYNC_OPERATION.POST);
                 id = database.insert("lectures", null, values);
+                if (performSync) {
+                    //TODO: Try to factorize the IFs more efficiency, also for the other functions.
+                    values.put(DB_STRINGS_LECTURE.OPERATION, SYNC_OPERATION.POST);
+                    values.put(DB_STRINGS_LECTURE.STATUS, SYNC_STATUS.PENDING);
+                }
                 break;
             case ENTRIES:
-                values.put(DB_STRINGS_WORKENTRY.OPERATION,SYNC_OPERATION.POST);
                 id = database.insert("workentries",null,values);
+                if (performSync) {
+                    values.put(DB_STRINGS_WORKENTRY.OPERATION, SYNC_OPERATION.POST);
+                    values.put(DB_STRINGS_WORKENTRY.STATUS, SYNC_STATUS.PENDING);
+                }
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
+        getContext().getContentResolver().notifyChange(uri, null, performSync);
         return Uri.parse(uri + String.valueOf(id));
 
     }
@@ -234,53 +243,109 @@ public class SurveyContentProvider extends ContentProvider{
         //TODO: Understand if setNotificationUri does also trigger a server sync and make sure not to double sync
 
         Bundle syncBundle = new Bundle();
-        syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD);
+        syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_USERDATA);
         ContentResolver.requestSync(mAccount,AUTHORITY, syncBundle);
         return cursor;
     }
 
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs){
-        return 0;
+    public int delete(Uri uri, String selection, String[] selectionArgs) {
+        if (selection != null) {
+            throw new IllegalArgumentException("Do not pass selection to update query. Not supported");
+        }
+        return delete(uri, true);
     }
 
+    public int delete(Uri uri, Boolean performSync){
+        int uriType = sURIMatcher.match(uri);
+        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
+        String table;
+        String selection;
+        ContentValues values = new ContentValues();
+        switch (uriType) {
+            case LECTURES_ID:
+                table = "lectures";
+                selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
+                if (performSync) {
+                    values.put(DB_STRINGS_LECTURE.OPERATION, SYNC_OPERATION.DELETE);
+                    values.put(DB_STRINGS_LECTURE.STATUS, SYNC_STATUS.PENDING);
+                }
+                break;
+            case ENTRIES_ID:
+                table = "workentries";
+                selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
+                if (performSync) {
+                    values.put(DB_STRINGS_WORKENTRY.OPERATION, SYNC_OPERATION.DELETE);
+                    values.put(DB_STRINGS_WORKENTRY.STATUS, SYNC_STATUS.PENDING);
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown or invalid uri. Note that with update, you MUST supply an ID: " + uri);
+        }
+        if (performSync) {
+            database.update(table, values, selection, null);
+            // Honestly, I think the easiest way is to simply not delete anything, just mark rows as deleted.
+            // That's unless something disappears remotely that can only deleted remotely, such as a lecture in the list of
+            //  available lectures
+        } else {
+            database.delete(table,selection, null);
+        }
+
+        getContext().getContentResolver().notifyChange(uri, null, performSync);
+
+        if (performSync) {
+            //TODO: figure out if I need this. Shouldn't the notifyChange above does it already?
+            Bundle syncBundle = new Bundle();
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.PUSH_CHANGES);
+            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+        }
+        return 1;
+    }
+
+    @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs){
+        if (selection != null){
+            throw new IllegalArgumentException("Do not pass selection to update query. Not supported");
+        }
+        return this.update(uri,values, true);
+    }
 
-        values.put(DB_STRINGS_WORKENTRY.OPERATION,"UPDATE");
-        values.put(DB_STRINGS_WORKENTRY.STATUS,"TRANSACTING");
+    public int update(Uri uri, ContentValues values, Boolean performSync){
 
+        String selection;
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
         String table;
         switch (uriType) {
             case LECTURES_ID:
-                if (selection != null){
-                    throw new IllegalArgumentException("Do not pass selection to update query when also passing ID");
-                }
                 table = "lectures";
                 selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
-                values.put(DB_STRINGS_LECTURE.OPERATION, SYNC_OPERATION.PUT);
-                values.put(DB_STRINGS_LECTURE.STATUS,SYNC_STATUS.PENDING);
+                if (performSync) {
+                    values.put(DB_STRINGS_LECTURE.OPERATION, SYNC_OPERATION.PUT);
+                    values.put(DB_STRINGS_LECTURE.STATUS, SYNC_STATUS.PENDING);
+                }
                 break;
             case ENTRIES_ID:
-                if (selection != null){
-                    throw new IllegalArgumentException("Do not pass selection to update query when also passing ID");
-                }
                 table = "workentries";
                 selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
-                values.put(DB_STRINGS_WORKENTRY.OPERATION, SYNC_OPERATION.PUT);
-                values.put(DB_STRINGS_WORKENTRY.STATUS,SYNC_STATUS.PENDING);
+                if (performSync) {
+                    values.put(DB_STRINGS_WORKENTRY.OPERATION, SYNC_OPERATION.PUT);
+                    values.put(DB_STRINGS_WORKENTRY.STATUS, SYNC_STATUS.PENDING);
+                }
                 break;
             default:
                 throw new IllegalArgumentException("Unknown or invalid uri. Note that with update, you MUST supply an ID: " + uri);
         }
-        database.update(table, values, selection, selectionArgs);
-        getContext().getContentResolver().notifyChange(uri, null);
+        database.update(table, values, selection, null);
+        getContext().getContentResolver().notifyChange(uri, null, performSync);
 
-        Bundle syncBundle = new Bundle();
-        syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.PUSH_CHANGES);
-        ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+        if (performSync) {
+            //TODO: figure out if I need this. Shouldn't the notifyChange above does it already?
+            Bundle syncBundle = new Bundle();
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.PUSH_CHANGES);
+            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+        }
         return 1;
     }
 //
@@ -291,7 +356,6 @@ public class SurveyContentProvider extends ContentProvider{
  //   TODO: are my view adapters written in a way so the view updates automatically?
 //   It's very magical, the database changes and your ListView just updates automatically.
 // Awesome. Also, when the database changes, Android will request Sync for you,
-// TODO: Figure out why this doesn't happen for me yet
 // even outside your normal schedule, so that those changes get taken off the device and synced to the server as rapidly as possible. Also awesome.
 //
 //    There's one edge case though. If you pull from the server, and push an update into the ContentProvider, it will dutifully call notifyChange() and android will go, "Oh, database changes, better put them on the server!" (Doh!) Well written ContentProviders will have some tests to see if the changes came from the network or from the user, and will set the boolean syncToNetwork flag false if so, to prevent this wasteful double-sync. If you're feeding data into a ContentProvider, it behooves you to figure out how to get this working -- Otherwise you'll end up always performing two syncs when only one is needed
