@@ -14,7 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 
-public class EnterWorkloadAdaper extends MyBaseAdapter  {
+public class EnterWorkloadAdaper extends MyBaseAdapter {
 
 
     private Context mContext;
@@ -27,11 +27,11 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
         mContext = context;
         sWeek = week;
         sLecture = this.dbObjectBuilder.getLectureById(lectureId);
-        mWorkloadEntry = this.dbObjectBuilder.getOrCreateWorkloadEntry(sLecture,sWeek);
+        mWorkloadEntry = this.dbObjectBuilder.getOrCreateWorkloadEntry(sLecture, sWeek);
         updateMembers();
     }
 
-    public View getView(final int position, View convertView, ViewGroup parent){
+    public View getView(final int position, View convertView, ViewGroup parent) {
         //With three rows only, we are ignoring the convertView
 
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -40,7 +40,7 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
         TextView textView = (TextView) lectureRow.getChildAt(0);
         textView.setText(EnterWorkload.ROW_TITLES.get(position));
         EditText editText = (EditText) lectureRow.getChildAt(1);
-        switch (position){
+        switch (position) {
             case EnterWorkload.ROW_HOURS_ATTENDING:
                 editText.setText(String.valueOf(mWorkloadEntry.getHoursInLecture()));
                 break;
@@ -57,10 +57,11 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
             public final int fWatchedPosition;
             public final EnterWorkloadAdaper fAdapter;
 
-            WorkloadTextWatcher(int position, EnterWorkloadAdaper adapter){
+            WorkloadTextWatcher(int position, EnterWorkloadAdaper adapter) {
                 this.fWatchedPosition = position;
                 this.fAdapter = adapter;
             }
+
             public void afterTextChanged(Editable s) {
                 if (!s.toString().isEmpty()) {
                     Float hours = Float.valueOf(s.toString());
@@ -77,8 +78,10 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
                     }
                 }
             }
+
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
+
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
         }
@@ -88,16 +91,16 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
         return lectureRow;
     }
 
-    public int getCount(){
+    public int getCount() {
         return 3;
     }
 
-    public Object getItem(int position){
+    public Object getItem(int position) {
         //TODO:Un-Stub
         return null;
     }
 
-    public long getItemId(int position){
+    public long getItemId(int position) {
         //TODO: figure out what this method is good for
         return 0;
     }
@@ -106,8 +109,10 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
         this.dbObjectBuilder.updateWorkloadEntryInDB(mWorkloadEntry);
     }
 
-    protected void updateMembers(){
-        mWorkloadEntry = this.dbObjectBuilder.getOrCreateWorkloadEntry(sLecture,sWeek);
-    };
+    protected void updateMembers() {
+        mWorkloadEntry = this.dbObjectBuilder.getOrCreateWorkloadEntry(sLecture, sWeek);
+    }
+
+    ;
 
 }

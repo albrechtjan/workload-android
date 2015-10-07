@@ -29,13 +29,11 @@ public class RESTResponseProcessor {
             }
             reader.endArray();
             reader.close();
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             //TODO: something
         }
         return lectures;
     }
-
 
 
     public Lecture buildLecture(JsonReader reader) throws IOException {
@@ -56,7 +54,7 @@ public class RESTResponseProcessor {
             } else if (key.equals("semester")) {
                 semester = reader.nextString();
             } else if (key.equals("startWeek")) {
-                startWeek =  Week.getWeekFromISOString(reader.nextString());
+                startWeek = Week.getWeekFromISOString(reader.nextString());
             } else if (key.equals("endWeek")) {
                 endWeek = Week.getWeekFromISOString(reader.nextString());
             } else {
@@ -68,7 +66,7 @@ public class RESTResponseProcessor {
     }
 
 
-    public void updateAvailableLectures(List<Lecture> remoteLectures){
+    public void updateAvailableLectures(List<Lecture> remoteLectures) {
 
 //        localLectures = // all lectures (active and inactive) that are listed locally
 //

@@ -12,8 +12,7 @@ import android.widget.LinearLayout;
 import java.util.List;
 
 
-
-public class SelectLectureAdapter extends MyBaseAdapter  { //BaseAdapter already implements Listadapter
+public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter already implements Listadapter
 
     //TODO: Check which of these members can move up into MyBaseAdapter
     private Context mContext;
@@ -28,12 +27,11 @@ public class SelectLectureAdapter extends MyBaseAdapter  { //BaseAdapter already
         updateMembers();
     }
 
-    public View getView(final int position, View convertView, ViewGroup parent){
+    public View getView(final int position, View convertView, ViewGroup parent) {
         LinearLayout lectureRow; //A button for the lecture wrapped in a LinearLayout
-        if (convertView!=null) {
+        if (convertView != null) {
             lectureRow = (LinearLayout) convertView;
-        }
-        else{
+        } else {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             lectureRow = (LinearLayout) inflater.inflate(R.layout.lecture_row, parent, false);
         }
@@ -57,25 +55,27 @@ public class SelectLectureAdapter extends MyBaseAdapter  { //BaseAdapter already
         return lectureRow;
     }
 
-    public int getCount(){
+    public int getCount() {
         return mLecturesThisWeek.size();
     }
 
-    public Object getItem(int position){
+    public Object getItem(int position) {
         //TODO:Un-Stub
         return null;
     }
 
-    public long getItemId(int position){
+    public long getItemId(int position) {
         //TODO: figure out what this method is good for
         return 0;
     }
 
 
-    protected void updateMembers(){
+    protected void updateMembers() {
         //TODO: Limit this from all Lectures to the lectures in this mWeek
         mLecturesThisWeek = this.dbObjectBuilder.getLecturesInWeek(mWeek, true);
-    };
+    }
+
+    ;
 
 
 }

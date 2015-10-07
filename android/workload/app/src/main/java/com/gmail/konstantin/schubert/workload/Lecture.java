@@ -12,7 +12,7 @@ public class Lecture {
     public final Week endWeek;
     public boolean isActive;
 
-    public Lecture(int _ID, String name, String semester, Week startWeek, Week endWeek, boolean isActive){
+    public Lecture(int _ID, String name, String semester, Week startWeek, Week endWeek, boolean isActive) {
         this._ID = _ID;
         this.name = name;
         this.semester = semester;
@@ -22,11 +22,7 @@ public class Lecture {
     }
 
 
-
-
-
-
-    public WorkloadEntry[] getWorkloadEntrie(){
+    public WorkloadEntry[] getWorkloadEntrie() {
         //Stub
         return null;
     }

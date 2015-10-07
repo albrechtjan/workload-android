@@ -18,7 +18,7 @@ import android.os.Bundle;
 
 import com.gmail.konstantin.schubert.workload.sync.SyncAdapter;
 
-public class SurveyContentProvider extends ContentProvider{
+public class SurveyContentProvider extends ContentProvider {
 
     private static final String TAG = SurveyContentProvider.class.getSimpleName();
 
@@ -34,7 +34,6 @@ public class SurveyContentProvider extends ContentProvider{
     private static final int ENTRIES_ID = 401;
 
 
-
     public static final String ACCOUNT_TYPE = "tu-dresden.de";
     public static final String ACCOUNT = "default_account";
     Account mAccount;
@@ -48,7 +47,7 @@ public class SurveyContentProvider extends ContentProvider{
 
 
     public static class SYNC_OPERATION {
-        public static final int NONE  = 0;
+        public static final int NONE = 0;
         public static final int GET = 1;  // == query
         public static final int PUT = 2;  // == update
         public static final int POST = 3; // == insert
@@ -58,15 +57,15 @@ public class SurveyContentProvider extends ContentProvider{
         //  available lectures
     }
 
-    public static class SYNC_STATUS{
+    public static class SYNC_STATUS {
         public static final int IDLE = 0;
-        public static final int PENDING = 1 ;
+        public static final int PENDING = 1;
         public static final int TRANSACTING = 2;
-        public static final int  RETRY = 3;
+        public static final int RETRY = 3;
     }
 
 
-    public static class DB_STRINGS_LECTURE{
+    public static class DB_STRINGS_LECTURE {
         public static final String _ID = "_id";
         public static final String NAME = "NAME";
         public static final String STARTYEAR = "STARTYEAR";
@@ -79,7 +78,7 @@ public class SurveyContentProvider extends ContentProvider{
         public static final String OPERATION = "OPERATION";
     }
 
-    public static class DB_STRINGS_WORKENTRY{
+    public static class DB_STRINGS_WORKENTRY {
         public static final String _ID = "_id";
         public static final String HOURS_IN_LECTURE = "HOURS_IN_LECTURE";
         public static final String HOURS_FOR_HOMEWORK = "HOURS_FOR_HOMEWORK";
@@ -108,7 +107,6 @@ public class SurveyContentProvider extends ContentProvider{
             ")";
 
 
-
     private static final String SQL_CREATE_WORKENTRIES = "CREATE TABLE " +
             "workentries " +                       // Table's name
             "(" +                           // The columns in the table
@@ -118,31 +116,31 @@ public class SurveyContentProvider extends ContentProvider{
             DB_STRINGS_WORKENTRY.HOURS_STUDYING + " REAL DEFAULT 0," +
             DB_STRINGS_WORKENTRY.YEAR + " INT, " +
             DB_STRINGS_WORKENTRY.WEEK + " INT, " +
-            DB_STRINGS_WORKENTRY.LECTURE_ID + " INTEGER, "+
+            DB_STRINGS_WORKENTRY.LECTURE_ID + " INTEGER, " +
             DB_STRINGS_WORKENTRY.STATUS + " INT DEFAULT 0, " +
             DB_STRINGS_WORKENTRY.OPERATION + " INT DEFAULT 0, " +
-            "FOREIGN KEY("+DB_STRINGS_WORKENTRY.LECTURE_ID+") REFERENCES lectures("+DB_STRINGS_LECTURE._ID+")" +
+            "FOREIGN KEY(" + DB_STRINGS_WORKENTRY.LECTURE_ID + ") REFERENCES lectures(" + DB_STRINGS_LECTURE._ID + ")" +
             ")";
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
     static {
         sURIMatcher.addURI(AUTHORITY, "/lectures/", LECTURES);
         sURIMatcher.addURI(AUTHORITY, "/lectures/#", LECTURES_ID);
         //I probably should not try to make the database give the lectures for a
         // given week, instead I should just grab all active lectures, and check them all
         // if they are in a given week. That should be sufficiently efficient.
-        sURIMatcher.addURI(AUTHORITY,"/workentries/",ENTRIES);
-        sURIMatcher.addURI(AUTHORITY,"/workentries/#",ENTRIES_ID);
+        sURIMatcher.addURI(AUTHORITY, "/workentries/", ENTRIES);
+        sURIMatcher.addURI(AUTHORITY, "/workentries/#", ENTRIES_ID);
     }
 
 
-
     @Override
-    public boolean onCreate(){
+    public boolean onCreate() {
         mOpenHelper = new MainDatabaseHelper(getContext());
         mAccount = CreateSyncAccount(getContext());
         //TODO:Figure out why this is not working
-        ContentResolver.setIsSyncable (mAccount, AUTHORITY,1);
+        ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
         Bundle syncBundle = new Bundle();
         syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_USERDATA);
         ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
@@ -150,7 +148,7 @@ public class SurveyContentProvider extends ContentProvider{
     }
 
 
-    public Uri update_status(Uri uri_with_id, int status){
+    public Uri update_status(Uri uri_with_id, int status) {
         // changes the status of the row without triggering a sync
         //TODO: remove duplicate code with update()
 
@@ -165,7 +163,7 @@ public class SurveyContentProvider extends ContentProvider{
                 id = database.insert("lectures", null, values);
                 break;
             case ENTRIES_ID:
-                id = database.insert("workentries",null,values);
+                id = database.insert("workentries", null, values);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri_with_id);
@@ -176,12 +174,12 @@ public class SurveyContentProvider extends ContentProvider{
     }
 
 
-
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         return insert(uri, values, true);
     }
-    public Uri insert(Uri uri, ContentValues values, Boolean performSync){
+
+    public Uri insert(Uri uri, ContentValues values, Boolean performSync) {
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
 
@@ -196,7 +194,7 @@ public class SurveyContentProvider extends ContentProvider{
                 }
                 break;
             case ENTRIES:
-                id = database.insert("workentries",null,values);
+                id = database.insert("workentries", null, values);
                 if (performSync) {
                     values.put(DB_STRINGS_WORKENTRY.OPERATION, SYNC_OPERATION.POST);
                     values.put(DB_STRINGS_WORKENTRY.STATUS, SYNC_STATUS.PENDING);
@@ -211,14 +209,13 @@ public class SurveyContentProvider extends ContentProvider{
     }
 
 
-
     @Override
-    public String getType(Uri uri){
+    public String getType(Uri uri) {
         return new String();
     }
 
     @Override
-    public Cursor query( Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder){
+    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getReadableDatabase();
@@ -247,7 +244,7 @@ public class SurveyContentProvider extends ContentProvider{
 
         Bundle syncBundle = new Bundle();
         syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_USERDATA);
-        ContentResolver.requestSync(mAccount,AUTHORITY, syncBundle);
+        ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         return cursor;
     }
 
@@ -260,7 +257,7 @@ public class SurveyContentProvider extends ContentProvider{
         return delete(uri, true);
     }
 
-    public int delete(Uri uri, Boolean performSync){
+    public int delete(Uri uri, Boolean performSync) {
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
         String table;
@@ -292,7 +289,7 @@ public class SurveyContentProvider extends ContentProvider{
             // That's unless something disappears remotely that can only deleted remotely, such as a lecture in the list of
             //  available lectures
         } else {
-            database.delete(table,selection, null);
+            database.delete(table, selection, null);
         }
 
         getContext().getContentResolver().notifyChange(uri, null, performSync);
@@ -307,14 +304,14 @@ public class SurveyContentProvider extends ContentProvider{
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs){
-        if (selection != null){
+    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        if (selection != null) {
             throw new IllegalArgumentException("Do not pass selection to update query. Not supported");
         }
-        return this.update(uri,values, true);
+        return this.update(uri, values, true);
     }
 
-    public int update(Uri uri, ContentValues values, Boolean performSync){
+    public int update(Uri uri, ContentValues values, Boolean performSync) {
 
         String selection;
         int uriType = sURIMatcher.match(uri);
@@ -356,7 +353,7 @@ public class SurveyContentProvider extends ContentProvider{
 //
 //    One tricky thing. ContentResolver.notifyChange() is a function used by ContentProviders to notify Android that the local database has been changed. This serves two functions, first,
 //   it will cause cursors following that contenturi to update, and in turn requery and invalidate and redraw a ListView, etc...
- //   TODO: are my view adapters written in a way so the view updates automatically?
+    //   TODO: are my view adapters written in a way so the view updates automatically?
 //   It's very magical, the database changes and your ListView just updates automatically.
 // Awesome. Also, when the database changes, Android will request Sync for you,
 // even outside your normal schedule, so that those changes get taken off the device and synced to the server as rapidly as possible. Also awesome.
@@ -377,13 +374,11 @@ public class SurveyContentProvider extends ContentProvider{
         }
 
 
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
         }
 
     }
-
-
 
 
     public static Account CreateSyncAccount(Context context) {
@@ -405,7 +400,6 @@ public class SurveyContentProvider extends ContentProvider{
         }
         return newAccount;
     }
-
 
 
 }

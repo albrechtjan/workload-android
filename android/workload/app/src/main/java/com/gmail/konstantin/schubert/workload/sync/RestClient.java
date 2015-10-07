@@ -78,7 +78,7 @@ public class RestClient {
                 executeRequest(request, url);
                 break;
             }
-            case PUT:{
+            case PUT: {
                 HttpPut request = new HttpPut(url);
                 if (headers != null) {
                     headers = addCommonHeaderField(headers);

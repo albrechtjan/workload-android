@@ -12,7 +12,7 @@ public class WorkloadEntry {
 
     /* I decided against passing an actual lecture object here since these might have multiple instances for a certain index
      * Maybe one day I will use a pattern that enforces only one instance per ID and then I change this. */
-    public WorkloadEntry(int _ID, Week week, int lecture_id, float hoursInLecture, float hoursForHomework, float hoursStudying){ //use a dict here to make method signatures more future-proof?
+    public WorkloadEntry(int _ID, Week week, int lecture_id, float hoursInLecture, float hoursForHomework, float hoursStudying) { //use a dict here to make method signatures more future-proof?
         this._ID = _ID;
         this.week = week;
         this.lecture_id = lecture_id;

@@ -23,14 +23,14 @@ public class SelectLecture extends ListActivity {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_lecture);
 
         Intent launchIntent = getIntent();
         Integer year = launchIntent.getIntExtra(MESSAGE_YEAR, -1);
         Integer weekNumber = launchIntent.getIntExtra(MESSAGE_WEEK, -1);
-        this.mWeek  = new Week(year,weekNumber);
+        this.mWeek = new Week(year, weekNumber);
         setListAdapter(new SelectLectureAdapter(this, mWeek));
         setTitle("Choose a lecture");
     }

@@ -18,7 +18,7 @@ public class EnterWorkload extends ListActivity {
 
     public final static int ROW_HOURS_ATTENDING = 0;
     public final static int ROW_HOURS_HOMEWORK = 1;
-    public final static int ROW_HOURS_STUDYING =2;
+    public final static int ROW_HOURS_STUDYING = 2;
     public final static List<String> ROW_TITLES = Arrays.asList("attending", "homework", "studying");
 
 
@@ -29,14 +29,14 @@ public class EnterWorkload extends ListActivity {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_lecture);
         Intent launchIntent = getIntent();
         Integer year = launchIntent.getIntExtra(MESSAGE_YEAR, -1);
         Integer weekNumber = launchIntent.getIntExtra(MESSAGE_WEEK, -1);
-        Integer lectureId = launchIntent.getIntExtra(MESSAGE_LECTURE,-1);
-        this.mWeek  = new Week(year,weekNumber);
+        Integer lectureId = launchIntent.getIntExtra(MESSAGE_LECTURE, -1);
+        this.mWeek = new Week(year, weekNumber);
         setListAdapter(new EnterWorkloadAdaper(this, mWeek, lectureId));
         setTitle("Enter your hours");
     }
@@ -48,8 +48,9 @@ public class EnterWorkload extends ListActivity {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
     @Override
-    protected void onPause(){
+    protected void onPause() {
         super.onPause();
         EnterWorkloadAdaper adaper = (EnterWorkloadAdaper) getListAdapter();
         adaper.saveWorkload();
