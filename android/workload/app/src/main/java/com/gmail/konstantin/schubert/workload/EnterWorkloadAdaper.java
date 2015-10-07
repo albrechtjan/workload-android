@@ -26,8 +26,8 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
         super(context);
         mContext = context;
         sWeek = week;
-        sLecture = getLectureById(lectureId);
-        mWorkloadEntry = getOrCreateWorkloadEntry(sLecture,sWeek);
+        sLecture = this.dbObjectBuilder.getLectureById(lectureId);
+        mWorkloadEntry = this.dbObjectBuilder.getOrCreateWorkloadEntry(sLecture,sWeek);
         updateMembers();
     }
 
@@ -103,11 +103,11 @@ public class EnterWorkloadAdaper extends MyBaseAdapter  {
     }
 
     public void saveWorkload() {
-        updateWorkloadEntryInDB(mWorkloadEntry);
+        this.dbObjectBuilder.updateWorkloadEntryInDB(mWorkloadEntry);
     }
 
     protected void updateMembers(){
-        mWorkloadEntry = getOrCreateWorkloadEntry(sLecture,sWeek);
+        mWorkloadEntry = this.dbObjectBuilder.getOrCreateWorkloadEntry(sLecture,sWeek);
     };
 
 }

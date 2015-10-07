@@ -74,7 +74,7 @@ public class SelectLectureAdapter extends MyBaseAdapter  { //BaseAdapter already
 
     protected void updateMembers(){
         //TODO: Limit this from all Lectures to the lectures in this mWeek
-        mLecturesThisWeek = this.getLecturesInWeek(mWeek, true);
+        mLecturesThisWeek = this.dbObjectBuilder.getLecturesInWeek(mWeek, true);
     };
 
 
