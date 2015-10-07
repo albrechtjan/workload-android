@@ -58,8 +58,6 @@ abstract public class MyBaseAdapter extends BaseAdapter{
 
     protected List<Lecture> getLectureList( boolean onlyActive){
         Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), null, null, null, null);
-        String cursorDump = DatabaseUtils.dumpCursorToString(cursor);
-        Log.d(TAG, "Full table dump:" + DatabaseUtils.dumpCursorToString(cursor));
         List<Lecture> lectures = new ArrayList<Lecture>();
         while (cursor.moveToNext()){
             Lecture newLecture = buildLectureFromCursor(cursor);

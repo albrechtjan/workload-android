@@ -20,7 +20,6 @@ public class Authenticator extends AbstractAccountAuthenticator{
     private static final String TAG = Authenticator.class.getSimpleName();
 
     //the following (parts of) key names also work as bundle keys for the httpcookie
-    public static final String NAME_PART_COOKIE_SHIBBOLETH = "_shibsession_"; // + additional (random?) string. This seems to be the shibboleth session ID, as opposed to the django session ID
     public static final String NAME_COOKIE_DJANGO = "csrftoken";
     public static final String NAME_COOKIE_CSRF = "sessionid";
 
@@ -127,7 +126,7 @@ public class Authenticator extends AbstractAccountAuthenticator{
         // Looks for the necessary cookies in the cookieString. Returns them in a map if it finds them.
         // Returns null if at least one cookie is missing
         Map<String,HttpCookie> cookies = new HashMap<>();
-        for (String key : new String[]{Authenticator.NAME_COOKIE_CSRF, Authenticator.NAME_COOKIE_DJANGO, Authenticator.NAME_PART_COOKIE_SHIBBOLETH}) {
+        for (String key : new String[]{Authenticator.NAME_COOKIE_CSRF, Authenticator.NAME_COOKIE_DJANGO}) {
             Boolean found = false;
             for (String cookieSubString : cookieString.split(";")) {
                 if (cookieSubString.contains(key)) {

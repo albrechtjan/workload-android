@@ -1,10 +1,12 @@
 package com.gmail.konstantin.schubert.workload;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Locale;
 
 /**
- * Simple Week representation aimed to monitor the most important functions of android's week.isoweek
+ * Simple Week representation aimed to mirror the most important functions of android's week.isoweek
  */
 public class Week implements Comparable<Week>{
 
@@ -13,6 +15,17 @@ public class Week implements Comparable<Week>{
     public Week(int year,int weeknumber){
         mCalendar.set(Calendar.YEAR, year);
         mCalendar.set(Calendar.WEEK_OF_YEAR, weeknumber);
+    }
+
+    public static Week getWeekFromISOString(String s){
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            cal.setTime(sdf.parse(s));
+            return new Week(cal.YEAR, cal.WEEK_OF_YEAR);
+        }catch (java.text.ParseException e){
+            return null;
+        }
     }
 
     public Week getNextWeek(){

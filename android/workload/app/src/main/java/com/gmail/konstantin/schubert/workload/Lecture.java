@@ -22,6 +22,10 @@ public class Lecture {
     }
 
 
+
+
+
+
     public WorkloadEntry[] getWorkloadEntrie(){
         //Stub
         return null;

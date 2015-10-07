@@ -143,6 +143,9 @@ public class SurveyContentProvider extends ContentProvider{
         mAccount = CreateSyncAccount(getContext());
         //TODO:Figure out why this is not working
         ContentResolver.setIsSyncable (mAccount, AUTHORITY,1);
+        Bundle syncBundle = new Bundle();
+        syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_USERDATA);
+        ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         return true;
     }
 

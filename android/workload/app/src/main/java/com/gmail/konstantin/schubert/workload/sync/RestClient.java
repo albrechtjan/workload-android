@@ -1,5 +1,7 @@
 package com.gmail.konstantin.schubert.workload.sync;
 
+import android.util.Log;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -22,11 +24,14 @@ import java.util.ArrayList;
 
 
 public class RestClient {
+
+    public final static String TAG = "RestClient";
+
     public enum RequestMethod {
         GET,
         POST,
         PUT,
-        DELETE
+        DELETE;
     }
 
     public int responseCode = 0;
@@ -34,6 +39,8 @@ public class RestClient {
     public String response;
 
     public void Execute(RequestMethod method, String url, ArrayList<NameValuePair> headers, ArrayList<NameValuePair> params) throws Exception {
+        Log.d(TAG, "Executing Rest Method");
+        android.os.Debug.waitForDebugger();
         switch (method) {
             case GET: {
                 // add parameters
