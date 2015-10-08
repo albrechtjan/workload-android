@@ -24,7 +24,6 @@ public class SurveyContentProvider extends ContentProvider {
 
     public static final String AUTHORITY = "de.tu-dresden.zqa.survey";
     private MainDatabaseHelper mOpenHelper;
-    private SQLiteDatabase db;
 
     private static final String DBNAME = "survey_database";
     private static int DATABASE_VERSION = 1;
@@ -127,9 +126,6 @@ public class SurveyContentProvider extends ContentProvider {
     static {
         sURIMatcher.addURI(AUTHORITY, "/lectures/", LECTURES);
         sURIMatcher.addURI(AUTHORITY, "/lectures/#", LECTURES_ID);
-        //I probably should not try to make the database give the lectures for a
-        // given week, instead I should just grab all active lectures, and check them all
-        // if they are in a given week. That should be sufficiently efficient.
         sURIMatcher.addURI(AUTHORITY, "/workentries/", ENTRIES);
         sURIMatcher.addURI(AUTHORITY, "/workentries/#", ENTRIES_ID);
     }
@@ -147,63 +143,50 @@ public class SurveyContentProvider extends ContentProvider {
         return true;
     }
 
-
-    public Uri update_status(Uri uri_with_id, int status) {
-        // changes the status of the row without triggering a sync
-        //TODO: remove duplicate code with update()
-
-        ContentValues values = new ContentValues();
-        values.put(DB_STRINGS_WORKENTRY.STATUS, status);
-        int uriType = sURIMatcher.match(uri_with_id);
-
-        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
-        long id;
+    private boolean decideSync(int uriType, ContentValues values){
+        boolean performSync = false;
         switch (uriType) {
-            case LECTURES_ID:
-                id = database.insert("lectures", null, values);
+            case LECTURES:
+                if ( values.get(DB_STRINGS_LECTURE.STATUS)==SYNC_STATUS.PENDING ){
+                    performSync = true;
+                }
                 break;
-            case ENTRIES_ID:
-                id = database.insert("workentries", null, values);
+            case ENTRIES:
+                if (values.get(DB_STRINGS_WORKENTRY.STATUS)==SYNC_STATUS.PENDING){
+                    performSync = true;
+                }
                 break;
-            default:
-                throw new IllegalArgumentException("Unknown URI: " + uri_with_id);
         }
-        getContext().getContentResolver().notifyChange(uri_with_id, null);
-        return uri_with_id;
-
+        return  performSync;
     }
-
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        return insert(uri, values, true);
-    }
 
-    public Uri insert(Uri uri, ContentValues values, Boolean performSync) {
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
-
         long id;
         switch (uriType) {
             case LECTURES:
                 id = database.insert("lectures", null, values);
-                if (performSync) {
-                    //TODO: Try to factorize the IFs more efficiency, also for the other functions.
-                    values.put(DB_STRINGS_LECTURE.OPERATION, SYNC_OPERATION.POST);
-                    values.put(DB_STRINGS_LECTURE.STATUS, SYNC_STATUS.PENDING);
-                }
                 break;
             case ENTRIES:
                 id = database.insert("workentries", null, values);
-                if (performSync) {
-                    values.put(DB_STRINGS_WORKENTRY.OPERATION, SYNC_OPERATION.POST);
-                    values.put(DB_STRINGS_WORKENTRY.STATUS, SYNC_STATUS.PENDING);
-                }
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
-        getContext().getContentResolver().notifyChange(uri, null, performSync);
+
+        getContext().getContentResolver().notifyChange(uri, null, decideSync(uriType,values));
+
+        if (decideSync(uriType,values)) {
+            //TODO: figure out if I need this. Shouldn't the notifyChange above do it already?
+            //TODO: Do I actually need the check or do I ALWAYS want to do a remote sync after an insert?
+            Bundle syncBundle = new Bundle();
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.PUSH_CHANGES);
+            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+        }
+
         return Uri.parse(uri + String.valueOf(id));
 
     }
@@ -240,66 +223,45 @@ public class SurveyContentProvider extends ContentProvider {
         }
         Cursor cursor = qBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
-        //TODO: Understand if setNotificationUri does also trigger a server sync and make sure not to double sync
 
+        //TODO: figure out if I need this.
+        //TODO: Understand if setNotificationUri does also trigger a server sync
         Bundle syncBundle = new Bundle();
-        syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_USERDATA);
+        syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_DOWNLOAD_USERDATA);
         ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+
+
         return cursor;
     }
 
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        if (selection != null) {
-            throw new IllegalArgumentException("Do not pass selection to update query. Not supported");
-        }
-        return delete(uri, true);
-    }
+        //delete is always local.
+        // If you want to 'delete remote', do an update with SYNC_OPERATION=DELETE
 
-    public int delete(Uri uri, Boolean performSync) {
+        if (selection != null) {
+            throw new IllegalArgumentException("Do not pass selection to delete query. Not supported");
+        }
+
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
         String table;
-        String selection;
-        ContentValues values = new ContentValues();
+
         switch (uriType) {
             case LECTURES_ID:
                 table = "lectures";
                 selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
-                if (performSync) {
-                    values.put(DB_STRINGS_LECTURE.OPERATION, SYNC_OPERATION.DELETE);
-                    values.put(DB_STRINGS_LECTURE.STATUS, SYNC_STATUS.PENDING);
-                }
                 break;
             case ENTRIES_ID:
                 table = "workentries";
                 selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
-                if (performSync) {
-                    values.put(DB_STRINGS_WORKENTRY.OPERATION, SYNC_OPERATION.DELETE);
-                    values.put(DB_STRINGS_WORKENTRY.STATUS, SYNC_STATUS.PENDING);
-                }
                 break;
             default:
-                throw new IllegalArgumentException("Unknown or invalid uri. Note that with update, you MUST supply an ID: " + uri);
+                throw new IllegalArgumentException("Unknown or invalid uri. Note that with delete, you MUST supply an ID: " + uri);
         }
-        if (performSync) {
-            database.update(table, values, selection, null);
-            // Honestly, I think the easiest way is to simply not delete anything, just mark rows as deleted.
-            // That's unless something disappears remotely that can only deleted remotely, such as a lecture in the list of
-            //  available lectures
-        } else {
-            database.delete(table, selection, null);
-        }
-
-        getContext().getContentResolver().notifyChange(uri, null, performSync);
-
-        if (performSync) {
-            //TODO: figure out if I need this. Shouldn't the notifyChange above does it already?
-            Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.PUSH_CHANGES);
-            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
-        }
+        database.delete(table, selection, null);
+        getContext().getContentResolver().notifyChange(uri, null, false);
         return 1;
     }
 
@@ -308,39 +270,27 @@ public class SurveyContentProvider extends ContentProvider {
         if (selection != null) {
             throw new IllegalArgumentException("Do not pass selection to update query. Not supported");
         }
-        return this.update(uri, values, true);
-    }
 
-    public int update(Uri uri, ContentValues values, Boolean performSync) {
-
-        String selection;
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
         String table;
+
         switch (uriType) {
             case LECTURES_ID:
                 table = "lectures";
                 selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
-                if (performSync) {
-                    values.put(DB_STRINGS_LECTURE.OPERATION, SYNC_OPERATION.PUT);
-                    values.put(DB_STRINGS_LECTURE.STATUS, SYNC_STATUS.PENDING);
-                }
                 break;
             case ENTRIES_ID:
                 table = "workentries";
                 selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
-                if (performSync) {
-                    values.put(DB_STRINGS_WORKENTRY.OPERATION, SYNC_OPERATION.PUT);
-                    values.put(DB_STRINGS_WORKENTRY.STATUS, SYNC_STATUS.PENDING);
-                }
                 break;
             default:
                 throw new IllegalArgumentException("Unknown or invalid uri. Note that with update, you MUST supply an ID: " + uri);
         }
         database.update(table, values, selection, null);
-        getContext().getContentResolver().notifyChange(uri, null, performSync);
+        getContext().getContentResolver().notifyChange(uri, null, decideSync(uriType,values));
 
-        if (performSync) {
+        if (decideSync(uriType,values)) {
             //TODO: figure out if I need this. Shouldn't the notifyChange above does it already?
             Bundle syncBundle = new Bundle();
             syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.PUSH_CHANGES);

@@ -2,7 +2,6 @@ package com.gmail.konstantin.schubert.workload;
 
 
 import android.content.Context;
-import android.content.Intent;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -12,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.gmail.konstantin.schubert.workload.activities.EnterWorkload;
 
 
 public class EnterWorkloadAdaper extends MyBaseAdapter {

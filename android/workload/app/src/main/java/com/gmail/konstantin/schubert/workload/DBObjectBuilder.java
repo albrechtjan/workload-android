@@ -7,6 +7,7 @@ import android.net.Uri;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public class DBObjectBuilder {
@@ -17,7 +18,7 @@ public class DBObjectBuilder {
         this.mContentResolver = contentResolver;
     }
 
-    protected List<Lecture> getLectureList( boolean onlyActive){
+    public List<Lecture> getLectureList( boolean onlyActive){
         Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), null, null, null, null);
         List<Lecture> lectures = new ArrayList<Lecture>();
         while (cursor.moveToNext()){
@@ -30,10 +31,36 @@ public class DBObjectBuilder {
     }
 
 
-    protected Lecture getLectureById(Integer lectureId){
+    public Lecture getLectureById(Integer lectureId){
         Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lectureId)),  null, null, null, null);
         cursor.moveToFirst();
         return buildLectureFromCursor(cursor);
+    }
+
+    public void deleteLectureById(int lectureId){
+        // you cannot delete a remote lecture
+        // not even in the sense that it is marked as deleted
+        Uri uri = Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lectureId));
+        mContentResolver.delete(uri, null, null);
+
+    }
+
+    public void addLecture(Lecture lecture, boolean performSync){
+        String uriString = "content://" + SurveyContentProvider.AUTHORITY + "/lectures/";
+        if (!performSync){
+            uriString += "nosync";
+        }
+
+        ContentValues values = new ContentValues();
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE._ID,lecture._ID);
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.NAME, lecture.name);
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.SEMESTER, lecture.semester);
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STARTYEAR, lecture.startWeek.year());
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STARTWEEK, lecture.startWeek.week());
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ENDYEAR, lecture.endWeek.year());
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ENDWEEK, lecture.endWeek.week());
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE, false);
+        mContentResolver.insert(Uri.parse(uriString), values);
     }
 
 
@@ -70,7 +97,7 @@ public class DBObjectBuilder {
 
     }
 
-    protected List<Lecture> getLecturesInWeek(Week thatWeek, boolean onlyActive){
+    public List<Lecture> getLecturesInWeek(Week thatWeek, boolean onlyActive){
         // gets lectures that are active in 'thatWeek'
         List<Lecture> allLectures = getLectureList(onlyActive);
         List<Lecture> lecturesThatWeek = new ArrayList<Lecture>();
@@ -84,7 +111,7 @@ public class DBObjectBuilder {
 
 
 
-    protected WorkloadEntry getOrCreateWorkloadEntry(Lecture lecture, Week week){
+    public WorkloadEntry getOrCreateWorkloadEntry(Lecture lecture, Week week){
         String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture._ID)+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(week.year())+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(week.week());
@@ -101,7 +128,7 @@ public class DBObjectBuilder {
         return buildWorkloadEntryFromCursor(cursor);
     }
 
-    protected List<WorkloadEntry> getWorkloadEntryList(Lecture lecture){
+    public List<WorkloadEntry> getWorkloadEntryList(Lecture lecture){
         /* Gets the workload entries for a given lecture.
         * If passed null it will get the entries for all lectures.
         * */
@@ -119,7 +146,7 @@ public class DBObjectBuilder {
         return workloadEntries;
     }
 
-    protected void updateWorkloadEntryInDB(WorkloadEntry entry){
+    public void updateWorkloadEntryInDB(WorkloadEntry entry){
         ContentValues values = new ContentValues();
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK, entry.getHoursForHomework());
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE, entry.getHoursInLecture());

@@ -11,16 +11,12 @@ import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
-
 import com.gmail.konstantin.schubert.workload.Lecture;
-
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
@@ -55,7 +51,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         super(context, autoInitialize, allowParallelSyncs);
         Log.d(TAG, "Initialized");
         mContentResolver = context.getContentResolver();
-        mRestResponseProcessor = new RESTResponseProcessor();
+        mRestResponseProcessor = new RESTResponseProcessor(mContentResolver);
         sAccountManager = AccountManager.get(getContext());
         Log.d(TAG, "got account manager" + sAccountManager.getClass().getCanonicalName());
 

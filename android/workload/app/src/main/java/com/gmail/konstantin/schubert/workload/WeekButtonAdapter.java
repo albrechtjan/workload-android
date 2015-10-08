@@ -2,16 +2,11 @@ package com.gmail.konstantin.schubert.workload;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.ContentObserver;
-import android.net.Uri;
-import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.GridView;
+
+import com.gmail.konstantin.schubert.workload.activities.SelectLecture;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -19,8 +14,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-
-import static android.widget.GridView.*;
 
 public class WeekButtonAdapter extends MyBaseAdapter {
     private Context mContext;
@@ -37,7 +30,7 @@ public class WeekButtonAdapter extends MyBaseAdapter {
 
     protected void updateMembers(){
 
-        this.mLectures = getLectureList(true);
+        this.mLectures = dbObjectBuilder.getLectureList(true);
         this.mWeeks = getWeeks(this.mLectures);
     }
 
@@ -111,7 +104,6 @@ public class WeekButtonAdapter extends MyBaseAdapter {
         List<Week> startWeeks = new ArrayList<>();
         for(Lecture lecture : lectures){
             startWeeks.add(lecture.startWeek);
-            Log.d("BBBSS", "added startweek of" + lecture.startWeek.week());
         }
         return Collections.min(startWeeks);
     }
@@ -120,7 +112,6 @@ public class WeekButtonAdapter extends MyBaseAdapter {
         List<Week> endWeeks = new ArrayList<>();
         for(Lecture lecture : lectures){
             endWeeks.add(lecture.endWeek);
-            Log.d("BBBSS", "added endweek of" + lecture.startWeek.week());
         }
         return Collections.max(endWeeks);
 

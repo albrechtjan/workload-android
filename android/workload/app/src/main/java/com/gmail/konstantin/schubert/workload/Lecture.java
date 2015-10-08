@@ -22,9 +22,8 @@ public class Lecture {
     }
 
 
-    public WorkloadEntry[] getWorkloadEntrie() {
-        //Stub
-        return null;
+    public Boolean equals(Lecture other){
+        return this._ID == other._ID;
     }
 
 

@@ -44,7 +44,7 @@
         </provider>
 
         <activity
-            android:name=".calendar"
+            android:name=".activities.Calendar"
             android:label="@string/title_activity_calendar"
             android:launchMode="singleTop">
             <intent-filter>
@@ -59,22 +59,57 @@
             android:label="@string/title_activity_web_login">
         </activity>
 
-
         <activity
-            android:name=".SelectLecture"
-            android:parentActivityName=".calendar"
+            android:name=".activities.Settings"
+            android:parentActivityName=".activities.Calendar"
             android:launchMode="singleTop">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.gmail.konstantin.schubert.workload.calendar" />
+                android:value=".activities.Calendar" />
+        </activity>
+
+        <activity
+            android:name=".activities.Statistics"
+            android:parentActivityName=".activities.Calendar"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.Calendar" />
+        </activity>
+
+        <activity
+            android:name=".activities.ManageLectures"
+            android:parentActivityName=".activities.Calendar"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.Calendar" />
+        </activity>
+
+        <activity
+            android:name=".activities.PrivacyAgreement"
+            android:parentActivityName=".activities.Calendar"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.Calendar" />
+        </activity>
+
+        <activity
+            android:name=".activities.SelectLecture"
+            android:parentActivityName=".activities.Calendar"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.Calendar" />
         </activity>
         <activity
-            android:name=".EnterWorkload"
-            android:parentActivityName=".SelectLecture"
+            android:name=".activities.EnterWorkload"
+            android:parentActivityName=".activities.SelectLecture"
             android:windowSoftInputMode="adjustPan">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.gmail.konstantin.schubert.workload.SelectLecture" />
+                android:value=".activities.SelectLecture" />
         </activity>
 
     </application>

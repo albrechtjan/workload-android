@@ -1,9 +1,10 @@
 package com.gmail.konstantin.schubert.workload.sync;
 
+import android.content.ContentResolver;
 import android.util.JsonReader;
 
+import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.Lecture;
-import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.Week;
 
 import java.io.IOException;
@@ -12,9 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RESTResponseProcessor {
-    //this class kinda does the json parsing AND the merging logic with the local database. Not sure how
-    // smart that is.
 
+    private DBObjectBuilder dbObjectBuilder;
+    //this class kinda does the object building from json AND the merging logic with the local database. Not sure how
+    // smart that combination of duties is.
+
+    public RESTResponseProcessor(ContentResolver resolver){
+        dbObjectBuilder = new DBObjectBuilder(resolver);
+    }
 
     public List<Lecture> lectureListFromJson(String jsonList) {
 
@@ -45,17 +51,17 @@ public class RESTResponseProcessor {
         Week endWeek = null;
 
         reader.beginObject();
-        String key = reader.nextName();
         while (reader.hasNext()) {
+            String key = reader.nextName();
             if (key.equals("id")) {
                 id = reader.nextInt();
             } else if (key.equals("name")) {
                 name = reader.nextString();
             } else if (key.equals("semester")) {
                 semester = reader.nextString();
-            } else if (key.equals("startWeek")) {
+            } else if (key.equals("startDay")) {
                 startWeek = Week.getWeekFromISOString(reader.nextString());
-            } else if (key.equals("endWeek")) {
+            } else if (key.equals("endDay")) {
                 endWeek = Week.getWeekFromISOString(reader.nextString());
             } else {
                 reader.skipValue();
@@ -68,18 +74,32 @@ public class RESTResponseProcessor {
 
     public void updateAvailableLectures(List<Lecture> remoteLectures) {
 
-//        localLectures = // all lectures (active and inactive) that are listed locally
-//
-//        for (localLecture in localLectures) {
-//            if (not localLecture in remoteLectures){
-//                contentProvider.delete(localLecture.url, false) // real delete without sync
-//            }
-//        }
-//        for (remoteLecture in remoteLectures){
-//            if (not remoteLecture in localLectures){
-//                contentProvider.insert( ... active=false)
-//            }
-//        }
+        List<Lecture> localLectures = this.dbObjectBuilder.getLectureList(false);  // all lectures (active and inactive) that are listed locally
+
+        // delete local lectures that are not in the remote list
+        for (Lecture localLecture : localLectures) {
+            boolean found = false;
+            for (Lecture remoteLecture : remoteLectures) {
+                if (localLecture.equals(remoteLecture)) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                this.dbObjectBuilder.deleteLectureById(localLecture._ID);
+            }
+        }
+        // add remote lectures that are not in local lectures
+        for (Lecture remoteLecture : remoteLectures){
+            boolean found = false;
+            for (Lecture localLecture : localLectures) {
+                if (localLecture.equals(remoteLecture)) {
+                    found = true;
+                }
+            }
+            if(!found){
+                this.dbObjectBuilder.addLecture(remoteLecture,false);
+            }
+        }
 
     }
 
