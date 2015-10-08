@@ -4,6 +4,7 @@
     <color name="primary_dark" type="color">#2F4067</color>
     <color name="primary_bright" type="color">#D8DADD</color>
     <color name="primary_brightish" type="color">#cacdd1</color>
-    <color name="accent" type="color">#FFFFFF</color>
+    <color name="accent" type="color">#ff8686</color>
+    <color name="text_primary" type="color">#000000</color>
 
 </resources>

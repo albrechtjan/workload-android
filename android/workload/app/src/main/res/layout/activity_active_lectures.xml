@@ -1,17 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="0dp">
+    android:layout_height="match_parent">
 
     <ListView android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:divider="@color/primary_brightish"
-        android:dividerHeight="1px"
-        android:drawSelectorOnTop="false" />
+        android:dividerHeight="1px"/>
+        <!--android:drawSelectorOnTop="false" />-->
 
 
-</LinearLayout>
+    <ImageButton
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|right"
+        android:src="@drawable/ic_plus_sign"
+        android:layout_margin="16dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:background="@drawable/round_button"
+        android:clickable="true"
+        android:elevation="5dp" />
+
+
+
+
+
+
+</RelativeLayout>
  

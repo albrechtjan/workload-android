@@ -1,6 +1,7 @@
 package com.gmail.konstantin.schubert.workload.sync;
 
 import android.util.Log;
+//TODO:Migrate to http://developer.android.com/about/versions/marshmallow/android-6.0-changes.html#behavior-apache-http-client
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
