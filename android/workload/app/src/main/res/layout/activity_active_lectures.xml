@@ -14,8 +14,10 @@
         android:dividerHeight="1px"/>
         <!--android:drawSelectorOnTop="false" />-->
 
-
+    <!--TODO: Maybe use this instead https://github.com/markushi/android-circlebutton-->
+    <!--TODO: Or get this here to work finally https://guides.codepath.com/android/Floating-Action-Buttons-->
     <ImageButton
+        android:id="@+id/add_lecture_button"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_gravity="bottom|right"

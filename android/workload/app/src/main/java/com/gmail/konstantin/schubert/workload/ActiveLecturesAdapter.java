@@ -38,18 +38,6 @@ public class ActiveLecturesAdapter  extends MyBaseAdapter { //BaseAdapter alread
         TextView label = (TextView) lectureRow.getChildAt(0);
         label.setText(mActiveLectures.get(position).name);
 
-//
-//        lectureButton.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//
-//                Intent intent = new Intent(mContext, EnterWorkload.class);
-//                intent.putExtra(EnterWorkload.MESSAGE_YEAR, mWeek.year());
-//                intent.putExtra(EnterWorkload.MESSAGE_WEEK, mWeek.week());
-//                intent.putExtra(EnterWorkload.MESSAGE_LECTURE, mLecturesThisWeek.get(position)._ID);
-//                mContext.startActivity(intent);
-//            }
-//        });
-
 
         return lectureRow;
     }

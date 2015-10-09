@@ -26,7 +26,6 @@ public class EnterWorkload extends MyBaseListActivity {
     //TODO: Figure out if a ListActivity is really what we want here. Figure out what to do as we cannot inherit from MyBaseAcitivy
 
     private Week mWeek;
-    private int lectureId;
 
 
     @Override

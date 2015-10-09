@@ -87,6 +87,15 @@
         </activity>
 
         <activity
+            android:name=".activities.AddLectureChooseSemester"
+            android:parentActivityName=".activities.ManageLectures"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.Calendar" />
+        </activity>
+
+        <activity
             android:name=".activities.PrivacyAgreement"
             android:parentActivityName=".activities.Calendar"
             android:launchMode="singleTop">

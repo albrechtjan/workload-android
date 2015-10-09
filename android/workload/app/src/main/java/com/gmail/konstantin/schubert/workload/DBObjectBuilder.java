@@ -12,6 +12,9 @@ import java.util.UUID;
 
 public class DBObjectBuilder {
 
+    //TODO: It would be nice to eliminate this object builder and instead have the adapters connect to the database more closely (making the auto-updates work)
+    //TODO: However, at this point I am not sure how the database would need to look like to this end.
+
     private ContentResolver mContentResolver;
 
     public DBObjectBuilder(ContentResolver contentResolver){
@@ -40,7 +43,7 @@ public class DBObjectBuilder {
     public void deleteLectureById(int lectureId){
         // you cannot delete a remote lecture
         // not even in the sense that it is marked as deleted
-        Uri uri = Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lectureId));
+        Uri uri = Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lectureId));
         mContentResolver.delete(uri, null, null);
 
     }
@@ -83,7 +86,7 @@ public class DBObjectBuilder {
 
         int _ID= cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE._ID));
         String name = cursor.getString( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.NAME) );
-        String semester = cursor.getString( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.SEMESTER) );
+        String semester = cursor.getString(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.SEMESTER));
         Week startWeek = new Week(
                 cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.STARTYEAR)),
                 cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.STARTWEEK))
@@ -107,6 +110,38 @@ public class DBObjectBuilder {
             }
         }
         return lecturesThatWeek;
+    }
+
+
+    public List<Lecture> getLecturesOfSemester(String semester, boolean onlyActive){
+        List<Lecture> lectures = getLectureList(onlyActive);
+        List<Lecture> lecturesInSemester = new ArrayList<>();
+        for (Lecture lecture : lectures){
+            if (lecture.semester == semester){
+                lecturesInSemester.add(lecture);
+            }
+        }
+        return  lecturesInSemester;
+    }
+
+    public List<String> getSemesterList(boolean onlyActive){
+        //TODO: Make this more efficient
+        List<String> semesters = new ArrayList<>();
+        List<Lecture> lectures = getLectureList(onlyActive);
+        //Wow, this is two lines in python. Am I doing this wrong?
+        for (Lecture lecture : lectures ){
+            boolean found =false;
+            for (String semester : semesters){
+                if(semester == lecture.semester){
+                    found = true;
+                    break;
+                }
+            }
+            if (!found){
+                semesters.add(lecture.semester);
+            }
+        }
+        return semesters;
     }
 
 
@@ -153,4 +188,6 @@ public class DBObjectBuilder {
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_STUDYING, entry.getHoursStudying());
         int updated = mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/" + String.valueOf(entry._ID)), values, null, null);
     }
+
+
 }

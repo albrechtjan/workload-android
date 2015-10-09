@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 
 import com.gmail.konstantin.schubert.workload.activities.EnterWorkload;
@@ -35,14 +36,14 @@ public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter already 
             lectureRow = (LinearLayout) convertView;
         } else {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            lectureRow = (LinearLayout) inflater.inflate(R.layout.lecture_row, parent, false);
+            lectureRow = (LinearLayout) inflater.inflate(R.layout.lecture_row_modern, parent, false);
         }
 
-        Button lectureButton = (Button) lectureRow.getChildAt(0);
-        lectureButton.setText(mLecturesThisWeek.get(position).name);
+        TextView label = (TextView) lectureRow.getChildAt(0);
+        label.setText(mLecturesThisWeek.get(position).name);
 
 
-        lectureButton.setOnClickListener(new View.OnClickListener() {
+        label.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
                 Intent intent = new Intent(mContext, EnterWorkload.class);
