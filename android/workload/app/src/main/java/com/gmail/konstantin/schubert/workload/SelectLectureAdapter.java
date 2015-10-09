@@ -5,8 +5,8 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 
@@ -31,12 +31,12 @@ public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter already 
     }
 
     public View getView(final int position, View convertView, ViewGroup parent) {
-        LinearLayout lectureRow; //A button for the lecture wrapped in a LinearLayout
+        RelativeLayout lectureRow; //A button for the lecture wrapped in a LinearLayout
         if (convertView != null) {
-            lectureRow = (LinearLayout) convertView;
+            lectureRow = (RelativeLayout) convertView;
         } else {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            lectureRow = (LinearLayout) inflater.inflate(R.layout.lecture_row_modern, parent, false);
+            lectureRow = (RelativeLayout) inflater.inflate(R.layout.lecture_row_modern, parent, false);
         }
 
         TextView label = (TextView) lectureRow.getChildAt(0);

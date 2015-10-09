@@ -14,4 +14,13 @@
         android:layout_centerHorizontal="true"
         android:gravity="center_vertical|center_horizontal" />
 
+    <Switch
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_margin="20dp"
+        android:id="@+id/add_lecture_select_switch"
+        android:layout_alignParentRight="true"
+        />
+
+
 </RelativeLayout>

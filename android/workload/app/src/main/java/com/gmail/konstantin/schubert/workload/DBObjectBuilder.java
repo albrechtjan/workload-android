@@ -117,7 +117,7 @@ public class DBObjectBuilder {
         List<Lecture> lectures = getLectureList(onlyActive);
         List<Lecture> lecturesInSemester = new ArrayList<>();
         for (Lecture lecture : lectures){
-            if (lecture.semester == semester){
+            if (lecture.semester.equals(semester)){
                 lecturesInSemester.add(lecture);
             }
         }
@@ -128,11 +128,11 @@ public class DBObjectBuilder {
         //TODO: Make this more efficient
         List<String> semesters = new ArrayList<>();
         List<Lecture> lectures = getLectureList(onlyActive);
-        //Wow, this is two lines in python. Am I doing this wrong?
+        //Wow, this would be two lines in python. Am I doing this wrong?
         for (Lecture lecture : lectures ){
             boolean found =false;
             for (String semester : semesters){
-                if(semester == lecture.semester){
+                if(semester.equals(lecture.semester)){
                     found = true;
                     break;
                 }

@@ -92,7 +92,16 @@
             android:launchMode="singleTop">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.Calendar" />
+                android:value=".activities.ManageLectures" />
+        </activity>
+
+        <activity
+            android:name=".activities.AddLecture"
+            android:parentActivityName=".activities.AddLectureChooseSemester"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.AddLectureChooseSemester" />
         </activity>
 
         <activity

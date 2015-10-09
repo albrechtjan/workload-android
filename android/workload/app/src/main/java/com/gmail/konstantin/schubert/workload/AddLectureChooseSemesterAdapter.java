@@ -1,12 +1,15 @@
 package com.gmail.konstantin.schubert.workload;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.gmail.konstantin.schubert.workload.activities.AddLecture;
 
 import java.util.List;
 
@@ -42,17 +45,15 @@ public class AddLectureChooseSemesterAdapter  extends MyBaseAdapter { //BaseAdap
         TextView label = (TextView) lectureRow.findViewById(R.id.semester_name_text_view);
         label.setText(mSemesters.get(position));
 
-//
-//        lectureButton.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//
-//                Intent intent = new Intent(mContext, EnterWorkload.class);
-//                intent.putExtra(EnterWorkload.MESSAGE_YEAR, mWeek.year());
-//                intent.putExtra(EnterWorkload.MESSAGE_WEEK, mWeek.week());
-//                intent.putExtra(EnterWorkload.MESSAGE_LECTURE, mLecturesThisWeek.get(position)._ID);
-//                mContext.startActivity(intent);
-//            }
-//        });
+
+        lectureRow.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                Intent intent = new Intent(mContext, AddLecture.class);
+                intent.putExtra(AddLecture.SEMESTER, mSemesters.get(position));
+                mContext.startActivity(intent);
+            }
+        });
 
 
         return lectureRow;
