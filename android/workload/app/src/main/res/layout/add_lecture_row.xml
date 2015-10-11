@@ -6,19 +6,20 @@
 
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Lecture Name"
+        android:layout_toLeftOf="@+id/add_lecture_select_switch"
         android:id="@+id/add_lecture_name_text_view"
         android:layout_centerHorizontal="true"
         android:gravity="center_vertical|center_horizontal" />
 
     <Switch
-        android:layout_width="30dp"
+        android:layout_width="wrap_content"
         android:layout_height="30dp"
         android:layout_margin="20dp"
-        android:id="@+id/add_lecture_select_switch"
+        android:id="@id/add_lecture_select_switch"
         android:layout_alignParentRight="true"
         />
 

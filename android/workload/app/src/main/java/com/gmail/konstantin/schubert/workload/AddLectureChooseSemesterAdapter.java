@@ -35,11 +35,6 @@ public class AddLectureChooseSemesterAdapter  extends MyBaseAdapter { //BaseAdap
         } else {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             lectureRow = (RelativeLayout) inflater.inflate(R.layout.semester_row, parent, false);
-
-            //TODO: figure out why the following three lines set the width to zero
-//            TextView label = (TextView) lectureRow.findViewById(R.id.semester_name_text_view);
-//            ImageView imageView= (ImageView) lectureRow.findViewById(R.id.semester_select_button);
-//            label.setMaxWidth(lectureRow.getWidth() - imageView.getWidth());
         }
 
         TextView label = (TextView) lectureRow.findViewById(R.id.semester_name_text_view);
