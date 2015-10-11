@@ -5,7 +5,9 @@ import android.util.JsonReader;
 
 import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.Lecture;
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.Week;
+import com.gmail.konstantin.schubert.workload.WorkloadEntry;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -23,11 +25,8 @@ public class RESTResponseProcessor {
     }
 
     static public List<Lecture> lectureListFromJson(String jsonList) {
-
         JsonReader reader = new JsonReader(new StringReader(jsonList));
-
-        List lectures = new ArrayList();
-
+        List<Lecture> lectures = new ArrayList();
         try {
             reader.beginArray();
             while (reader.hasNext()) {
@@ -39,6 +38,23 @@ public class RESTResponseProcessor {
             //TODO: something
         }
         return lectures;
+    }
+
+
+    static public List<WorkloadEntry> entryListFromJson(String jsonList) {
+        JsonReader reader = new JsonReader(new StringReader(jsonList));
+        List<WorkloadEntry> entries = new ArrayList();
+        try {
+            reader.beginArray();
+            while (reader.hasNext()) {
+                entries.add(buildEntry(reader));
+            }
+            reader.endArray();
+            reader.close();
+        } catch (IOException e) {
+            //TODO: something
+        }
+        return entries;
     }
 
 
@@ -71,43 +87,85 @@ public class RESTResponseProcessor {
         return new Lecture(id, name, semester, startWeek, endWeek, false);
     }
 
+    static public WorkloadEntry buildEntry(JsonReader reader) throws IOException {
+
+        int lecture_id = -1;
+        Long hoursInLecture = null;
+        Long hoursForHomework = null;
+        Long hoursStudying = null;
+        Week week = null;
+
+        reader.beginObject();
+        while (reader.hasNext()) {
+            String key = reader.nextName();
+            if (key.equals("lecture_id")) {
+                lecture_id = reader.nextInt();
+            } else if (key.equals("hoursInLecture")) {
+                hoursInLecture = reader.nextLong();
+            } else if (key.equals("hoursForHomework")) {
+                hoursForHomework = reader.nextLong();
+            } else if (key.equals("hoursStudying")) {
+                hoursStudying = reader.nextLong();
+            } else if (key.equals("week")) {
+               week = Week.getWeekFromISOString(reader.nextString());
+            } else {
+                reader.skipValue();
+            }
+        }
+        reader.endObject();
+        return new WorkloadEntry(week, lecture_id, hoursInLecture, hoursForHomework, hoursStudying);
+
+    }
+
 
     public void updateAvailableLectures(List<Lecture> remoteLectures) {
         // updates the available lectures from the remote end to the local end.
         // Remote always supersedes local, even if syncing
 
-        List<Lecture> localLectures = this.dbObjectBuilder.getLectureList(false);  // all lectures (active and inactive) that are listed locally
+        List<Lecture> localLectures = this.dbObjectBuilder.getLectureList(false, true);  // all lectures (active and inactive) that are listed locally
 
         // delete local lectures that are not in the remote list
         for (Lecture localLecture : localLectures) {
-            boolean found = false;
-            for (Lecture remoteLecture : remoteLectures) {
-                if (localLecture.equals(remoteLecture)) {
-                    found = true;
-                }
-            }
-            if (!found) {
+
+            if (!lectureIsInList(localLecture, remoteLectures)) {
                 this.dbObjectBuilder.deleteLectureById(localLecture._ID);
             }
         }
 
         // add remote lectures that are not in local lectures
         for (Lecture remoteLecture : remoteLectures){
-            boolean found = false;
-            for (Lecture localLecture : localLectures) {
-                if (localLecture.equals(remoteLecture)) {
-                    found = true;
-                }
-            }
-            if(!found){
+            if(!lectureIsInList(remoteLecture, localLectures)){
                 this.dbObjectBuilder.addLecture(remoteLecture,false);
             }
         }
 
     }
     public void updateActiveLectures(List<Lecture> remoteActiveLectures){
-        // Update which lectures are active
-        // If local is syncing its status is not overwritten.
+        List<Lecture> localLectures = dbObjectBuilder.getLectureList(false, true);
+        for (Lecture localLecture : localLectures){
+            if (dbObjectBuilder.getSyncStatus("lectures", localLecture._ID) != SurveyContentProvider.SYNC_STATUS.IDLE){
+                // if getSyncStatus is too much I/O, one can also store the sync status in the lecture object
+                // but that is a more fragile approach
+                continue; // we do not overwrite stuff that has not yet synced
+            }
+            if (lectureIsInList(localLecture, remoteActiveLectures) && !localLecture.isActive){
+                dbObjectBuilder.setLectureIsActive(localLecture._ID, true, false);
+            }
+            else if (!lectureIsInList(localLecture, remoteActiveLectures) && localLecture.isActive){
+                dbObjectBuilder.setLectureIsActive(localLecture._ID, false, false);
+            }
+        }
+    }
+
+    private boolean lectureIsInList(Lecture lecture, List<Lecture> lectureList){
+        boolean isInList = false;
+        for (Lecture other : lectureList){
+            if (lecture.equals(other)){
+                isInList = true;
+                break;
+            }
+        }
+        return  isInList;
     }
 
 }

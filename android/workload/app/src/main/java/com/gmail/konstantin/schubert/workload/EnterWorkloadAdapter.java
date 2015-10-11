@@ -15,7 +15,7 @@ import android.widget.TextView;
 import com.gmail.konstantin.schubert.workload.activities.EnterWorkload;
 
 
-public class EnterWorkloadAdaper extends MyBaseAdapter {
+public class EnterWorkloadAdapter extends MyBaseAdapter {
 
 
     private Context mContext;
@@ -23,12 +23,12 @@ public class EnterWorkloadAdaper extends MyBaseAdapter {
     private final Lecture sLecture;
     private WorkloadEntry mWorkloadEntry;
 
-    public EnterWorkloadAdaper(Context context, Week week, int lectureId) {
+    public EnterWorkloadAdapter(Context context, Week week, int lectureId) {
         super(context);
         mContext = context;
         sWeek = week;
-        sLecture = this.dbObjectBuilder.getLectureById(lectureId);
-        mWorkloadEntry = this.dbObjectBuilder.getOrCreateWorkloadEntry(sLecture, sWeek);
+        sLecture = this.dbObjectBuilder.getLectureById(lectureId, false);
+        mWorkloadEntry = this.dbObjectBuilder.getOrCreateWorkloadEntry(sLecture._ID, sWeek);
         updateMembers();
     }
 
@@ -56,9 +56,9 @@ public class EnterWorkloadAdaper extends MyBaseAdapter {
 
         class WorkloadTextWatcher implements TextWatcher {
             public final int fWatchedPosition;
-            public final EnterWorkloadAdaper fAdapter;
+            public final EnterWorkloadAdapter fAdapter;
 
-            WorkloadTextWatcher(int position, EnterWorkloadAdaper adapter) {
+            WorkloadTextWatcher(int position, EnterWorkloadAdapter adapter) {
                 this.fWatchedPosition = position;
                 this.fAdapter = adapter;
             }
@@ -111,7 +111,7 @@ public class EnterWorkloadAdaper extends MyBaseAdapter {
     }
 
     protected void updateMembers() {
-        mWorkloadEntry = this.dbObjectBuilder.getOrCreateWorkloadEntry(sLecture, sWeek);
+        mWorkloadEntry = this.dbObjectBuilder.getOrCreateWorkloadEntry(sLecture._ID, sWeek);
     }
 
     ;

@@ -30,7 +30,7 @@ public class WeekButtonAdapter extends MyBaseAdapter {
 
     protected void updateMembers(){
 
-        this.mLectures = dbObjectBuilder.getLectureList(true);
+        this.mLectures = dbObjectBuilder.getLectureList(true, false);
         this.mWeeks = getWeeks(this.mLectures);
     }
 

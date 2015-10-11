@@ -66,7 +66,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Add anything to local that is in remote but not in local (as inactive)
         try {
             ArrayList<NameValuePair> headers = buildAuthHeaders();
-            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/menu/lectures/all/", headers, null);
+            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/lectures/all/", headers, null);
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
             List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
             mRestResponseProcessor.updateAvailableLectures(remoteLectures);
@@ -98,7 +98,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/entries/active/", buildAuthHeaders(), null);
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
             List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
-            mRestResponseProcessor.updateEntries(remoteEntries);
+//TODO            mRestResponseProcessor.updateEntries(remoteEntries);
         }
         catch (Exception e ){
             //TODO
@@ -120,8 +120,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void push_changes(){
-        send_synching_lectures();
-        send_synching_workload_entries();
+//TODO        send_synching_lectures();
+//TODO        send_synching_workload_entries();
     }
 
 
@@ -155,9 +155,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-
-
-
 
         android.os.Debug.waitForDebugger();
         int sync_task = extras.getInt("SYNC_MODUS");

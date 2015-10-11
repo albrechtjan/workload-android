@@ -4,10 +4,9 @@ package com.gmail.konstantin.schubert.workload.activities;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.gmail.konstantin.schubert.workload.EnterWorkloadAdaper;
+import com.gmail.konstantin.schubert.workload.EnterWorkloadAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.Week;
-import com.gmail.konstantin.schubert.workload.activities.MyBaseListActivity;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +36,7 @@ public class EnterWorkload extends MyBaseListActivity {
         Integer weekNumber = launchIntent.getIntExtra(MESSAGE_WEEK, -1);
         Integer lectureId = launchIntent.getIntExtra(MESSAGE_LECTURE, -1);
         this.mWeek = new Week(year, weekNumber);
-        setListAdapter(new EnterWorkloadAdaper(this, mWeek, lectureId));
+        setListAdapter(new EnterWorkloadAdapter(this, mWeek, lectureId));
         setTitle("Enter your hours");
     }
 
@@ -46,7 +45,7 @@ public class EnterWorkload extends MyBaseListActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        EnterWorkloadAdaper adaper = (EnterWorkloadAdaper) getListAdapter();
+        EnterWorkloadAdapter adaper = (EnterWorkloadAdapter) getListAdapter();
         adaper.saveWorkload();
     }
 

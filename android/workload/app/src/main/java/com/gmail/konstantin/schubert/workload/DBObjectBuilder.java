@@ -20,12 +20,12 @@ public class DBObjectBuilder {
         this.mContentResolver = contentResolver;
     }
 
-    public List<Lecture> getLectureList( boolean onlyActive){
+    public List<Lecture> getLectureList( boolean onlyActive, boolean noSync){
         Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), null, null, null, null);
         List<Lecture> lectures = new ArrayList<Lecture>();
         while (cursor.moveToNext()){
             Lecture newLecture = buildLectureFromCursor(cursor);
-            if (!onlyActive || (onlyActive&&newLecture.isActive)) {
+            if (!onlyActive || newLecture.isActive) {
                 lectures.add(newLecture);
             }
         }
@@ -33,8 +33,8 @@ public class DBObjectBuilder {
     }
 
 
-    public Lecture getLectureById(Integer lectureId){
-        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lectureId)),  null, null, null, null);
+    public Lecture getLectureById(Integer lectureId, boolean nosync){
+        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lectureId)), null, null, null, null);
         cursor.moveToFirst();
         return buildLectureFromCursor(cursor);
     }
@@ -68,7 +68,6 @@ public class DBObjectBuilder {
 
 
     private WorkloadEntry buildWorkloadEntryFromCursor(Cursor cursor){
-        int _ID = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY._ID));
         Week week = new Week(
                 cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR)),
                 cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK))
@@ -77,7 +76,7 @@ public class DBObjectBuilder {
         float hoursInLecture = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE));
         float hoursForHomework = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK));
         float hoursStudying = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_STUDYING));
-        return new WorkloadEntry(_ID, week, lecture_id, hoursInLecture, hoursForHomework, hoursStudying );
+        return new WorkloadEntry(week, lecture_id, hoursInLecture, hoursForHomework, hoursStudying );
 
     }
 
@@ -101,7 +100,7 @@ public class DBObjectBuilder {
 
     public List<Lecture> getLecturesInWeek(Week thatWeek, boolean onlyActive){
         // gets lectures that are active in 'thatWeek'
-        List<Lecture> allLectures = getLectureList(onlyActive);
+        List<Lecture> allLectures = getLectureList(onlyActive, false);
         List<Lecture> lecturesThatWeek = new ArrayList<Lecture>();
         for (Lecture lecture : allLectures){
             if (lecture.startWeek.compareTo(thatWeek)<=0 && thatWeek.compareTo(lecture.endWeek)<=0) {
@@ -112,8 +111,8 @@ public class DBObjectBuilder {
     }
 
 
-    public List<Lecture> getLecturesOfSemester(String semester, boolean onlyActive){
-        List<Lecture> lectures = getLectureList(onlyActive);
+    public List<Lecture> getLecturesOfSemester(String semester, boolean onlyActive, boolean nosync){
+        List<Lecture> lectures = getLectureList(onlyActive, nosync);
         List<Lecture> lecturesInSemester = new ArrayList<>();
         for (Lecture lecture : lectures){
             if (lecture.semester.equals(semester)){
@@ -123,10 +122,10 @@ public class DBObjectBuilder {
         return  lecturesInSemester;
     }
 
-    public List<String> getSemesterList(boolean onlyActive){
+    public List<String> getSemesterList(boolean onlyActive, boolean nosync){
         //TODO: Make this more efficient
         List<String> semesters = new ArrayList<>();
-        List<Lecture> lectures = getLectureList(onlyActive);
+        List<Lecture> lectures = getLectureList(onlyActive, nosync);
         //Wow, this would be two lines in python. Am I doing this wrong?
         for (Lecture lecture : lectures ){
             boolean found =false;
@@ -145,8 +144,8 @@ public class DBObjectBuilder {
 
 
 
-    public WorkloadEntry getOrCreateWorkloadEntry(Lecture lecture, Week week){
-        String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture._ID)+" AND ";
+    public WorkloadEntry getOrCreateWorkloadEntry(int lecture_id, Week week){
+        String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture_id)+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(week.year())+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(week.week());
         Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, where, null, null);
@@ -154,7 +153,7 @@ public class DBObjectBuilder {
             ContentValues contentValues = new ContentValues(3);
             contentValues.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR, week.year());
             contentValues.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK, week.week());
-            contentValues.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID, lecture._ID);
+            contentValues.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID, lecture_id);
             mContentResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), contentValues);
             cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, where, null, null);
         }
@@ -162,7 +161,7 @@ public class DBObjectBuilder {
         return buildWorkloadEntryFromCursor(cursor);
     }
 
-    public List<WorkloadEntry> getWorkloadEntryList(Lecture lecture){
+    public List<WorkloadEntry> getWorkloadEntries(Lecture lecture){
         /* Gets the workload entries for a given lecture.
         * If passed null it will get the entries for all lectures.
         * */
@@ -185,7 +184,33 @@ public class DBObjectBuilder {
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK, entry.getHoursForHomework());
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE, entry.getHoursInLecture());
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_STUDYING, entry.getHoursStudying());
-        int updated = mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/" + String.valueOf(entry._ID)), values, null, null);
+        String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(entry.lecture_id)+" AND ";
+        where += SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(entry.week.year())+" AND ";
+        where += SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(entry.week.week());
+        mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), values, where, null);
     }
+
+
+    public  void setLectureIsActive(int lecture_id, boolean isActive, boolean sync){
+        ContentValues values = new ContentValues();
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE, isActive);
+
+        if (sync){
+            values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STATUS, SurveyContentProvider.SYNC_STATUS.PENDING);
+            values.put(SurveyContentProvider.DB_STRINGS_LECTURE.OPERATION, SurveyContentProvider.SYNC_OPERATION.PATCH);
+        }
+        mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lecture_id)), values, null, null);
+        if (sync) {
+         //   TODO:
+         //   do I need to initiate a sync?
+        }
+    }
+
+    public int getSyncStatus(String DBNAME, int id){
+        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/" + DBNAME + "/" + String.valueOf(id)), null, null, null, null);
+        cursor.moveToFirst();
+        return  cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.STATUS));
+    }
+
 
 }

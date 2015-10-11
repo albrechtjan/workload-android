@@ -17,8 +17,6 @@ import java.util.List;
 
 abstract public class MyBaseAdapter extends BaseAdapter{
 
-
-    private static final String TAG = MyBaseAdapter.class.getSimpleName();
     private final LectureObserver sLectureObserver;
     protected DBObjectBuilder dbObjectBuilder;
 
@@ -45,7 +43,6 @@ abstract public class MyBaseAdapter extends BaseAdapter{
             super(handler);
             this.myBaseAdapter = myBaseAdapter;
         }
-
         @Override
         public void onChange(boolean selfChange) {
             this.onChange(selfChange, null);

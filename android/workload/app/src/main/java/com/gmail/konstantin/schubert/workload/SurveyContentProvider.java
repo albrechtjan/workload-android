@@ -61,6 +61,8 @@ public class SurveyContentProvider extends ContentProvider {
         public static final int PENDING = 1;
         public static final int TRANSACTING = 2;
         public static final int RETRY = 3;
+
+
     }
 
 
@@ -226,8 +228,12 @@ public class SurveyContentProvider extends ContentProvider {
 
         //TODO: figure out if I need this.
         //TODO: Understand if setNotificationUri does also trigger a server sync
+
         Bundle syncBundle = new Bundle();
-        syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_DOWNLOAD_USERDATA);
+        syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_USERDATA);
+        //TODO: Do the download only if there was no download in the past 5 minutes or something
+        //TODO: Or do an INCREMENTAL_DOWNLOAD_USERDATA where maybe all active lectures and entries are downloaded
+        //TODO: but only columns marked as GET and PENDING are updated.
         ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
 
 
@@ -258,7 +264,7 @@ public class SurveyContentProvider extends ContentProvider {
                 selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
                 break;
             default:
-                throw new IllegalArgumentException("Unknown or invalid uri. Note that with delete, you MUST supply an ID: " + uri);
+                throw new IllegalArgumentException("Unknown or invalid uri." + uri);
         }
         database.delete(table, selection, null);
         getContext().getContentResolver().notifyChange(uri, null, false);
@@ -267,9 +273,6 @@ public class SurveyContentProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        if (selection != null) {
-            throw new IllegalArgumentException("Do not pass selection to update query. Not supported");
-        }
 
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
@@ -278,14 +281,22 @@ public class SurveyContentProvider extends ContentProvider {
         switch (uriType) {
             case LECTURES_ID:
                 table = "lectures";
+                if (selection != null)  throw new IllegalArgumentException("Do not pass selection when using ID.");
                 selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
                 break;
             case ENTRIES_ID:
                 table = "workentries";
+                if (selection != null)  throw new IllegalArgumentException("Do not pass selection when using ID.");
                 selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
                 break;
+            case LECTURES:
+                table = "lectures";
+                break;
+            case ENTRIES:
+                table = "workentries";
+                break;
             default:
-                throw new IllegalArgumentException("Unknown or invalid uri. Note that with update, you MUST supply an ID: " + uri);
+                throw new IllegalArgumentException("Unknown or invalid uri.");
         }
         database.update(table, values, selection, null);
         getContext().getContentResolver().notifyChange(uri, null, decideSync(uriType,values));

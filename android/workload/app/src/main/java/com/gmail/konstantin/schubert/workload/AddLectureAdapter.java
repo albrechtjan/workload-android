@@ -60,7 +60,7 @@ public class AddLectureAdapter  extends MyBaseAdapter { //BaseAdapter already im
 
 
     protected void updateMembers() {
-        mLectures = this.dbObjectBuilder.getLecturesOfSemester(sSemester, false);
+        mLectures = this.dbObjectBuilder.getLecturesOfSemester(sSemester, false, false);
     }
 
 
