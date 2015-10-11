@@ -23,7 +23,7 @@ public class Lecture {
 
 
     public Boolean equals(Lecture other){
-        return this._ID == other._ID;
+        return (this._ID == other._ID && this.name.equals(other.name) && this.semester.equals(other.semester));
     }
 
 

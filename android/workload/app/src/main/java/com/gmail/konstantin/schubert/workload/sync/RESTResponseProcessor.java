@@ -88,6 +88,7 @@ public class RESTResponseProcessor {
                 this.dbObjectBuilder.deleteLectureById(localLecture._ID);
             }
         }
+
         // add remote lectures that are not in local lectures
         for (Lecture remoteLecture : remoteLectures){
             boolean found = false;

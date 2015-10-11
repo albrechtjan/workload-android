@@ -17,12 +17,14 @@ public class Week implements Comparable<Week> {
         mCalendar.set(Calendar.WEEK_OF_YEAR, weeknumber);
     }
 
+
     public static Week getWeekFromISOString(String s) {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         try {
             cal.setTime(sdf.parse(s));
-            return new Week(cal.YEAR, cal.WEEK_OF_YEAR);
+            Week week = new Week(cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR));
+            return week;
         } catch (java.text.ParseException e) {
             return null;
         }

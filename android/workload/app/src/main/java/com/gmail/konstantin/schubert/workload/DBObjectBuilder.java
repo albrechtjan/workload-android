@@ -7,7 +7,6 @@ import android.net.Uri;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 
 public class DBObjectBuilder {
@@ -50,8 +49,8 @@ public class DBObjectBuilder {
 
     public void addLecture(Lecture lecture, boolean performSync){
         String uriString = "content://" + SurveyContentProvider.AUTHORITY + "/lectures/";
-        if (!performSync){
-            uriString += "nosync";
+        if (performSync){
+            //TODO: set sync value to pending
         }
 
         ContentValues values = new ContentValues();
@@ -188,6 +187,5 @@ public class DBObjectBuilder {
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_STUDYING, entry.getHoursStudying());
         int updated = mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/" + String.valueOf(entry._ID)), values, null, null);
     }
-
 
 }

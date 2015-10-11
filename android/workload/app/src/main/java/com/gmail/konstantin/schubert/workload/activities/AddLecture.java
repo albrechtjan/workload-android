@@ -10,7 +10,8 @@ import com.gmail.konstantin.schubert.workload.R;
 public class AddLecture  extends MyBaseListActivity {
 
     public final static String SEMESTER = "com.gmail.konstantin.schubert.workload.SEMESTER";
-    String mSemester = null;
+
+//    http://stackoverflow.com/a/2377946/1375015
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

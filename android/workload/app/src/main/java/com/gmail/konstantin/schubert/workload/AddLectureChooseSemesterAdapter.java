@@ -75,7 +75,7 @@ public class AddLectureChooseSemesterAdapter  extends MyBaseAdapter { //BaseAdap
 
 
     protected void updateMembers() {
-        mSemesters = this.dbObjectBuilder.getSemesterList(true);
+        mSemesters = this.dbObjectBuilder.getSemesterList(false);
     }
 
 

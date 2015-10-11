@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -15,7 +14,7 @@ import com.gmail.konstantin.schubert.workload.activities.EnterWorkload;
 import java.util.List;
 
 
-public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter already implements Listadapter
+public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter implements Listadapter
 
     //TODO: Check which of these members can move up into MyBaseAdapter
     private Context mContext;
