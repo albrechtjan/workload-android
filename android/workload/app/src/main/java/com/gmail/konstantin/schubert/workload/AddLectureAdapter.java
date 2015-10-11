@@ -33,7 +33,6 @@ public class AddLectureAdapter  extends MyBaseAdapter { //BaseAdapter already im
         } else {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             lectureRow = (RelativeLayout) inflater.inflate(R.layout.add_lecture_row, parent, false);
-            
         }
 
         TextView label = (TextView) lectureRow.findViewById(R.id.add_lecture_name_text_view);

@@ -12,6 +12,8 @@ import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
 import com.gmail.konstantin.schubert.workload.Lecture;
+import com.gmail.konstantin.schubert.workload.WorkloadEntry;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -23,9 +25,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static class SYNC_TASK {
         public static final int FULL_DOWNLOAD_USERDATA = 0;
-        public static final int INCREMENTAL_DOWNLOAD_USERDATA = 1;
+//        public static final int INCREMENTAL_DOWNLOAD_USERDATA = 1;
         public static final int PUSH_CHANGES = 2;
-        public static final int GET_AVAILABLE_LECTURES = 3;
+//        public static final int GET_AVAILABLE_LECTURES = 3;
     }
 
     public final static String TAG = "WorkloadSyncAdapter";
@@ -59,28 +61,56 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private void get_available_lectures(){
         // Update list of lectures with list of available lectures
+        // This *always* supersedes local as it is an admin configuration
         // Delete anything local that is not in remote
         // Add anything to local that is in remote but not in local (as inactive)
         try {
             ArrayList<NameValuePair> headers = buildAuthHeaders();
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/menu/lectures/all/", headers, null);
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-            List<Lecture> remoteLectures = mRestResponseProcessor.lectureListFromJson(response);
+            List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
             mRestResponseProcessor.updateAvailableLectures(remoteLectures);
-
         }
         catch (Exception e ){
             //TODO
         }
+    }
 
+    private void get_active_lectures(){
+        // Update which lectures are active
+        // If local is syncing it is not overwritten.
+        try {
+            ArrayList<NameValuePair> headers = buildAuthHeaders();
+            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/lectures/active", headers, null);
+            String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
+            List<Lecture> remoteActiveLectures = RESTResponseProcessor.lectureListFromJson(response);
+            mRestResponseProcessor.updateActiveLectures(remoteActiveLectures);
+        }
+        catch (Exception e ){
+            //TODO
+        }
+    }
 
+    private void get_workload_entries(){
+        // Update workload entries
+        // If local entry is syncing it is not overwritten.
+        try {
+            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/entries/active/", buildAuthHeaders(), null);
+            String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
+            List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
+            mRestResponseProcessor.updateEntries(remoteEntries);
+        }
+        catch (Exception e ){
+            //TODO
+        }
     }
 
 
     private void full_download(){
         Log.d(TAG,"Full download");
         get_available_lectures();
-        // shares a lot of code with incremental_download
+        get_active_lectures(); // does *not* supersede local synching lectures
+        get_workload_entries(); // does *not* supersede local synching entries
     }
 
     private void incremental_download(){
@@ -90,7 +120,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void push_changes(){
-        Log.d(TAG,"Pushing changes");
+        send_synching_lectures();
+        send_synching_workload_entries();
     }
 
 
@@ -135,16 +166,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 full_download();
                 break;
             }
-            case SYNC_TASK.INCREMENTAL_DOWNLOAD_USERDATA: {
-                incremental_download();
-                break;
-            }
+
             case SYNC_TASK.PUSH_CHANGES: {
                 push_changes();
-                break;
-            }
-            case SYNC_TASK.GET_AVAILABLE_LECTURES: {
-                get_available_lectures();
                 break;
             }
             default: {

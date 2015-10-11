@@ -48,7 +48,7 @@ public class SurveyContentProvider extends ContentProvider {
     public static class SYNC_OPERATION {
         public static final int NONE = 0;
         public static final int GET = 1;  // == query
-        public static final int PUT = 2;  // == update
+        public static final int PATCH = 2;  // == update
         public static final int POST = 3; // == insert
         public static final int DELETE = 4; // == delete
         // Honestly, I think the easiest way is to simply not delete anything, just mark rows as deleted.

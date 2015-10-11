@@ -22,7 +22,7 @@ public class RESTResponseProcessor {
         dbObjectBuilder = new DBObjectBuilder(resolver);
     }
 
-    public List<Lecture> lectureListFromJson(String jsonList) {
+    static public List<Lecture> lectureListFromJson(String jsonList) {
 
         JsonReader reader = new JsonReader(new StringReader(jsonList));
 
@@ -42,7 +42,7 @@ public class RESTResponseProcessor {
     }
 
 
-    public Lecture buildLecture(JsonReader reader) throws IOException {
+    static public Lecture buildLecture(JsonReader reader) throws IOException {
 
         int id = -1;
         String name = null;
@@ -73,6 +73,8 @@ public class RESTResponseProcessor {
 
 
     public void updateAvailableLectures(List<Lecture> remoteLectures) {
+        // updates the available lectures from the remote end to the local end.
+        // Remote always supersedes local, even if syncing
 
         List<Lecture> localLectures = this.dbObjectBuilder.getLectureList(false);  // all lectures (active and inactive) that are listed locally
 
@@ -102,6 +104,10 @@ public class RESTResponseProcessor {
             }
         }
 
+    }
+    public void updateActiveLectures(List<Lecture> remoteActiveLectures){
+        // Update which lectures are active
+        // If local is syncing its status is not overwritten.
     }
 
 }
