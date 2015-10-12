@@ -2,7 +2,7 @@ package com.gmail.konstantin.schubert.workload.activities;
 
 import android.os.Bundle;
 
-import com.gmail.konstantin.schubert.workload.AddLectureChooseSemesterAdapter;
+import com.gmail.konstantin.schubert.workload.Adapters.AddLectureChooseSemesterAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 
 public class AddLectureChooseSemester  extends MyBaseListActivity {

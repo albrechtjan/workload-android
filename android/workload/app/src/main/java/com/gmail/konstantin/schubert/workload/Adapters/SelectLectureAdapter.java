@@ -1,4 +1,4 @@
-package com.gmail.konstantin.schubert.workload;
+package com.gmail.konstantin.schubert.workload.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +9,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 
+import com.gmail.konstantin.schubert.workload.Lecture;
+import com.gmail.konstantin.schubert.workload.MyBaseAdapter;
+import com.gmail.konstantin.schubert.workload.R;
+import com.gmail.konstantin.schubert.workload.Week;
 import com.gmail.konstantin.schubert.workload.activities.EnterWorkload;
 
 import java.util.List;

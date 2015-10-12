@@ -1,6 +1,5 @@
 package com.gmail.konstantin.schubert.workload.test;
 
-import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
@@ -10,7 +9,7 @@ import android.util.Log;
 
 import com.gmail.konstantin.schubert.workload.MyBaseAdapter;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
-import com.gmail.konstantin.schubert.workload.WeekButtonAdapter;
+import com.gmail.konstantin.schubert.workload.Adapters.WeekButtonAdapter;
 
 
 public class AdapterTests extends AndroidTestCase{

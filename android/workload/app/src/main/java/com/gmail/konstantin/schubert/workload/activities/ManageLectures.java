@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 
-import com.gmail.konstantin.schubert.workload.ActiveLecturesAdapter;
+import com.gmail.konstantin.schubert.workload.Adapters.ActiveLecturesAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 
 

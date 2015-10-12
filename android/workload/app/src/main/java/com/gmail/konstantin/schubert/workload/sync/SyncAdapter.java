@@ -145,6 +145,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
         else if (intent != null) {
             //TODO: actually handle this case
+//            getContext().startActivity(intent);
             return null;
         }else{
             return null;

@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.gmail.konstantin.schubert.workload.R;
-import com.gmail.konstantin.schubert.workload.SelectLectureAdapter;
+import com.gmail.konstantin.schubert.workload.Adapters.SelectLectureAdapter;
 import com.gmail.konstantin.schubert.workload.Week;
 
 

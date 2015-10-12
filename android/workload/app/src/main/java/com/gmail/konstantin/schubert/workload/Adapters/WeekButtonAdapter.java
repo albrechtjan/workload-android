@@ -1,4 +1,4 @@
-package com.gmail.konstantin.schubert.workload;
+package com.gmail.konstantin.schubert.workload.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -6,6 +6,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.gmail.konstantin.schubert.workload.Lecture;
+import com.gmail.konstantin.schubert.workload.MyBaseAdapter;
+import com.gmail.konstantin.schubert.workload.R;
+import com.gmail.konstantin.schubert.workload.Week;
+import com.gmail.konstantin.schubert.workload.WeekButton;
 import com.gmail.konstantin.schubert.workload.activities.SelectLecture;
 
 import java.util.ArrayList;

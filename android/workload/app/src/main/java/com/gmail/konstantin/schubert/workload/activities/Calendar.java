@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.widget.GridView;
 
 import com.gmail.konstantin.schubert.workload.R;
-import com.gmail.konstantin.schubert.workload.WeekButtonAdapter;
+import com.gmail.konstantin.schubert.workload.Adapters.WeekButtonAdapter;
 
 
 public class Calendar extends MyBaseActivity {

@@ -4,7 +4,7 @@ package com.gmail.konstantin.schubert.workload.activities;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.gmail.konstantin.schubert.workload.EnterWorkloadAdapter;
+import com.gmail.konstantin.schubert.workload.Adapters.EnterWorkloadAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.Week;
 
