@@ -1,5 +1,6 @@
 package com.gmail.konstantin.schubert.workload.Adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -47,7 +48,11 @@ public class AddLectureChooseSemesterAdapter  extends MyBaseAdapter { //BaseAdap
 
                 Intent intent = new Intent(mContext, AddLecture.class);
                 intent.putExtra(AddLecture.SEMESTER, mSemesters.get(position));
+                Activity activity = (Activity) mContext; // this is like cheating
                 mContext.startActivity(intent);
+                activity.overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
+                //doing this after startActivity is strange. Does this mean the startActivity method does not
+                // start the activity before the onClick method has finished.
             }
         });
 
