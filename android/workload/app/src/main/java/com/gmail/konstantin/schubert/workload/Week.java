@@ -1,12 +1,11 @@
 package com.gmail.konstantin.schubert.workload;
 
 
+import org.joda.time.Chronology;
 import org.joda.time.DateTimeFieldType;
 import org.joda.time.LocalDate;
 import org.joda.time.Partial;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 
 /**
@@ -40,19 +39,20 @@ public class Week implements Comparable<Week> {
         return newWeek;
     }
 
-    public Calendar firstDay() {
-
-        Calendar c = new GregorianCalendar();
-        c.set(Calendar.YEAR, yearWeek.get(DateTimeFieldType.weekyear()));
-        c.set(Calendar.WEEK_OF_YEAR, yearWeek.get(DateTimeFieldType.weekOfWeekyear()));
-        c.set(Calendar.DAY_OF_WEEK, c.getFirstDayOfWeek());
-        return c;
+    public LocalDate firstDay() {
+        LocalDate date = new LocalDate();
+        date = date.withYear(yearWeek.get(DateTimeFieldType.weekyear()));
+        date = date.withWeekOfWeekyear(yearWeek.get(DateTimeFieldType.weekOfWeekyear()));
+        date = date.withDayOfWeek(1);
+        return date;
     }
 
-    public Calendar lastDay() {
-        Calendar c = this.firstDay();
-        c.add(Calendar.DAY_OF_WEEK, c.getFirstDayOfWeek()+6);
-        return c;
+    public LocalDate lastDay() {
+        LocalDate date = new LocalDate();
+        date = date.withYear(yearWeek.get(DateTimeFieldType.weekyear()));
+        date = date.withWeekOfWeekyear(yearWeek.get(DateTimeFieldType.weekOfWeekyear()));
+        date = date.withDayOfWeek(7);
+        return date;
     }
 
     public int year() {

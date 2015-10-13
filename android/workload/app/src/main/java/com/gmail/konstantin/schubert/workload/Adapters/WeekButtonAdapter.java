@@ -5,13 +5,16 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.MyBaseAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.Week;
-import com.gmail.konstantin.schubert.workload.WeekButton;
 import com.gmail.konstantin.schubert.workload.activities.SelectLecture;
+
+import org.joda.time.DateTimeField;
+import org.joda.time.DateTimeFieldType;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -58,28 +61,27 @@ public class WeekButtonAdapter extends MyBaseAdapter {
 
 
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        final WeekButton weekButton;
+        final Button weekButton;
         if (convertView == null) {
             // if it's not recycled, initialize some attributes
-            //TODO: Use View.inflate instead of the LayoutInflater
-            weekButton = (WeekButton) inflater.inflate(R.layout.week_button, null);
+            //TODO: Use View.inflate instead of the LayoutInflater?
+            weekButton = (Button) inflater.inflate(R.layout.week_button, null);
         } else {
-            weekButton = (WeekButton) convertView;
+            weekButton = (Button) convertView;
         }
 
-        weekButton.setWeek(mWeeks.get(position));
+        final Week week = mWeeks.get(position);
 
-        Calendar firstDay = weekButton.getWeek().firstDay();
-        String firstDayString = firstDay.get(Calendar.DAY_OF_MONTH) + ". " + firstDay.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.UK);
-        Calendar lastDay = weekButton.getWeek().lastDay();
-        String lastDayString = lastDay.get(Calendar.DAY_OF_MONTH) + ". " + lastDay.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.UK);
-        weekButton.setText(firstDayString + "\n-\n" +lastDayString);
+        String first_day = week.firstDay().toString("dd.MMM");
+        String last_day = week.lastDay().toString("dd.MMM");
+
+        weekButton.setText(first_day+"\n-\n"+last_day);
         weekButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
                 Intent intent = new Intent(mContext, SelectLecture.class);
-                intent.putExtra(SelectLecture.MESSAGE_YEAR, weekButton.getWeek().year());
-                intent.putExtra(SelectLecture.MESSAGE_WEEK, weekButton.getWeek().week());
+                intent.putExtra(SelectLecture.MESSAGE_YEAR, week.year());
+                intent.putExtra(SelectLecture.MESSAGE_WEEK, week.week());
                 mContext.startActivity(intent);
             }
         });

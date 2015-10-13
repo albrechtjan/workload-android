@@ -2,6 +2,7 @@ package com.gmail.konstantin.schubert.workload.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 
 import com.gmail.konstantin.schubert.workload.Adapters.AddLectureAdapter;
 import com.gmail.konstantin.schubert.workload.R;
@@ -21,5 +22,30 @@ public class AddLecture  extends MyBaseListActivity {
 
         setListAdapter(new AddLectureAdapter(this, mSemester));
         setTitle("Activate Lectures");
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        switch(id) {
+
+            case android.R.id.home:
+                finish();
+                overridePendingTransition(R.anim.in_from_left, R.anim.out_to_right);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // finish() is called in super: we only override this method to be able to override the transition
+        super.onBackPressed();
+        overridePendingTransition(R.anim.in_from_left, R.anim.out_to_right);
     }
 }
