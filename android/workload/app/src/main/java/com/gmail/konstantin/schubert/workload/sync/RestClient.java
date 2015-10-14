@@ -41,7 +41,6 @@ public class RestClient {
 
     public void Execute(RequestMethod method, String url, ArrayList<NameValuePair> headers, ArrayList<NameValuePair> params) throws Exception {
         Log.d(TAG, "Executing Rest Method");
-        android.os.Debug.waitForDebugger();
         switch (method) {
             case GET: {
                 // add parameters

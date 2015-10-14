@@ -4,6 +4,9 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
+
+import com.gmail.konstantin.schubert.workload.sync.SyncAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,20 +32,23 @@ public class DBObjectBuilder {
                 lectures.add(newLecture);
             }
         }
+        cursor.close();
         return lectures;
     }
 
 
     public Lecture getLectureById(Integer lectureId, boolean nosync){
-        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lectureId)), null, null, null, null);
+        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lectureId)+ "/"), null, null, null, null);
         cursor.moveToFirst();
-        return buildLectureFromCursor(cursor);
+        Lecture lecture = buildLectureFromCursor(cursor);
+        cursor.close();
+        return lecture;
     }
 
     public void deleteLectureById(int lectureId){
         // you cannot delete a remote lecture
         // not even in the sense that it is marked as deleted
-        Uri uri = Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lectureId));
+        Uri uri = Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lectureId)+ "/");
         mContentResolver.delete(uri, null, null);
 
     }
@@ -119,6 +125,8 @@ public class DBObjectBuilder {
                 lecturesInSemester.add(lecture);
             }
         }
+
+
         return  lecturesInSemester;
     }
 
@@ -158,7 +166,9 @@ public class DBObjectBuilder {
             cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, where, null, null);
         }
         cursor.moveToFirst();
-        return buildWorkloadEntryFromCursor(cursor);
+        WorkloadEntry entry = buildWorkloadEntryFromCursor(cursor);
+        cursor.close();
+        return entry;
     }
 
     public List<WorkloadEntry> getWorkloadEntries(Lecture lecture){
@@ -176,6 +186,7 @@ public class DBObjectBuilder {
             WorkloadEntry newWorkloadEntry = buildWorkloadEntryFromCursor(cursor);
             workloadEntries.add(newWorkloadEntry);
         }
+        cursor.close();
         return workloadEntries;
     }
 
@@ -199,7 +210,7 @@ public class DBObjectBuilder {
             values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STATUS, SurveyContentProvider.SYNC_STATUS.PENDING);
             values.put(SurveyContentProvider.DB_STRINGS_LECTURE.OPERATION, SurveyContentProvider.SYNC_OPERATION.PATCH);
         }
-        mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lecture_id)), values, null, null);
+        mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lecture_id)+ "/"), values, null, null);
         if (sync) {
          //   TODO:
          //   do I need to initiate a sync?
@@ -207,10 +218,13 @@ public class DBObjectBuilder {
     }
 
     public int getSyncStatus(String DBNAME, int id){
-        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/" + DBNAME + "/" + String.valueOf(id)), null, null, null, null);
+        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/" + DBNAME + "/" + String.valueOf(id)+ "/"), null, null, null, null);
         cursor.moveToFirst();
-        return  cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.STATUS));
+        int syncStatus = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.STATUS));
+        return  syncStatus;
     }
+
+
 
 
 }

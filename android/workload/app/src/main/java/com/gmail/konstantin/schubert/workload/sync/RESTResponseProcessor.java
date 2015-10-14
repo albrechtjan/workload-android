@@ -1,6 +1,6 @@
 package com.gmail.konstantin.schubert.workload.sync;
 
-import android.content.ContentResolver;
+
 import android.util.JsonReader;
 
 import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
@@ -20,8 +20,8 @@ public class RESTResponseProcessor {
     //this class kinda does the object building from json AND the merging logic with the local database. Not sure how
     // smart that combination of duties is.
 
-    public RESTResponseProcessor(ContentResolver resolver){
-        dbObjectBuilder = new DBObjectBuilder(resolver);
+    public RESTResponseProcessor(DBObjectBuilder builder){
+        dbObjectBuilder = builder;
     }
 
     static public List<Lecture> lectureListFromJson(String jsonList) {

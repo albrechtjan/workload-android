@@ -15,6 +15,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.gmail.konstantin.schubert.workload.sync.SyncAdapter;
 
@@ -27,10 +28,11 @@ public class SurveyContentProvider extends ContentProvider {
 
     private static final String DBNAME = "survey_database";
     private static int DATABASE_VERSION = 1;
-    private static final int LECTURES = 300;
-    private static final int LECTURES_ID = 301;
-    private static final int ENTRIES = 400;
-    private static final int ENTRIES_ID = 401;
+    private static final int LECTURES = 2;
+    private static final int ENTRIES = 4;
+    private static final int NOSYNC = 6;
+    private static final int STOPSYNC = 7;
+    private static final int HAS_ID = 8;
 
 
     public static final String ACCOUNT_TYPE = "tu-dresden.de";
@@ -123,44 +125,33 @@ public class SurveyContentProvider extends ContentProvider {
             "FOREIGN KEY(" + DB_STRINGS_WORKENTRY.LECTURE_ID + ") REFERENCES lectures(" + DB_STRINGS_LECTURE._ID + ")" +
             ")";
 
-    private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+    private static final UriMatcher sURITableTypeMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+    private static final UriMatcher sURIOptionMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+    private static final UriMatcher sURIHasIDMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
-        sURIMatcher.addURI(AUTHORITY, "/lectures/", LECTURES);
-        sURIMatcher.addURI(AUTHORITY, "/lectures/#", LECTURES_ID);
-        sURIMatcher.addURI(AUTHORITY, "/workentries/", ENTRIES);
-        sURIMatcher.addURI(AUTHORITY, "/workentries/#", ENTRIES_ID);
+        sURITableTypeMatcher.addURI(AUTHORITY, "/lectures/*", LECTURES);
+        sURITableTypeMatcher.addURI(AUTHORITY, "/workentries/*", ENTRIES);
+        sURIOptionMatcher.addURI(AUTHORITY, "*/nosync/", NOSYNC);
+        sURIOptionMatcher.addURI(AUTHORITY, "*/stopsync/", STOPSYNC);
+        sURIHasIDMatcher.addURI(AUTHORITY, "*/#/", HAS_ID);
     }
 
+    private int table_sync_status_lectures;
+    private int table_sync_status_workentries;
+    private int table_sync_operation_lectures;
+    private int table_sync_operation_workentries;
 
     @Override
     public boolean onCreate() {
         mOpenHelper = new MainDatabaseHelper(getContext());
+        Log.d(TAG, "Created Database Helper");
         mAccount = CreateSyncAccount(getContext());
-        //TODO:Figure out why this is not working
         ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
-        Bundle syncBundle = new Bundle();
-        syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_USERDATA);
-        ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         return true;
     }
 
-    private boolean decideSync(int uriType, ContentValues values){
-        boolean performSync = false;
-        switch (uriType) {
-            case LECTURES:
-                if ( values.get(DB_STRINGS_LECTURE.STATUS)==SYNC_STATUS.PENDING ){
-                    performSync = true;
-                }
-                break;
-            case ENTRIES:
-                if (values.get(DB_STRINGS_WORKENTRY.STATUS)==SYNC_STATUS.PENDING){
-                    performSync = true;
-                }
-                break;
-        }
-        return  performSync;
-    }
+
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
@@ -179,15 +170,7 @@ public class SurveyContentProvider extends ContentProvider {
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
 
-        getContext().getContentResolver().notifyChange(uri, null, decideSync(uriType,values));
-
-        if (decideSync(uriType,values)) {
-            //TODO: figure out if I need this. Shouldn't the notifyChange above do it already?
-            //TODO: Do I actually need the check or do I ALWAYS want to do a remote sync after an insert?
-            Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.PUSH_CHANGES);
-            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
-        }
+        maybeSync();
 
         return Uri.parse(uri + String.valueOf(id));
 
@@ -202,40 +185,65 @@ public class SurveyContentProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 
-        int uriType = sURIMatcher.match(uri);
-        SQLiteDatabase database = mOpenHelper.getReadableDatabase();
-        SQLiteQueryBuilder qBuilder = new SQLiteQueryBuilder();
-        switch (uriType) {
-            case LECTURES:
-                qBuilder.setTables("lectures");
+        int uriOption = sURIOptionMatcher.match(uri);
+
+        switch (uriOption){
+            case UriMatcher.NO_MATCH:
                 break;
-            case LECTURES_ID:
-                qBuilder.setTables("lectures");
-                qBuilder.appendWhere("_ID=" + String.valueOf(ContentUris.parseId(uri)));
+            case NOSYNC:
                 break;
-            case ENTRIES:
-                qBuilder.setTables("workentries");
-                break;
-            case ENTRIES_ID:
-                qBuilder.setTables("workentries");
-                qBuilder.appendWhere("_ID=" + String.valueOf(ContentUris.parseId(uri)));
+            case STOPSYNC:
                 break;
             default:
-                throw new IllegalArgumentException("Unknown URI: " + uri);
+                break;
+
         }
+
+        int tableType = sURITableTypeMatcherMatcher.match(uri);
+        int hasID = sURIHasIDMatcherMatcher.match(uri);
+        SQLiteDatabase database = mOpenHelper.getReadableDatabase();
+        SQLiteQueryBuilder qBuilder = new SQLiteQueryBuilder();
+
+        if(tableType==LECTURES){
+            qBuilder.setTables(R.string.lecture_table_name);
+        }
+
+        if(tableType==ENTRIES){
+            qBuilder.setTables(R.string.workentry_table_name);
+        }
+
+        if (hasID==HAS_ID){
+            qBuilder.appendWhere("_ID=" + String.valueOf(ContentUris.parseId(uri)));
+        }
+
+
         Cursor cursor = qBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
+
+        if (uriOption!=NOSYNC){
+            // add sync entries
+            //TODO: next three lines
+//            if(hasID=HAS_ID){
+//             // add sync values for the specific entries
+//            }
+//            else{
+                if(tableType==LECTURES){
+                    table_sync_operation_lectures = SYNC_OPERATION.GET;
+                    table_sync_status_lectures = SYNC_STATUS.PENDING;
+                }
+                else if (tableType==ENTRIES){
+                    table_sync_operation_workentries = SYNC_OPERATION.GET;
+                    table_sync_status_workentries = SYNC_STATUS.PENDING;
+                }
+
+//            }
+        }
+
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
         //TODO: figure out if I need this.
         //TODO: Understand if setNotificationUri does also trigger a server sync
 
-        Bundle syncBundle = new Bundle();
-        syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_USERDATA);
-        //TODO: Do the download only if there was no download in the past 5 minutes or something
-        //TODO: Or do an INCREMENTAL_DOWNLOAD_USERDATA where maybe all active lectures and entries are downloaded
-        //TODO: but only columns marked as GET and PENDING are updated.
-        ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
-
+        maybeSync(); //TODO: Does this create a deadlock where the calls in maybeSync are waiting for the cursor to be released?
 
         return cursor;
     }
@@ -268,6 +276,8 @@ public class SurveyContentProvider extends ContentProvider {
         }
         database.delete(table, selection, null);
         getContext().getContentResolver().notifyChange(uri, null, false);
+
+        maybeSync();
         return 1;
     }
 
@@ -298,15 +308,20 @@ public class SurveyContentProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Unknown or invalid uri.");
         }
-        database.update(table, values, selection, null);
-        getContext().getContentResolver().notifyChange(uri, null, decideSync(uriType,values));
 
-        if (decideSync(uriType,values)) {
-            //TODO: figure out if I need this. Shouldn't the notifyChange above does it already?
-            Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.PUSH_CHANGES);
-            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+        if (uriOption==NOSYNC){
+
         }
+        else if(uriOption==STOPSYNC){
+            // remove
+
+        }
+
+
+        database.update(table, values, selection, null);
+
+        maybeSync();
+
         return 1;
     }
 //
@@ -360,6 +375,52 @@ public class SurveyContentProvider extends ContentProvider {
              */
         }
         return newAccount;
+    }
+
+    private void maybeSync(){
+
+        // obviously the deicisions in this functions can be sped up by
+        // restricting the things the function checks via parameters. For now, we check it all
+
+        // there is a table_sync_status and table_sync_operation for each table
+        // also each row has these defined.
+        // These values are used to decide what is synced, and how. Finer-grained syncing methods
+        // can anchored in this function.
+
+        // VERY rough checks, and we will download everything
+        if (table_sync_status_lectures == SYNC_STATUS.PENDING ||
+                table_sync_operation_workentries==SYNC_STATUS.PENDING){
+            if(table_sync_operation_lectures==SYNC_OPERATION.GET ||
+                    table_sync_operation_workentries==SYNC_OPERATION.GET) {
+                Bundle syncBundle = new Bundle();
+                syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_USERDATA);
+                ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+            }
+        }
+
+
+        //TODO: Check if single rows are marked as pending for get
+
+
+        //TODO: Check if single are marked for update, and then push remote
+
+            boolean performSync = false;
+            switch (uriType) {
+                case LECTURES:
+                    if ( values.get(DB_STRINGS_LECTURE.STATUS)==SYNC_STATUS.PENDING ){
+                        performSync = true;
+                    }
+                    break;
+                case ENTRIES:
+                    if (values.get(DB_STRINGS_WORKENTRY.STATUS)==SYNC_STATUS.PENDING){
+                        performSync = true;
+                    }
+                    break;
+            }
+
+        }
+
+
     }
 
 

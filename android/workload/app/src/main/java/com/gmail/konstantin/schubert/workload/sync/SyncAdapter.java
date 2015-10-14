@@ -11,6 +11,8 @@ import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
+
+import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.WorkloadEntry;
 
@@ -34,7 +36,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public final static String baseUrl = "https://survey.zqa.tu-dresden.de/app/workload/";
 
 
-    ContentResolver mContentResolver;
     RESTResponseProcessor mRestResponseProcessor;
     static AccountManager sAccountManager;
     RestClient mRestClient = new RestClient();
@@ -52,8 +53,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
         Log.d(TAG, "Initialized");
-        mContentResolver = context.getContentResolver();
-        mRestResponseProcessor = new RESTResponseProcessor(mContentResolver);
+        DBObjectBuilder builder = new DBObjectBuilder(context.getContentResolver());
+        mRestResponseProcessor = new RESTResponseProcessor(builder);
         sAccountManager = AccountManager.get(getContext());
         Log.d(TAG, "got account manager" + sAccountManager.getClass().getCanonicalName());
 
@@ -157,7 +158,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
 
-        android.os.Debug.waitForDebugger();
         int sync_task = extras.getInt("SYNC_MODUS");
         switch (sync_task) {
             case SYNC_TASK.FULL_DOWNLOAD_USERDATA: {
