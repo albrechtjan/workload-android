@@ -9,6 +9,7 @@ import android.os.Bundle;
 import com.gmail.konstantin.schubert.workload.sync.SyncAdapter;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -24,7 +25,11 @@ public class DBObjectBuilder {
     }
 
     public List<Lecture> getLectureList( boolean onlyActive, boolean noSync){
-        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), null, null, null, null);
+        Cursor cursor;
+        if (noSync)
+            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/nosync/"), null, null, null, null);
+        else
+            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), null, null, null, null);
         List<Lecture> lectures = new ArrayList<Lecture>();
         while (cursor.moveToNext()){
             Lecture newLecture = buildLectureFromCursor(cursor);
@@ -38,7 +43,12 @@ public class DBObjectBuilder {
 
 
     public Lecture getLectureById(Integer lectureId, boolean nosync){
-        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lectureId)+ "/"), null, null, null, null);
+        Cursor cursor;
+        if (nosync) {
+            cursor= mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lectureId) + "/nosync/"), null, null, null, null);
+        }else{
+            cursor= mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lectureId)), null, null, null, null);
+        }
         cursor.moveToFirst();
         Lecture lecture = buildLectureFromCursor(cursor);
         cursor.close();
@@ -48,19 +58,20 @@ public class DBObjectBuilder {
     public void deleteLectureById(int lectureId){
         // you cannot delete a remote lecture
         // not even in the sense that it is marked as deleted
-        Uri uri = Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lectureId)+ "/");
+        Uri uri = Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lectureId) + "/");
         mContentResolver.delete(uri, null, null);
 
     }
 
     public void addLecture(Lecture lecture, boolean performSync){
         String uriString = "content://" + SurveyContentProvider.AUTHORITY + "/lectures/";
-        if (performSync){
+        if (!performSync){
             //TODO: set sync value to pending
+            uriString = "content://" + SurveyContentProvider.AUTHORITY + "/lectures/stopsync/";
         }
 
         ContentValues values = new ContentValues();
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE._ID,lecture._ID);
+        values.put(SurveyContentProvider.DB_STRINGS._ID,lecture._ID);
         values.put(SurveyContentProvider.DB_STRINGS_LECTURE.NAME, lecture.name);
         values.put(SurveyContentProvider.DB_STRINGS_LECTURE.SEMESTER, lecture.semester);
         values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STARTYEAR, lecture.startWeek.year());
@@ -88,7 +99,7 @@ public class DBObjectBuilder {
 
     private Lecture buildLectureFromCursor(Cursor cursor){
 
-        int _ID= cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE._ID));
+        int _ID= cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
         String name = cursor.getString( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.NAME) );
         String semester = cursor.getString(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.SEMESTER));
         Week startWeek = new Week(
@@ -99,7 +110,7 @@ public class DBObjectBuilder {
                 cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.ENDYEAR)),
                 cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.ENDWEEK))
         );
-        boolean isActive = ( cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE)) == 1); //TODO: Figure out if and why there is no boolean method.
+        boolean isActive = ( cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE)) == 1);
         return new Lecture(_ID, name, semester, startWeek, endWeek, isActive);
 
     }
@@ -206,25 +217,11 @@ public class DBObjectBuilder {
         ContentValues values = new ContentValues();
         values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE, isActive);
 
-        if (sync){
-            values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STATUS, SurveyContentProvider.SYNC_STATUS.PENDING);
-            values.put(SurveyContentProvider.DB_STRINGS_LECTURE.OPERATION, SurveyContentProvider.SYNC_OPERATION.PATCH);
-        }
-        mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lecture_id)+ "/"), values, null, null);
-        if (sync) {
-         //   TODO:
-         //   do I need to initiate a sync?
-        }
+        if (sync)
+            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lecture_id)+ "/"), values, null, null);
+        else
+            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lecture_id)+ "/nosync/"), values, null, null);
+
     }
-
-    public int getSyncStatus(String DBNAME, int id){
-        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/" + DBNAME + "/" + String.valueOf(id)+ "/"), null, null, null, null);
-        cursor.moveToFirst();
-        int syncStatus = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.STATUS));
-        return  syncStatus;
-    }
-
-
-
 
 }

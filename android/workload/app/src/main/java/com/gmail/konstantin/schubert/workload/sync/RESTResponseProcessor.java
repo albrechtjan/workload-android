@@ -5,7 +5,6 @@ import android.util.JsonReader;
 
 import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.Lecture;
-import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.Week;
 import com.gmail.konstantin.schubert.workload.WorkloadEntry;
 
@@ -138,21 +137,20 @@ public class RESTResponseProcessor {
                 this.dbObjectBuilder.addLecture(remoteLecture,false);
             }
         }
-
     }
     public void updateActiveLectures(List<Lecture> remoteActiveLectures){
         List<Lecture> localLectures = dbObjectBuilder.getLectureList(false, true);
         for (Lecture localLecture : localLectures){
-            if (dbObjectBuilder.getSyncStatus("lectures", localLecture._ID) != SurveyContentProvider.SYNC_STATUS.IDLE){
-                // if getSyncStatus is too much I/O, one can also store the sync status in the lecture object
+            if (! dbObjectBuilder.isPending("lectures", localLecture._ID)){
+                // we do not overwrite stuff that is waiting to be synced
+                // if this is too much I/O, one can also store the sync status in the lecture object
                 // but that is a more fragile approach
-                continue; // we do not overwrite stuff that has not yet synced
-            }
-            if (lectureIsInList(localLecture, remoteActiveLectures) && !localLecture.isActive){
-                dbObjectBuilder.setLectureIsActive(localLecture._ID, true, false);
-            }
-            else if (!lectureIsInList(localLecture, remoteActiveLectures) && localLecture.isActive){
-                dbObjectBuilder.setLectureIsActive(localLecture._ID, false, false);
+                if (lectureIsInList(localLecture, remoteActiveLectures) && !localLecture.isActive){
+                    dbObjectBuilder.setLectureIsActive(localLecture._ID, true, false);
+                }
+                else if (!lectureIsInList(localLecture, remoteActiveLectures) && localLecture.isActive){
+                    dbObjectBuilder.setLectureIsActive(localLecture._ID, false, false);
+                }
             }
         }
     }

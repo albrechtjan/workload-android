@@ -9,27 +9,34 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
 import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.Lecture;
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.WorkloadEntry;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static class SYNC_TASK {
-        public static final int FULL_DOWNLOAD_USERDATA = 0;
-//        public static final int INCREMENTAL_DOWNLOAD_USERDATA = 1;
-        public static final int PUSH_CHANGES = 2;
-//        public static final int GET_AVAILABLE_LECTURES = 3;
+        public static final int FULL_DOWNLOAD_LECTURES = 0;
+        public static final int FULL_DOWNLOAD_ENTRIES = 1;
+        public static final int INCREMENTAL_DOWNLOAD_LECTURES = 2;
+        public static final int INCREMENTAL_DOWNLOAD_ENTRIES = 3;
+        public static final int INCREMENTAL_PATCH_LECTURES = 4;
+        public static final int INCREMENTAL_PATCH_ENTRIES = 5;
+        public static final int INCREMENTAL_POST_ENTRIES = 6;
+
     }
 
     public final static String TAG = "WorkloadSyncAdapter";
@@ -107,10 +114,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
 
-    private void full_download(){
-        Log.d(TAG,"Full download");
+    private void full_download_lectures(){
+        Log.d(TAG, "Full download lectures");
         get_available_lectures();
         get_active_lectures(); // does *not* supersede local synching lectures
+        stopSync("lectures", null, SurveyContentProvider.SYNC_OPERATION.GET);
+    }
+
+    private void full_download_entries(){
+        Log.d(TAG, "Full download entries");
         get_workload_entries(); // does *not* supersede local synching entries
     }
 
@@ -121,8 +133,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void push_changes(){
-//TODO        send_synching_lectures();
-//TODO        send_synching_workload_entries();
+    //TODO        send_synching_lectures();
+    //TODO        send_synching_workload_entries();
     }
 
 
@@ -160,12 +172,23 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         int sync_task = extras.getInt("SYNC_MODUS");
         switch (sync_task) {
-            case SYNC_TASK.FULL_DOWNLOAD_USERDATA: {
-                full_download();
+            case SYNC_TASK.FULL_DOWNLOAD_ENTRIES: {
+                full_download_entries();
                 break;
             }
-
-            case SYNC_TASK.PUSH_CHANGES: {
+            case SYNC_TASK.INCREMENTAL_DOWNLOAD_ENTRIES: {
+                full_download_entries();
+                break;
+            }
+            case SYNC_TASK.FULL_DOWNLOAD_LECTURES: {
+                full_download_lectures();
+                break;
+            }
+            case SYNC_TASK.INCREMENTAL_DOWNLOAD_LECTURES: {
+                full_download_lectures();
+                break;
+            }
+            case SYNC_TASK.INCREMENTAL_PATCH_ENTRIES: {
                 push_changes();
                 break;
             }
@@ -175,6 +198,24 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
 
+    }
+
+    public void stopSync(String table, List<Long> IDs, int sync_operation){
+        String where = null;
+        if (IDs != null && (!IDs.isEmpty())) {
+            where = SurveyContentProvider.DB_STRINGS._ID + " IN (";
+            Iterator<Long> it = IDs.iterator();
+            while (it.hasNext()) {
+                where += String.valueOf(it.next());
+                if (it.hasNext()) {
+                    where += ",";
+                }
+                where += ")";
+            }
+        }
+        where += SurveyContentProvider.DB_STRINGS.OPERATION + "=" + sync_operation;
+
+        getContext().getContentResolver().update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/" + table + "/"), null, where, null);
     }
 
 }
