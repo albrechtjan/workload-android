@@ -156,6 +156,8 @@ public class SurveyContentProvider extends ContentProvider {
     @Override
     public Uri insert(Uri uri, ContentValues values) {
 
+        TODO: rewerite!
+
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
         long id;
@@ -185,19 +187,7 @@ public class SurveyContentProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 
-        int uriOption = sURIOptionMatcher.match(uri);
 
-        switch (uriOption){
-            case UriMatcher.NO_MATCH:
-                break;
-            case NOSYNC:
-                break;
-            case STOPSYNC:
-                break;
-            default:
-                break;
-
-        }
 
         int tableType = sURITableTypeMatcherMatcher.match(uri);
         int hasID = sURIHasIDMatcherMatcher.match(uri);
@@ -254,27 +244,35 @@ public class SurveyContentProvider extends ContentProvider {
         //delete is always local.
         // If you want to 'delete remote', do an update with SYNC_OPERATION=DELETE
 
-        if (selection != null) {
-            throw new IllegalArgumentException("Do not pass selection to delete query. Not supported");
+        if (selection==null){
+            //TODO: In this case, ID MUST be suppied
+            selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
+        }else{
+            //TODO: append ID if it exists
+        }
+        int tableType = sURITableTypeMatcherMatcher.match(uri);
+        string table;
+        if (tableType=LECTURES){
+            table = R.string.lecture_table_name
+        }else{
+            table = R.string.entry_table_name
         }
 
-        int uriType = sURIMatcher.match(uri);
+        int option = sURIOptionMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
-        String table;
+        if(option == NOSYNC) {
+            database.delete(table, selection, null);
+        }else if (option == STOPSYNC){
 
-        switch (uriType) {
-            case LECTURES_ID:
-                table = "lectures";
-                selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
-                break;
-            case ENTRIES_ID:
-                table = "workentries";
-                selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown or invalid uri." + uri);
+            database.update(table, selection, .. update STATUS to IDLE)
+
+        }else {
+            // do remote delete by marking row as delted
+            //currently, this is not supported
+            //TODO: thow unsupported operation exception
         }
-        database.delete(table, selection, null);
+
+
         getContext().getContentResolver().notifyChange(uri, null, false);
 
         maybeSync();
@@ -283,6 +281,7 @@ public class SurveyContentProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        TODO: rewrite
 
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
@@ -377,6 +376,9 @@ public class SurveyContentProvider extends ContentProvider {
         return newAccount;
     }
 
+    /*
+    This function figures out what should be synched.
+     */
     private void maybeSync(){
 
         // obviously the deicisions in this functions can be sped up by
@@ -386,40 +388,108 @@ public class SurveyContentProvider extends ContentProvider {
         // also each row has these defined.
         // These values are used to decide what is synced, and how. Finer-grained syncing methods
         // can anchored in this function.
+        full_download_lectures = false;
+        full_download_entries = false;
+
 
         // VERY rough checks, and we will download everything
-        if (table_sync_status_lectures == SYNC_STATUS.PENDING ||
-                table_sync_operation_workentries==SYNC_STATUS.PENDING){
-            if(table_sync_operation_lectures==SYNC_OPERATION.GET ||
-                    table_sync_operation_workentries==SYNC_OPERATION.GET) {
-                Bundle syncBundle = new Bundle();
-                syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_USERDATA);
-                ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
-            }
+        if (table_sync_status_lectures == SYNC_STATUS.PENDING && table_sync_operation_lectures==SYNC_OPERATION.GET) {
+            full_download_lectures = true;
+        }
+
+        if(table_sync_operation_workentries==SYNC_STATUS.PENDING && table_sync_operation_workentries==SYNC_OPERATION.GET) {
+            full_download_entries = true;
         }
 
 
-        //TODO: Check if single rows are marked as pending for get
 
-
-        //TODO: Check if single are marked for update, and then push remote
-
-            boolean performSync = false;
-            switch (uriType) {
-                case LECTURES:
-                    if ( values.get(DB_STRINGS_LECTURE.STATUS)==SYNC_STATUS.PENDING ){
-                        performSync = true;
-                    }
-                    break;
-                case ENTRIES:
-                    if (values.get(DB_STRINGS_WORKENTRY.STATUS)==SYNC_STATUS.PENDING){
-                        performSync = true;
-                    }
-                    break;
+        SQLiteDatabase database = mOpenHelper.getReadableDatabase();
+        SQLiteQueryBuilder qBuilder = new SQLiteQueryBuilder();
+        qBuilder.setTables(R.string.lecture_table_name);
+        qBuilder.appendWhere(DB_STRINGS_LECTURE.STATUS+"="+SYNC_STATUS.PENDING);
+        Cursor cursor = qBuilder.query(database, null, null, null, null, null, null);
+        List<int> lectures_to_get;
+        List<int> lectures_to_patch;
+        while (cursor.moveToNext()){
+            int sync_operation = cursor.getInt(cursor.getColumnIndex(DB_STRINGS_LECTURE.OPERATION));
+            int id = cursor.getInt(cursor.getColumnINdex(DB_STRINGS_LECTURE._ID));
+            if(sync_operation == SYNC_OPERATION.GET){
+                lectures_to_get.add(id)
             }
-
+            else if (sync_operation == SYNC_OPERATION.PATCH){
+                lectures_to_patch.add(id)
+            }
+            // possibly add more
         }
 
+
+
+        qBuilder = new SQLiteQueryBuilder();
+        qBuilder.setTables(R.string.entries_table_name);
+        qBuilder.appendWhere(DB_STRINGS_WORKENTRY.STATUS+"="+SYNC_STATUS.PENDING);
+        Cursor cursor = qBuilder.query(database, null, null, null, null, null, null);
+        List<int> entries_to_get;
+        List<int> entries_to_patch;
+        List<int> entries_to_push;
+        while (cursor.moveToNext()){
+            int sync_operation = cursor.getInt(cursor.getColumnIndex(DB_STRINGS_WORKENTRY.OPERATION));
+            int id = cursor.getInt(cursor.getColumnINdex(DB_STRINGS_WORKENTRY._ID));
+            if(sync_operation == SYNC_OPERATION.GET){
+                entries_to_get.add(id)
+            }
+            else if (sync_operation == SYNC_OPERATION.PATCH){
+                entries_to_patch.add(id)
+            }
+            else if (sync_operation == SYNC_OPERATION.PUSH){
+                entries_to_push.add(id)
+            }
+            // possibly add more
+        }
+
+
+        if (full_download_lectures){
+            Bundle syncBundle = new Bundle();
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_LECTURES);
+            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+        } else if (len(lectures_to_get)>0){
+            Bundle syncBundle = new Bundle();
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_DOWNLOAD_LECTURES);
+            syncBundle.putList("IDS", lectures_to_get);   / something like this
+            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+        }
+
+        if(len(lectures_to_patch)>0){
+            Bundle syncBundle = new Bundle();
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_PATCH_LECTURES);
+            syncBundle.putList("IDS", lectures_to_patch);   / something like this
+            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+        }
+
+
+        if (full_download_entries){
+            Bundle syncBundle = new Bundle();
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_ENTRIES);
+            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+        } else if (len(entries_to_get)>0){
+            Bundle syncBundle = new Bundle();
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_DOWNLOAD_ENTRIES);
+            syncBundle.putList("IDS", entries_to_get); / something like this
+            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+        }
+
+        if(len(entries_to_patch)>0){
+            Bundle syncBundle = new Bundle();
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_PATCH_ENTRIES);
+            syncBundle.putList("IDS", entries_to_patch);  / something like this
+            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+        }
+
+        if(len(entries_to_push)>0){
+            Bundle syncBundle = new Bundle();
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_PUSH_ENTRIES);
+            syncBundle.putList("IDS", entries_to_push); / something like this
+            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+        }
 
     }
 
