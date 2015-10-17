@@ -137,10 +137,11 @@ public class SurveyContentProvider extends ContentProvider {
         sURIHasIDMatcher.addURI(AUTHORITY, "*/#/", HAS_ID);
     }
 
-    private int table_sync_status_lectures;
-    private int table_sync_status_workentries;
-    private int table_sync_operation_lectures;
-    private int table_sync_operation_workentries;
+    // These flags indicate if the table is being checked for possible inserts or deletes.
+    private int insert_from_remote_lectures_status;
+    private int delete_from_remote_lectures_status;
+    private int insert_from_remote_workentries_status;
+    private int delete_from_remote_workentries_status;
 
     @Override
     public boolean onCreate() {
@@ -154,34 +155,6 @@ public class SurveyContentProvider extends ContentProvider {
 
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
-
-        int tableType = sURITableTypeMatcher.match(uri);
-        int uriOption = sURIOptionMatcher.match(uri);
-
-        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
-
-        String table;
-        if (tableType == LECTURES){
-            table = getContext().getResources().getString(R.string.lectures_table_name);
-        }else{
-            table = getContext().getResources().getString(R.string.workentry_table_name);
-        }
-
-        if (uriOption != NOSYNC){
-            // we do a patch
-            values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.PATCH);
-            values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
-        }
-
-        long id = database.insert(table, null, values);
-        maybeSync();
-        return Uri.parse(uri + String.valueOf(id));
-
-    }
-
-
-    @Override
     public String getType(Uri uri) {
         return new String();
     }
@@ -189,95 +162,92 @@ public class SurveyContentProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 
+        // 1. A query will never fail.
+        // 2. Any queried entry causes a remote GET on this entry IF the entry is idle.
+        // 3. Querying all rows causes a check for inserts/deletes that occurred remotely.
+        // 4. If a remote get or a check for remote inserts fails, it goes back to IDLE.
+        // 4. the /nosync/ parameter prevents any remote operations.
+
         int tableType = sURITableTypeMatcher.match(uri);
         int hasID = sURIHasIDMatcher.match(uri);
         int uriOption = sURIOptionMatcher.match(uri);
-        SQLiteDatabase database = mOpenHelper.getReadableDatabase();
+
+        if (selection != null && uriOption!=NOSYNC){
+            throw new UnsupportedOperationException("Do not use a selection when you need up-to-date information.");
+        }
+        if (uriOption==STOPSYNC){
+            throw new UnsupportedOperationException();
+        }
+
+
+        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
         SQLiteQueryBuilder qBuilder = new SQLiteQueryBuilder();
-
-        if(tableType==LECTURES){
-            qBuilder.setTables(getContext().getString(R.string.lectures_table_name));
+        if (selection != null ) {
+            qBuilder.appendWhere(selection);
         }
 
-        if(tableType==ENTRIES){
-            qBuilder.setTables(getContext().getString(R.string.workentry_table_name));
-        }
+        if(tableType==LECTURES) qBuilder.setTables(getContext().getString(R.string.lectures_table_name));
+        if(tableType==ENTRIES) qBuilder.setTables(getContext().getString(R.string.workentry_table_name));
 
         if (hasID==HAS_ID){
-            qBuilder.appendWhere("_ID=" + String.valueOf(ContentUris.parseId(uri)));
+            qBuilder.appendWhere(DB_STRINGS._ID + "=" + String.valueOf(ContentUris.parseId(uri)));
         }
 
 
         Cursor cursor = qBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
-
-        if (uriOption!=NOSYNC){
-            // add sync entries
-            //TODO: next three lines
-//            if(hasID=HAS_ID){
-//             // add sync values for the specific entries
-//            }
-//            else{
-                if(tableType==LECTURES){
-                    table_sync_operation_lectures = SYNC_OPERATION.GET;
-                    table_sync_status_lectures = SYNC_STATUS.PENDING;
-                }
-                else if (tableType==ENTRIES){
-                    table_sync_operation_workentries = SYNC_OPERATION.GET;
-                    table_sync_status_workentries = SYNC_STATUS.PENDING;
-                }
-
-//            }
-        }
-
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
-        //TODO: figure out if I need this.
-        //TODO: Understand if setNotificationUri does also trigger a server sync
-
-        maybeSync(); //TODO: Does this create a deadlock where the calls in maybeSync are waiting for the cursor to be released?
+        if (uriOption == NOSYNC) {
+            // we do not sync, return.
+            return cursor;
+        }
+        else{
+            // we sync
+            // but only idle entries can be GET-ed
+            String where = DB_STRINGS.STATUS + "=" + SYNC_STATUS.IDLE;
+            if(hasID == HAS_ID){
+                where += " AND " + DB_STRINGS._ID + "=" + String.valueOf(ContentUris.parseId(uri));
+            }
+            if (selection != null){
+                where += " AND " + selection;
+            }
+            if (hasID != HAS_ID && selection==null){
+                // full table requested: Also check for remote inserts.
+                if (tableType == LECTURES) {
+                    if (insert_from_remote_lectures_status == SYNC_STATUS.IDLE) insert_from_remote_lectures_status = SYNC_STATUS.PENDING;
+                    if (delete_from_remote_lectures_status == SYNC_STATUS.IDLE) delete_from_remote_lectures_status = SYNC_STATUS.PENDING;
+                }
+                if (tableType == ENTRIES) {
+                    if (insert_from_remote_workentries_status == SYNC_STATUS.IDLE) insert_from_remote_workentries_status = SYNC_STATUS.PENDING;
+                    if (delete_from_remote_workentries_status == SYNC_STATUS.IDLE) delete_from_remote_workentries_status = SYNC_STATUS.PENDING;
+                }
+            }
+            ContentValues values = new ContentValues(2);
+            values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.GET);
+            values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
+            database.update(qBuilder.getTables(), values, where, null);
+            maybeSync(); //TODO: Does this create a deadlock where the calls in maybeSync are waiting for the cursor to be released?
+        }
 
         return cursor;
     }
 
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
-        //delete is always local.
-        // If you want to 'delete remote', do an update with SYNC_OPERATION=DELETE
-
-        int tableType = sURITableTypeMatcher.match(uri);
-        int hasID = sURIHasIDMatcher.match(uri);
-        int uriOption = sURIOptionMatcher.match(uri);
-
-        if (hasID==HAS_ID){
-            if (selection != null)  throw new IllegalArgumentException("Do not pass selection when using ID.");
-            selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
-        }
-
-        String table;
-        if (tableType == LECTURES){
-            table = getContext().getResources().getString(R.string.lectures_table_name);
-        }else{
-            table = getContext().getResources().getString(R.string.workentry_table_name);
-        }
-
-
-        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
-        if(uriOption == NOSYNC) {
-            database.delete(table, selection, null);
-        }else {
-            // do remote delete by marking row as delted
-            //currently, this is not supported
-            //TODO: throw unsupported operation exception
-        }
-        getContext().getContentResolver().notifyChange(uri, null, false);
-        maybeSync();
-        return 1;
-    }
-
-    @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        // TODO: rewrite
+
+        // 1. An update will only work if
+        //    - the affected entries are all IDLE, OR
+        //    - for all affected entries, the operation is GET, the status is TRANSACTING and the STOPSYNC option is activated.
+        //  Otherwise, the update fails.
+        // 2. A PATCH to remote is initiated if
+        //    - the update worked and neither the NOSYNC nor the STOPSYNC options are active.
+        //    This implies that all entries are idle.
+
+        // In case of no update, the return value is -1. No exception is thrown.
+        // TODO: Maybe better return an exception?
+
+
 
         int tableType = sURITableTypeMatcher.match(uri);
         int hasID = sURIHasIDMatcher.match(uri);
@@ -285,10 +255,13 @@ public class SurveyContentProvider extends ContentProvider {
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
 
         if (hasID==HAS_ID){
-            if (selection != null)  throw new IllegalArgumentException("Do not pass selection when using ID.");
-            selection = DB_STRINGS._ID + "=" + String.valueOf(ContentUris.parseId(uri));
+            if (selection == null){
+                selection = "";
+            }else {
+                selection += " AND ";
+            }
+            selection += DB_STRINGS._ID + "=" + String.valueOf(ContentUris.parseId(uri));
         }
-
         String table;
         if (tableType == LECTURES){
             table = getContext().getResources().getString(R.string.lectures_table_name);
@@ -296,21 +269,120 @@ public class SurveyContentProvider extends ContentProvider {
             table = getContext().getResources().getString(R.string.workentry_table_name);
         }
 
-        if (uriOption==NOSYNC){
+        // checking if update can be done.
+        String is_okay_selection = selection;
+        if (is_okay_selection== null){
+            is_okay_selection = "";
+        }else {
+            is_okay_selection+= " AND ";
         }
-        else if(uriOption==STOPSYNC){
-            selection += " AND " + DB_STRINGS.STATUS + "=" +SYNC_STATUS.TRANSACTING;
-            // only those can be set to idle that are currently transacting.
+        is_okay_selection += DB_STRINGS.STATUS + "=" + SYNC_STATUS.IDLE;
+
+        if(uriOption==STOPSYNC){
+            is_okay_selection += " OR " + DB_STRINGS.OPERATION +"="+ SYNC_OPERATION.GET;
+            is_okay_selection += " AND " + DB_STRINGS.STATUS +"="+ SYNC_STATUS.TRANSACTING;
+        }
+
+        String[] columns = {DB_STRINGS._ID};
+        Cursor cursor_okay = database.query(table, columns, is_okay_selection, selectionArgs, null, null, null);
+        Cursor cursor_all = database.query(table, columns, selection, selectionArgs, null, null, null);
+        // Since is_okay_selection is a subset of selection, the sets must be equal
+        // if the number of elements in the sets is the same
+        if (cursor_okay.getCount() != cursor_all.getCount()){
+            return -1;
+        }
+
+
+        if(uriOption==STOPSYNC){
             values.put(DB_STRINGS.STATUS, SYNC_STATUS.IDLE);
-        } else {
+        }
+        if (uriOption == UriMatcher.NO_MATCH){
             // we do a patch
             values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.PATCH);
             values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
         }
-        database.update(table, values, selection, null);
+        int rows_updated = database.update(table, values, selection, null);
         maybeSync();
-        return 1;
+        return rows_updated;
     }
+
+
+    @Override
+    public Uri insert(Uri uri, ContentValues values) {
+
+        // Operation succeeds if row does not yet exist locally.
+        // Otherwise, -1 is returned.
+        // If row already exists remotely, it will instead be updated.
+        // If the STOPSYNC option is passed, it is assumed that the remote end
+        // has been successfully checked for inserted entries, and the
+        // insert_from_remote_*_status variables are set accordingly.
+        //
+        int tableType = sURITableTypeMatcher.match(uri);
+        int uriOption = sURIOptionMatcher.match(uri);
+
+        if (uriOption == STOPSYNC){
+            //TODO: Do this only if variables are TRANSACTING
+            if (tableType == LECTURES) insert_from_remote_lectures_status = SYNC_STATUS.IDLE;
+            if (tableType == ENTRIES) insert_from_remote_workentries_status = SYNC_STATUS.IDLE;
+        }
+
+        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
+        String table;
+        if (tableType == LECTURES){
+            table = getContext().getResources().getString(R.string.lectures_table_name);
+        }else{
+            table = getContext().getResources().getString(R.string.workentry_table_name);
+        }
+        if (uriOption != NOSYNC && uriOption!=STOPSYNC){
+            // we do a post
+            values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.POST);
+            values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
+        }
+        long id = database.insert(table, null, values);
+        maybeSync();
+        return Uri.parse(uri + String.valueOf(id));
+
+    }
+
+    @Override
+    public int delete(Uri uri, String selection, String[] selectionArgs) {
+        // Rows are only deleted locally only. No sync is performed.
+        // If row still exists remote, it will likely be re-created
+        // If the STOPSYNC option is passed, it is assumed that the remote end
+        // has been successfully checked for deleted entries, and the
+        // delete_from_remote_*_status variables are set accordingly.
+
+        int tableType = sURITableTypeMatcher.match(uri);
+        int hasID = sURIHasIDMatcher.match(uri);
+        int uriOption = sURIOptionMatcher.match(uri);
+
+        if (hasID==HAS_ID){
+            if (selection == null) selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
+            else selection += " AND _ID=" + String.valueOf(ContentUris.parseId(uri));
+        }
+
+        if (uriOption == STOPSYNC){
+            //TODO: Do this only if variables are TRANSACTING
+            if (tableType == LECTURES) delete_from_remote_lectures_status = SYNC_STATUS.IDLE;
+            if (tableType == ENTRIES) delete_from_remote_workentries_status = SYNC_STATUS.IDLE;
+        }
+
+        String table;
+        if (tableType == LECTURES) table = getContext().getResources().getString(R.string.lectures_table_name);
+        else table = getContext().getResources().getString(R.string.workentry_table_name);
+
+        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
+        int rows_affected = database.delete(table, selection, null);
+        getContext().getContentResolver().notifyChange(uri, null, false);
+        return rows_affected;
+    }
+
+
+
+
+
+
+    //TODO: replace comparisons of Integer objects with equals!
 //
 //    7. Be aware of ContentResolver.notifyChange()
 //
@@ -375,17 +447,22 @@ public class SurveyContentProvider extends ContentProvider {
         // also each row has these defined.
         // These values are used to decide what is synced, and how. Finer-grained syncing methods
         // can anchored in this function.
-        boolean full_download_lectures = false;
-        boolean full_download_entries = false;
-
 
         // VERY rough checks, and we will download everything
-        if (table_sync_status_lectures == SYNC_STATUS.PENDING && table_sync_operation_lectures==SYNC_OPERATION.GET) {
-            full_download_lectures = true;
+        if (insert_from_remote_lectures_status == SYNC_STATUS.PENDING || delete_from_remote_lectures_status == SYNC_STATUS.PENDING ) {
+            insert_from_remote_lectures_status = SYNC_STATUS.TRANSACTING;
+            delete_from_remote_lectures_status = SYNC_STATUS.TRANSACTING;
+            Bundle syncBundle = new Bundle();
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_LECTURES);
+            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }
 
-        if(table_sync_status_workentries==SYNC_STATUS.PENDING && table_sync_operation_workentries==SYNC_OPERATION.GET) {
-            full_download_entries = true;
+        if(insert_from_remote_workentries_status == SYNC_STATUS.PENDING || delete_from_remote_workentries_status == SYNC_STATUS.PENDING ) {
+            Bundle syncBundle = new Bundle();
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_ENTRIES);
+            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
+            insert_from_remote_workentries_status = SYNC_STATUS.TRANSACTING;
+            delete_from_remote_workentries_status = SYNC_STATUS.TRANSACTING;
         }
 
         SQLiteDatabase database = mOpenHelper.getReadableDatabase();
@@ -438,12 +515,7 @@ public class SurveyContentProvider extends ContentProvider {
         }
         cursor.close();
 
-        if (full_download_lectures){
-            table_sync_status_lectures = SYNC_STATUS.TRANSACTING;
-            Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_LECTURES);
-            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
-        } else if (!lectures_to_get.isEmpty()){
+        if (!lectures_to_get.isEmpty()){
             Bundle syncBundle = new Bundle();
             syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_DOWNLOAD_LECTURES);
             syncBundle.putIntArray("IDS", Ints.toArray(lectures_to_get));
@@ -455,12 +527,8 @@ public class SurveyContentProvider extends ContentProvider {
             syncBundle.putIntArray("IDS", Ints.toArray(lectures_to_patch));
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }
-        if (full_download_entries){
-            table_sync_status_workentries = SYNC_STATUS.TRANSACTING;
-            Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_ENTRIES);
-            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
-        } else if (!entries_to_get.isEmpty()){
+
+        if (!entries_to_get.isEmpty()){
             Bundle syncBundle = new Bundle();
             syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_DOWNLOAD_ENTRIES);
             syncBundle.putIntArray ("IDS", Ints.toArray(entries_to_get));
@@ -487,4 +555,6 @@ public class SurveyContentProvider extends ContentProvider {
         String selection = "_ID=" + String.valueOf(id);
         database.update(table, values, selection, null);
     }
+
+
 }

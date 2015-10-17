@@ -141,16 +141,13 @@ public class RESTResponseProcessor {
     public void updateActiveLectures(List<Lecture> remoteActiveLectures){
         List<Lecture> localLectures = dbObjectBuilder.getLectureList(false, true);
         for (Lecture localLecture : localLectures){
-            if (! dbObjectBuilder.isPending("lectures", localLecture._ID)){
-                // we do not overwrite stuff that is waiting to be synced
-                // if this is too much I/O, one can also store the sync status in the lecture object
-                // but that is a more fragile approach
-                if (lectureIsInList(localLecture, remoteActiveLectures) && !localLecture.isActive){
-                    dbObjectBuilder.setLectureIsActive(localLecture._ID, true, false);
-                }
-                else if (!lectureIsInList(localLecture, remoteActiveLectures) && localLecture.isActive){
-                    dbObjectBuilder.setLectureIsActive(localLecture._ID, false, false);
-                }
+
+            if (lectureIsInList(localLecture, remoteActiveLectures) && !localLecture.isActive){
+                dbObjectBuilder.setLectureIsActive(localLecture._ID, true, false);
+            }
+            else if (!lectureIsInList(localLecture, remoteActiveLectures) && localLecture.isActive){
+                dbObjectBuilder.setLectureIsActive(localLecture._ID, false, false);
+
             }
         }
     }
