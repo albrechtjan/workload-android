@@ -1,6 +1,8 @@
 package com.gmail.konstantin.schubert.workload;
 
 
+import android.database.Cursor;
+
 public class WorkloadEntry {
 
 
@@ -18,6 +20,26 @@ public class WorkloadEntry {
         this.hoursForHomework = hoursForHomework;
         this.hoursStudying = hoursStudying;
     }
+
+    public WorkloadEntry(Cursor cursor){
+        cursor.moveToFirst();
+        this.week = new Week(
+                cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR)),
+                cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK))
+        );
+        this.lecture_id = cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID));
+        this.hoursInLecture = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE));
+        this.hoursForHomework = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK));
+        this.hoursStudying = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_STUDYING));
+        cursor.close();
+    }
+
+    @Override
+    public boolean equals(Object otherObject){
+        WorkloadEntry other = (WorkloadEntry) otherObject;
+        return (other.lecture_id == this.lecture_id) && other.week.equals(this.week);
+    }
+
 
 
     public float getHoursInLecture() {

@@ -2,6 +2,7 @@ package com.gmail.konstantin.schubert.workload.Adapters;
 
 
 import android.content.Context;
+import android.database.Cursor;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -33,7 +34,6 @@ public class EnterWorkloadAdapter extends MyBaseAdapter {
         mContext = context;
         sWeek = week;
         sLecture = this.dbObjectBuilder.getLectureById(lectureId, false);
-        mWorkloadEntry = this.dbObjectBuilder.getOrCreateWorkloadEntry(sLecture._ID, sWeek);
         updateMembers();
     }
 
@@ -116,9 +116,12 @@ public class EnterWorkloadAdapter extends MyBaseAdapter {
     }
 
     protected void updateMembers() {
-        mWorkloadEntry = this.dbObjectBuilder.getOrCreateWorkloadEntry(sLecture._ID, sWeek);
+        Cursor cursor = this.dbObjectBuilder.getWorkloadEntry(sLecture._ID, sWeek);
+        if (cursor.getCount()==0){
+            this.dbObjectBuilder.addWorkloadEntry(sLecture._ID, sWeek, false);
+            cursor = this.dbObjectBuilder.getWorkloadEntry(sLecture._ID,sWeek);
+        }
+        mWorkloadEntry = new WorkloadEntry(cursor);
     }
-
-    ;
 
 }

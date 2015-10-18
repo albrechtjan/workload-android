@@ -29,8 +29,8 @@ import java.util.List;
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static class SYNC_TASK {
-        public static final int FULL_DOWNLOAD_LECTURES = 0;
-        public static final int FULL_DOWNLOAD_ENTRIES = 1;
+        public static final int SYNC_TABLE_ENTRIES_LECTURES = 0;
+        public static final int SYNC_TABLE_ENTRIES_WORKENTRIES = 1;
         public static final int INCREMENTAL_DOWNLOAD_LECTURES = 2;
         public static final int INCREMENTAL_DOWNLOAD_ENTRIES = 3;
         public static final int INCREMENTAL_PATCH_LECTURES = 4;
@@ -51,7 +51,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public SyncAdapter(Context context, boolean autoInitialize) {
         //for backwards compatibility
-        this(context,autoInitialize,false);
+        this(context, autoInitialize, false);
     }
 
     public SyncAdapter(
@@ -60,16 +60,52 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
         Log.d(TAG, "Initialized");
-        DBObjectBuilder builder = new DBObjectBuilder(context.getContentResolver());
-        mRestResponseProcessor = new RESTResponseProcessor(builder);
+        mRestResponseProcessor = new RESTResponseProcessor(context.getContentResolver());
         sAccountManager = AccountManager.get(getContext());
         Log.d(TAG, "got account manager" + sAccountManager.getClass().getCanonicalName());
 
     }
 
-    private void get_available_lectures(){
-        // Update list of lectures with list of available lectures
-        // This *always* supersedes local as it is an admin configuration
+
+
+    // There is a lot of duplicate code and even duplicate downloads in this function.
+    // Until I have the pattern fully figured out, I will favor clarity over efficiency.
+
+    private void get_workload_entries(int[] IDs){
+        // Update workload entries
+        // If local entry is syncing it is not overwritten.
+        try {
+            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/entries/active/", buildAuthHeaders(), null);
+            String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
+            List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
+            reduce list to those that were requested
+            TODO            mRestResponseProcessor.updateEntries(remoteEntries);
+
+        }
+        catch (Exception e ){
+            //TODO
+        }
+    }
+
+    private void get_lecture_entries(int[] IDs){
+        // Update workload entries
+        // If local entry is syncing it is not overwritten.
+        try {
+            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/entries/active/", buildAuthHeaders(), null);
+            String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
+            List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
+            reduce list to those that were requested
+TODO            mRestResponseProcessor.updateEntries(remoteEntries);
+        }
+        catch (Exception e ){
+            //TODO
+        }
+    }
+
+
+
+
+    private void sync_table_entries_lectures() {
         // Delete anything local that is not in remote
         // Add anything to local that is in remote but not in local (as inactive)
         try {
@@ -77,60 +113,29 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/lectures/all/", headers, null);
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
             List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
-            mRestResponseProcessor.updateAvailableLectures(remoteLectures);
+            mRestResponseProcessor.insert_delete_lectures_from_remote(remoteLectures);
         }
         catch (Exception e ){
             //TODO
         }
     }
 
-    private void get_active_lectures(){
-        // Update which lectures are active
-        // If local is syncing it is not overwritten.
+    private void sync_table_entries_workentries() {
+        // Delete anything local that is not in remote
+        // Add anything to local that is in remote but not in local (as inactive)
         try {
             ArrayList<NameValuePair> headers = buildAuthHeaders();
-            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/lectures/active", headers, null);
-            String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-            List<Lecture> remoteActiveLectures = RESTResponseProcessor.lectureListFromJson(response);
-            mRestResponseProcessor.updateActiveLectures(remoteActiveLectures);
-        }
-        catch (Exception e ){
-            //TODO
-        }
-    }
-
-    private void get_workload_entries(){
-        // Update workload entries
-        // If local entry is syncing it is not overwritten.
-        try {
-            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/entries/active/", buildAuthHeaders(), null);
+            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/entries/active/", headers, null);
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
             List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
-//TODO            mRestResponseProcessor.updateEntries(remoteEntries);
+            mRestResponseProcessor.insert_delete_workloadentries_from_remote(remoteEntries);
         }
         catch (Exception e ){
             //TODO
         }
-    }
-
-
-    private void full_download_lectures(){
-        Log.d(TAG, "Full download lectures");
-        get_available_lectures();
-        get_active_lectures(); // does *not* supersede local synching lectures
-        stopSync("lectures", null, SurveyContentProvider.SYNC_OPERATION.GET);
-    }
-
-    private void full_download_entries(){
-        Log.d(TAG, "Full download entries");
-        get_workload_entries(); // does *not* supersede local synching entries
-    }
-
-    private void incremental_download(){
-        Log.d(TAG, "Incremental download");
-        // even with the incremental download of changes, it might be that the change has originated with us, so we have to be careful not to insert things twice
 
     }
+
 
     private void push_changes(){
     //TODO        send_synching_lectures();
@@ -172,20 +177,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         int sync_task = extras.getInt("SYNC_MODUS");
         switch (sync_task) {
-            case SYNC_TASK.FULL_DOWNLOAD_ENTRIES: {
-                full_download_entries();
+            case SYNC_TASK.SYNC_TABLE_ENTRIES_WORKENTRIES: {
+                sync_table_entries_workentries();
                 break;
             }
             case SYNC_TASK.INCREMENTAL_DOWNLOAD_ENTRIES: {
-                full_download_entries();
+                get_workload_entries(extras.getIntArray("IDS"));
                 break;
             }
-            case SYNC_TASK.FULL_DOWNLOAD_LECTURES: {
-                full_download_lectures();
+            case SYNC_TASK.SYNC_TABLE_ENTRIES_LECTURES: {
+                sync_table_entries_lectures();
                 break;
             }
             case SYNC_TASK.INCREMENTAL_DOWNLOAD_LECTURES: {
-                full_download_lectures();
+                get_lecture_entries(extras.getIntArray("IDS"));
                 break;
             }
             case SYNC_TASK.INCREMENTAL_PATCH_ENTRIES: {
@@ -198,24 +203,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
 
-    }
-
-    public void stopSync(String table, List<Long> IDs, int sync_operation){
-        String where = null;
-        if (IDs != null && (!IDs.isEmpty())) {
-            where = SurveyContentProvider.DB_STRINGS._ID + " IN (";
-            Iterator<Long> it = IDs.iterator();
-            while (it.hasNext()) {
-                where += String.valueOf(it.next());
-                if (it.hasNext()) {
-                    where += ",";
-                }
-                where += ")";
-            }
-        }
-        where += SurveyContentProvider.DB_STRINGS.OPERATION + "=" + sync_operation;
-
-        getContext().getContentResolver().update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/" + table + "/"), null, where, null);
     }
 
 }

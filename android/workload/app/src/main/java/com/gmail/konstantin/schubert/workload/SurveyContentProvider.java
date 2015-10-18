@@ -211,17 +211,17 @@ public class SurveyContentProvider extends ContentProvider {
             if (selection != null){
                 where += " AND " + selection;
             }
-            if (hasID != HAS_ID && selection==null){
-                // full table requested: Also check for remote inserts.
-                if (tableType == LECTURES) {
-                    if (insert_from_remote_lectures_status == SYNC_STATUS.IDLE) insert_from_remote_lectures_status = SYNC_STATUS.PENDING;
-                    if (delete_from_remote_lectures_status == SYNC_STATUS.IDLE) delete_from_remote_lectures_status = SYNC_STATUS.PENDING;
-                }
-                if (tableType == ENTRIES) {
-                    if (insert_from_remote_workentries_status == SYNC_STATUS.IDLE) insert_from_remote_workentries_status = SYNC_STATUS.PENDING;
-                    if (delete_from_remote_workentries_status == SYNC_STATUS.IDLE) delete_from_remote_workentries_status = SYNC_STATUS.PENDING;
-                }
+
+            // Always also check for remote inserts and deletes.
+            if (tableType == LECTURES) {
+                if (insert_from_remote_lectures_status == SYNC_STATUS.IDLE) insert_from_remote_lectures_status = SYNC_STATUS.PENDING;
+                if (delete_from_remote_lectures_status == SYNC_STATUS.IDLE) delete_from_remote_lectures_status = SYNC_STATUS.PENDING;
             }
+            if (tableType == ENTRIES) {
+                if (insert_from_remote_workentries_status == SYNC_STATUS.IDLE) insert_from_remote_workentries_status = SYNC_STATUS.PENDING;
+                if (delete_from_remote_workentries_status == SYNC_STATUS.IDLE) delete_from_remote_workentries_status = SYNC_STATUS.PENDING;
+            }
+
             ContentValues values = new ContentValues(2);
             values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.GET);
             values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
@@ -379,9 +379,6 @@ public class SurveyContentProvider extends ContentProvider {
 
 
 
-
-
-
     //TODO: replace comparisons of Integer objects with equals!
 //
 //    7. Be aware of ContentResolver.notifyChange()
@@ -397,20 +394,14 @@ public class SurveyContentProvider extends ContentProvider {
 
 
     protected static final class MainDatabaseHelper extends SQLiteOpenHelper {
-
         MainDatabaseHelper(Context context) {
             super(context, DBNAME, null, 1);
         }
-
-
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(SQL_CREATE_LECTURES);
             db.execSQL(SQL_CREATE_WORKENTRIES);
         }
-
-
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
         }
 
     }
@@ -453,13 +444,13 @@ public class SurveyContentProvider extends ContentProvider {
             insert_from_remote_lectures_status = SYNC_STATUS.TRANSACTING;
             delete_from_remote_lectures_status = SYNC_STATUS.TRANSACTING;
             Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_LECTURES);
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.SYNC_TABLE_ENTRIES_LECTURES);
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }
 
         if(insert_from_remote_workentries_status == SYNC_STATUS.PENDING || delete_from_remote_workentries_status == SYNC_STATUS.PENDING ) {
             Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.FULL_DOWNLOAD_ENTRIES);
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.SYNC_TABLE_ENTRIES_WORKENTRIES);
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
             insert_from_remote_workentries_status = SYNC_STATUS.TRANSACTING;
             delete_from_remote_workentries_status = SYNC_STATUS.TRANSACTING;

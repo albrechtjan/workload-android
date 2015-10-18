@@ -1,10 +1,13 @@
 package com.gmail.konstantin.schubert.workload.sync;
 
 
+import android.content.ContentResolver;
+import android.net.Uri;
 import android.util.JsonReader;
 
 import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.Lecture;
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.Week;
 import com.gmail.konstantin.schubert.workload.WorkloadEntry;
 
@@ -16,11 +19,14 @@ import java.util.List;
 public class RESTResponseProcessor {
 
     private DBObjectBuilder dbObjectBuilder;
+    private ContentResolver mContentResolver;
     //this class kinda does the object building from json AND the merging logic with the local database. Not sure how
     // smart that combination of duties is.
 
-    public RESTResponseProcessor(DBObjectBuilder builder){
-        dbObjectBuilder = builder;
+    public RESTResponseProcessor(ContentResolver contentResolver){
+
+        dbObjectBuilder = new DBObjectBuilder(mContentResolver);
+        this.mContentResolver = contentResolver;
     }
 
     static public List<Lecture> lectureListFromJson(String jsonList) {
@@ -117,45 +123,45 @@ public class RESTResponseProcessor {
     }
 
 
-    public void updateAvailableLectures(List<Lecture> remoteLectures) {
+    public void insert_delete_lectures_from_remote(List<Lecture> remoteLectures) {
         // updates the available lectures from the remote end to the local end.
         // Remote always supersedes local, even if syncing
-
         List<Lecture> localLectures = this.dbObjectBuilder.getLectureList(false, true);  // all lectures (active and inactive) that are listed locally
-
         // delete local lectures that are not in the remote list
         for (Lecture localLecture : localLectures) {
-
-            if (!lectureIsInList(localLecture, remoteLectures)) {
-                this.dbObjectBuilder.deleteLectureById(localLecture._ID);
+            if (!isInList(localLecture, remoteLectures)) {
+                Uri uri = Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(localLecture._ID) + "/STOPSYNC/");
+                mContentResolver.delete(uri, null, null);
             }
         }
-
         // add remote lectures that are not in local lectures
         for (Lecture remoteLecture : remoteLectures){
-            if(!lectureIsInList(remoteLecture, localLectures)){
-                this.dbObjectBuilder.addLecture(remoteLecture,false);
-            }
-        }
-    }
-    public void updateActiveLectures(List<Lecture> remoteActiveLectures){
-        List<Lecture> localLectures = dbObjectBuilder.getLectureList(false, true);
-        for (Lecture localLecture : localLectures){
-
-            if (lectureIsInList(localLecture, remoteActiveLectures) && !localLecture.isActive){
-                dbObjectBuilder.setLectureIsActive(localLecture._ID, true, false);
-            }
-            else if (!lectureIsInList(localLecture, remoteActiveLectures) && localLecture.isActive){
-                dbObjectBuilder.setLectureIsActive(localLecture._ID, false, false);
-
+            if(!isInList(remoteLecture, localLectures)){
+               this.dbObjectBuilder.addLecture(remoteLecture,true);
             }
         }
     }
 
-    private boolean lectureIsInList(Lecture lecture, List<Lecture> lectureList){
+
+    public  void insert_delete_workloadentries_from_remote(List<WorkloadEntry> remoteWorkloadEntries){
+        boolean nosync = true;
+        boolean stopsync = true;
+        List<WorkloadEntry> localWorkloadEntries = this.dbObjectBuilder.getWorkloadEntries(null, nosync);
+        for(WorkloadEntry localWorkloadEntry : localWorkloadEntries){
+            if(!isInList(localWorkloadEntry, remoteWorkloadEntries)){
+                dbObjectBuilder.deleteWorkloadEntry(localWorkloadEntry.lecture_id, localWorkloadEntry.week,stopsync);
+            }
+        }
+        for(WorkloadEntry remoteWorkloadEntry : remoteWorkloadEntries){
+            if(!isInList(remoteWorkloadEntry, localWorkloadEntries)){
+                this.dbObjectBuilder.addWorkloadEntry(remoteWorkloadEntry.lecture_id, remoteWorkloadEntry.week, stopsync);
+            }
+        }
+    }
+    private boolean isInList(Object object, List list){
         boolean isInList = false;
-        for (Lecture other : lectureList){
-            if (lecture.equals(other)){
+        for (Object other : list){
+            if (object.equals(other)){
                 isInList = true;
                 break;
             }

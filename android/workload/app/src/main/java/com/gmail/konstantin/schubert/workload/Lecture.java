@@ -21,8 +21,9 @@ public class Lecture {
         this.isActive = isActive;
     }
 
-
-    public Boolean equals(Lecture other){
+    @Override
+    public boolean equals(Object otherObject){
+        Lecture other = (Lecture) otherObject;
         return (this._ID == other._ID && this.name.equals(other.name) && this.semester.equals(other.semester));
     }
 
