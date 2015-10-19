@@ -3,7 +3,9 @@ package com.gmail.konstantin.schubert.workload;
 
 import android.database.Cursor;
 
-public class WorkloadEntry {
+import java.io.Serializable;
+
+public class WorkloadEntry{
 
 
     // since all variables are final, make them public

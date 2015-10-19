@@ -21,6 +21,7 @@ import com.gmail.konstantin.schubert.workload.WorkloadEntry;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -66,20 +67,37 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     }
 
-
+    //TODO: Do we really want the remote end to only give the entries of active lectures?
+    // That means it will look as if remote deletes/adds a lot of entries when a lecture is activated or
+    // de-activated. Is that what we want?
 
     // There is a lot of duplicate code and even duplicate downloads in this function.
     // Until I have the pattern fully figured out, I will favor clarity over efficiency.
 
-    private void get_workload_entries(int[] IDs){
+    private void get_workload_entries(int[] lecture_ids, int[] years, int[] weeks){
         // Update workload entries
         // If local entry is syncing it is not overwritten.
         try {
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/entries/active/", buildAuthHeaders(), null);
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
             List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
-            reduce list to those that were requested
-            TODO            mRestResponseProcessor.updateEntries(remoteEntries);
+//            reduce list to those that were requested
+//            This is all extremely inefficient obviously, but right now I am favoring clarity over performance
+            List<WorkloadEntry> requestedRemoteEntries = new ArrayList<>();
+            for (WorkloadEntry remoteEntry : remoteEntries){
+                boolean found = false;
+                for (int i =0; i< Array.getLength(lecture_ids); i+=1){
+                    if (remoteEntry.week.week() == weeks[i]
+                            && remoteEntry.week.year() == years[i]
+                            && remoteEntry.lecture_id == lecture_ids[i]){
+                        found = true;
+                    }
+                }
+                if(found){
+                    requestedRemoteEntries.add(remoteEntry);
+                }
+            }
+            mRestResponseProcessor.updateWorkloadRows(requestedRemoteEntries);
 
         }
         catch (Exception e ){
@@ -91,11 +109,24 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Update workload entries
         // If local entry is syncing it is not overwritten.
         try {
-            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/entries/active/", buildAuthHeaders(), null);
+            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/lectures/all/", buildAuthHeaders(), null);
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-            List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
-            reduce list to those that were requested
-TODO            mRestResponseProcessor.updateEntries(remoteEntries);
+            List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
+            List<Lecture> requestedRemoteLectures = new ArrayList<>();
+            for (Lecture remoteLecture : remoteLectures){
+                boolean found = false;
+                for(int i=0; i< Array.getLength(IDs); i+=1){
+                    if(remoteLecture._ID == IDs[i]){
+                        found = true;
+                    }
+                }
+                if(found){
+                    requestedRemoteLectures.add(remoteLecture);
+                }
+            }
+
+
+            mRestResponseProcessor.updateLectureRows(requestedRemoteLectures);
         }
         catch (Exception e ){
             //TODO
@@ -182,7 +213,7 @@ TODO            mRestResponseProcessor.updateEntries(remoteEntries);
                 break;
             }
             case SYNC_TASK.INCREMENTAL_DOWNLOAD_ENTRIES: {
-                get_workload_entries(extras.getIntArray("IDS"));
+                get_workload_entries(extras.getIntArray("LECTURE_IDs"), extras.getIntArray("YEARs"), extras.getIntArray("WEEKs"));
                 break;
             }
             case SYNC_TASK.SYNC_TABLE_ENTRIES_LECTURES: {
