@@ -143,6 +143,22 @@ public class RESTResponseProcessor {
     }
 
 
+    public void updateLectureRows(List<Lecture> remoteLectures){
+        boolean stopsync = true;
+        for(Lecture lecture : remoteLectures) {
+            dbObjectBuilder.updateLecture(lecture, stopsync);
+        }
+    }
+
+    public void updateWorkloadRows(List<WorkloadEntry> remoteWorkloadEntries){
+        boolean stopsync = true;
+        for (WorkloadEntry workloadEntry : remoteWorkloadEntries){
+            dbObjectBuilder.updateWorkloadEntry(workloadEntry, stopsync);
+        }
+
+    }
+
+
     public  void insert_delete_workloadentries_from_remote(List<WorkloadEntry> remoteWorkloadEntries){
         boolean nosync = true;
         boolean stopsync = true;

@@ -5,17 +5,13 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.Lecture;
-import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.WorkloadEntry;
 
 import org.apache.http.NameValuePair;
@@ -23,7 +19,6 @@ import org.apache.http.message.BasicNameValuePair;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -35,7 +30,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         public static final int INCREMENTAL_DOWNLOAD_LECTURES = 2;
         public static final int INCREMENTAL_DOWNLOAD_ENTRIES = 3;
         public static final int INCREMENTAL_PATCH_LECTURES = 4;
-        public static final int INCREMENTAL_PATCH_ENTRIES = 5;
+        public static final int INCREMENTAL_PATCH_WORKENTRIES = 5;
         public static final int INCREMENTAL_POST_ENTRIES = 6;
 
     }
@@ -98,7 +93,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }
             mRestResponseProcessor.updateWorkloadRows(requestedRemoteEntries);
-
         }
         catch (Exception e ){
             //TODO
@@ -124,8 +118,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     requestedRemoteLectures.add(remoteLecture);
                 }
             }
-
-
             mRestResponseProcessor.updateLectureRows(requestedRemoteLectures);
         }
         catch (Exception e ){
@@ -168,9 +160,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
 
-    private void push_changes(){
-    //TODO        send_synching_lectures();
-    //TODO        send_synching_workload_entries();
+    private void patch_workentries(){
+
+    }
+
+    private void patch_lectures(){
+        //TODO: Actually we are only changing the active/nonactive status
     }
 
 
@@ -213,6 +208,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 break;
             }
             case SYNC_TASK.INCREMENTAL_DOWNLOAD_ENTRIES: {
+
                 get_workload_entries(extras.getIntArray("LECTURE_IDs"), extras.getIntArray("YEARs"), extras.getIntArray("WEEKs"));
                 break;
             }
@@ -224,10 +220,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 get_lecture_entries(extras.getIntArray("IDS"));
                 break;
             }
-            case SYNC_TASK.INCREMENTAL_PATCH_ENTRIES: {
-                push_changes();
+            case SYNC_TASK.INCREMENTAL_PATCH_WORKENTRIES: {
+                use extras.getArray("LOCAL_IDs") and build the workentry object via a dbObjectBuilder
+                        with nosync option before passing it to patch_workentries
+                patch_workentries();
                 break;
             }
+            case SYNC_TASK.INCREMENTAL_PATCH_LECTURES: {
+                use extras.getArray("LOCAL_IDs") and build the lecture object via a dbObjectBuilder
+                with nosync option before passing it to patch_lectures
+                patch_lectures();
+                break;
+            }
+
+            do workentry POST analogously to patch
+
             default: {
                 throw new IllegalArgumentException("specified sync task invalid");
             }

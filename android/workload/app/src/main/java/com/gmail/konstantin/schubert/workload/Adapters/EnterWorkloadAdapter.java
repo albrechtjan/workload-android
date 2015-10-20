@@ -112,7 +112,7 @@ public class EnterWorkloadAdapter extends MyBaseAdapter {
     }
 
     public void saveWorkload() {
-        this.dbObjectBuilder.updateWorkloadEntryInDB(mWorkloadEntry);
+        this.dbObjectBuilder.updateWorkloadEntry(mWorkloadEntry, false);
     }
 
     protected void updateMembers() {

@@ -1,9 +1,11 @@
 package com.gmail.konstantin.schubert.workload;
 
+import java.io.Serializable;
+
 /**
  * Class representing a lecture
  */
-public class Lecture {
+public class Lecture implements Serializable {
 
     public final int _ID;
     public final String name;

@@ -208,7 +208,7 @@ public class DBObjectBuilder {
         return workloadEntries;
     }
 
-    public void updateWorkloadEntryInDB(WorkloadEntry entry){
+    public void updateWorkloadEntry(WorkloadEntry entry, boolean stopsync){
         ContentValues values = new ContentValues();
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK, entry.getHoursForHomework());
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE, entry.getHoursInLecture());
@@ -216,19 +216,30 @@ public class DBObjectBuilder {
         String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(entry.lecture_id)+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(entry.week.year())+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(entry.week.week());
-        mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), values, where, null);
+        if (stopsync){
+            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/stopsync/"), values, where, null);
+        }else {
+            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), values, where, null);
+        }
     }
 
-
-    public  void setLectureIsActive(int lecture_id, boolean isActive, boolean sync){
+    public void updateLecture(Lecture lecture, boolean stopsync){
         ContentValues values = new ContentValues();
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE, isActive);
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE, lecture.isActive);
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.NAME, lecture.name);
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ENDWEEK, lecture.endWeek.week());
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ENDYEAR, lecture.endWeek.year());
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STARTWEEK, lecture.startWeek.week());
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STARTYEAR, lecture.startWeek.year());
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.NAME, lecture.name);
 
-        if (sync)
-            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lecture_id)+ "/"), values, null, null);
-        else
-            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lecture_id)+ "/nosync/"), values, null, null);
+        if (stopsync){
+            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/" + String.valueOf(lecture._ID) + "/stopsync/"), values, null, null);
+        }else {
+            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"+String.valueOf(lecture._ID)), values, null, null);
+        }
 
     }
+
 
 }

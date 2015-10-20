@@ -5,7 +5,7 @@ import android.database.Cursor;
 
 import java.io.Serializable;
 
-public class WorkloadEntry{
+public class WorkloadEntry implements Serializable{
 
 
     // since all variables are final, make them public

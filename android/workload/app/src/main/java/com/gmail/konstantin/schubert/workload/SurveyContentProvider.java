@@ -463,7 +463,7 @@ public class SurveyContentProvider extends ContentProvider {
         qBuilder.appendWhere(DB_STRINGS.STATUS+"="+SYNC_STATUS.PENDING);
         Cursor cursor = qBuilder.query(database, null, null, null, null, null, null);
         List<Integer> lectures_to_get = new ArrayList<>();
-        List<Integer> lectures_to_patch = new ArrayList<>();
+        List<Integer> lectures_to_patch_localid = new ArrayList<>();
         while (cursor.moveToNext()){
             int sync_operation = cursor.getInt(cursor.getColumnIndex(DB_STRINGS.OPERATION));
             int id = cursor.getInt(cursor.getColumnIndex(DB_STRINGS._ID));
@@ -472,7 +472,7 @@ public class SurveyContentProvider extends ContentProvider {
                 mark_as_transacting(id, table);
             }
             else if (sync_operation == SYNC_OPERATION.PATCH){
-                lectures_to_patch.add(id);
+                lectures_to_patch_localid.add(id); // id is same as local-id since the ids are unique and identifiying for lectures across local AND remote
                 mark_as_transacting(id, table);
             }
             // possibly add more
@@ -487,15 +487,12 @@ public class SurveyContentProvider extends ContentProvider {
         List<Integer> entries_to_get_lectureid = new ArrayList<>();
         List<Integer> entries_to_get_year = new ArrayList<>();
         List<Integer> entries_to_get_week = new ArrayList<>();
-        List<Integer> entries_to_patch_lectureid = new ArrayList<>();
-        List<Integer> entries_to_patch_year = new ArrayList<>();
-        List<Integer> entries_to_patch_week = new ArrayList<>();
-        List<Integer> entries_to_post_lectureid = new ArrayList<>();
-        List<Integer> entries_to_post_year = new ArrayList<>();
-        List<Integer> entries_to_post_week = new ArrayList<>();
+        List<Integer> entries_to_patch_localid = new ArrayList<>();
+        List<Integer> entries_to_post_localid = new ArrayList<>();
         while (cursor.moveToNext()){
             int sync_operation = cursor.getInt(cursor.getColumnIndex(DB_STRINGS.OPERATION));
             int id = cursor.getInt(cursor.getColumnIndex(DB_STRINGS._ID));
+            int local_id = cursor.getInt(cursor.getColumnIndex(DB_STRINGS._ID));
             int lecture_id = cursor.getInt(cursor.getColumnIndex(DB_STRINGS_WORKENTRY.LECTURE_ID));
             int year = cursor.getInt(cursor.getColumnIndex(DB_STRINGS_WORKENTRY.YEAR));
             int week = cursor.getInt(cursor.getColumnIndex(DB_STRINGS_WORKENTRY.WEEK));
@@ -506,15 +503,11 @@ public class SurveyContentProvider extends ContentProvider {
                 mark_as_transacting(id, table);
             }
             else if (sync_operation == SYNC_OPERATION.PATCH){
-                entries_to_patch_lectureid.add(lecture_id);
-                entries_to_patch_year.add(year);
-                entries_to_patch_week.add(week);
+                entries_to_patch_localid.add(local_id);
                 mark_as_transacting(id, table);
             }
             else if (sync_operation == SYNC_OPERATION.POST){
-                entries_to_post_lectureid.add(lecture_id);
-                entries_to_post_year.add(year);
-                entries_to_post_week.add(week);
+                entries_to_post_localid.add(local_id);
                 mark_as_transacting(id, table);
             }
             // possibly add more
@@ -527,10 +520,10 @@ public class SurveyContentProvider extends ContentProvider {
             syncBundle.putIntArray("IDS", Ints.toArray(lectures_to_get));
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }
-        if(!lectures_to_patch.isEmpty()){
+        if(!lectures_to_patch_localid.isEmpty()){
             Bundle syncBundle = new Bundle();
             syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_PATCH_LECTURES);
-            syncBundle.putIntArray("IDS", Ints.toArray(lectures_to_patch));
+            syncBundle.putIntArray("LOCAL_IDs", Ints.toArray(lectures_to_patch_localid));
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }
 
@@ -542,20 +535,16 @@ public class SurveyContentProvider extends ContentProvider {
             syncBundle.putIntArray ("WEEKs", Ints.toArray(entries_to_get_week));
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }
-        if(!entries_to_patch_lectureid.isEmpty()){
+        if(!entries_to_patch_localid.isEmpty()){
             Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_PATCH_ENTRIES);
-            syncBundle.putIntArray("LECTURE_IDs", Ints.toArray(entries_to_patch_lectureid));
-            syncBundle.putIntArray("YEARs", Ints.toArray(entries_to_patch_year));
-            syncBundle.putIntArray ("WEEKs", Ints.toArray(entries_to_patch_week));
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_PATCH_WORKENTRIES);
+            syncBundle.putIntArray("LOCAL_IDs", Ints.toArray(entries_to_patch_localid));
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }
-        if(!entries_to_post_lectureid.isEmpty()){
+        if(!entries_to_post_localid.isEmpty()){
             Bundle syncBundle = new Bundle();
             syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_POST_ENTRIES);
-            syncBundle.putIntArray("LECTURE_IDs", Ints.toArray(entries_to_post_lectureid));
-            syncBundle.putIntArray("YEARs", Ints.toArray(entries_to_post_year));
-            syncBundle.putIntArray ("WEEKs", Ints.toArray(entries_to_post_week));
+            syncBundle.putIntArray("LOCAL_IDs", Ints.toArray(entries_to_post_localid));
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }
     }
