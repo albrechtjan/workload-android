@@ -543,7 +543,7 @@ public class SurveyContentProvider extends ContentProvider {
         }
         if(!entries_to_post_localid.isEmpty()){
             Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_POST_ENTRIES);
+            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_POST_WORKENTRIES);
             syncBundle.putIntArray("LOCAL_IDs", Ints.toArray(entries_to_post_localid));
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }

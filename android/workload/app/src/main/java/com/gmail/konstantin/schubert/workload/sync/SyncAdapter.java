@@ -11,6 +11,7 @@ import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.WorkloadEntry;
 
@@ -31,7 +32,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         public static final int INCREMENTAL_DOWNLOAD_ENTRIES = 3;
         public static final int INCREMENTAL_PATCH_LECTURES = 4;
         public static final int INCREMENTAL_PATCH_WORKENTRIES = 5;
-        public static final int INCREMENTAL_POST_ENTRIES = 6;
+        public static final int INCREMENTAL_POST_WORKENTRIES = 6;
 
     }
 
@@ -221,19 +222,38 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 break;
             }
             case SYNC_TASK.INCREMENTAL_PATCH_WORKENTRIES: {
-                use extras.getArray("LOCAL_IDs") and build the workentry object via a dbObjectBuilder
-                        with nosync option before passing it to patch_workentries
-                patch_workentries();
+                DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
+                List<WorkloadEntry> workloadEntriesToPatch = new ArrayList<>();
+                boolean nosync = true;
+                for(int localID : extras.getIntArray("LOCAL_IDs")){
+                    workloadEntriesToPatch.add(dbObjectBuilder.getWorkloadEntryByLocalId(localID, nosync));
+
+                }
+                patch_workentries(workloadEntriesToPatch);
                 break;
             }
             case SYNC_TASK.INCREMENTAL_PATCH_LECTURES: {
-                use extras.getArray("LOCAL_IDs") and build the lecture object via a dbObjectBuilder
-                with nosync option before passing it to patch_lectures
-                patch_lectures();
+                DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
+                List<Lecture> lecturesToPatch = new ArrayList<>();
+                boolean nosync = true;
+                for(int localID : extras.getIntArray("IDs")){
+                    lecturesToPatch .add(dbObjectBuilder.getLectureById(localID, nosync));
+
+                }
+                patch_lectures(lecturesToPatch);
                 break;
             }
+            case SYNC_TASK.INCREMENTAL_POST_WORKENTRIES: {
+                DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
+                List<WorkloadEntry> workloadEntriesToPost = new ArrayList<>();
+                boolean nosync = true;
+                for (int localID : extras.getIntArray("LOCAL_IDs")) {
+                    workloadEntriesToPost.add(dbObjectBuilder.getWorkloadEntryByLocalId(localID, nosync));
 
-            do workentry POST analogously to patch
+                }
+                post_workentries(workloadEntriesToPost);
+                break;
+            }
 
             default: {
                 throw new IllegalArgumentException("specified sync task invalid");
