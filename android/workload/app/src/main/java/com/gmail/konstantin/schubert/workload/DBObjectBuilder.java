@@ -163,6 +163,16 @@ public class DBObjectBuilder {
         return cursor;
     }
 
+    public WorkloadEntry getWorkloadEntryByLocalId(int local_id, boolean nosync){
+        Cursor cursor;
+        if (nosync) {
+            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/" + String.valueOf(local_id) + "/nosync/"), null, null, null, null);
+        }else{
+            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/" + String.valueOf(local_id)), null, null, null, null);
+        }
+        return buildWorkloadEntryFromCursor(cursor);
+    }
+
     public void addWorkloadEntry(int lecture_id, Week week, boolean stopsync){
         ContentValues values = new ContentValues(3);
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR, week.year());
@@ -234,9 +244,9 @@ public class DBObjectBuilder {
         values.put(SurveyContentProvider.DB_STRINGS_LECTURE.NAME, lecture.name);
 
         if (stopsync){
-            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/" + String.valueOf(lecture._ID) + "/stopsync/"), values, null, null);
+            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lecture._ID) + "/stopsync/"), values, null, null);
         }else {
-            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"+String.valueOf(lecture._ID)), values, null, null);
+            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lecture._ID)), values, null, null);
         }
 
     }

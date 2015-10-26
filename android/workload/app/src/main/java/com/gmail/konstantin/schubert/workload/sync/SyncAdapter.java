@@ -161,11 +161,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
 
-    private void patch_workentries(){
-
+    private void patch_workentries( List<WorkloadEntry> workloadEntriesToPatch){
+        //TODO implement
     }
 
-    private void patch_lectures(){
+    private void post_workentries( List<WorkloadEntry> workloadEntriesToPost){
+        //TODO implement
+    }
+
+    private void patch_lectures(List<Lecture> lecturesToPatch){
+        //TODO: Implement
         //TODO: Actually we are only changing the active/nonactive status
     }
 
