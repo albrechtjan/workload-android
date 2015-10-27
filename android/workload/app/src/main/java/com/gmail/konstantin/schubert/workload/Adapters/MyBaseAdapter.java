@@ -1,18 +1,14 @@
-package com.gmail.konstantin.schubert.workload;
+package com.gmail.konstantin.schubert.workload.Adapters;
 
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.ContentObserver;
-import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.BaseAdapter;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
 
 abstract public class MyBaseAdapter extends BaseAdapter{

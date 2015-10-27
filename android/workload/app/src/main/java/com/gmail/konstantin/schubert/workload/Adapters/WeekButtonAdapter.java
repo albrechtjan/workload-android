@@ -8,20 +8,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.gmail.konstantin.schubert.workload.Lecture;
-import com.gmail.konstantin.schubert.workload.MyBaseAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.Week;
 import com.gmail.konstantin.schubert.workload.activities.SelectLecture;
 
-import org.joda.time.DateTimeField;
-import org.joda.time.DateTimeFieldType;
-
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 
 public class WeekButtonAdapter extends MyBaseAdapter {
     private Context mContext;

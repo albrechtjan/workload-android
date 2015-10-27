@@ -140,6 +140,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             mRestResponseProcessor.insert_delete_lectures_from_remote(remoteLectures);
         }
         catch (Exception e ){
+            int i = 0;
+            i +=1;
             //TODO
         }
     }
@@ -206,6 +208,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
+
+        android.os.Debug.waitForDebugger();
 
         int sync_task = extras.getInt("SYNC_MODUS");
         switch (sync_task) {

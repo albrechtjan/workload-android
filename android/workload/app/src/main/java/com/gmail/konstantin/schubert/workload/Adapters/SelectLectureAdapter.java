@@ -10,7 +10,6 @@ import android.widget.TextView;
 
 
 import com.gmail.konstantin.schubert.workload.Lecture;
-import com.gmail.konstantin.schubert.workload.MyBaseAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.Week;
 import com.gmail.konstantin.schubert.workload.activities.EnterWorkload;

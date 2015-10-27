@@ -130,7 +130,9 @@ public class SurveyContentProvider extends ContentProvider {
     private static final UriMatcher sURIHasIDMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
+        sURITableTypeMatcher.addURI(AUTHORITY, "/lectures/", LECTURES);
         sURITableTypeMatcher.addURI(AUTHORITY, "/lectures/*", LECTURES);
+        sURITableTypeMatcher.addURI(AUTHORITY, "/workentries/", ENTRIES);
         sURITableTypeMatcher.addURI(AUTHORITY, "/workentries/*", ENTRIES);
         sURIOptionMatcher.addURI(AUTHORITY, "*/nosync/", NOSYNC);
         sURIOptionMatcher.addURI(AUTHORITY, "*/stopsync/", STOPSYNC);  // set to idle
@@ -165,6 +167,7 @@ public class SurveyContentProvider extends ContentProvider {
         // 1. A query will never fail.
         // 2. Any queried entry causes a remote GET on this entry IF the entry is idle.
         // 3. Querying all rows causes a check for inserts/deletes that occurred remotely.
+        // 4. Querying with a selection where nothing is found causes a check for remote inserts.
         // 4. If a remote get or a check for remote inserts fails, it goes back to IDLE.
         // 4. the /nosync/ parameter prevents any remote operations.
 
@@ -172,9 +175,7 @@ public class SurveyContentProvider extends ContentProvider {
         int hasID = sURIHasIDMatcher.match(uri);
         int uriOption = sURIOptionMatcher.match(uri);
 
-        if (selection != null && uriOption!=NOSYNC){
-            throw new UnsupportedOperationException("Do not use a selection when you need up-to-date information.");
-        }
+
         if (uriOption==STOPSYNC){
             throw new UnsupportedOperationException();
         }
@@ -197,11 +198,7 @@ public class SurveyContentProvider extends ContentProvider {
         Cursor cursor = qBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
-        if (uriOption == NOSYNC) {
-            // we do not sync, return.
-            return cursor;
-        }
-        else{
+        if (uriOption != NOSYNC) {
             // we sync
             // but only idle entries can be GET-ed
             String where = DB_STRINGS.STATUS + "=" + SYNC_STATUS.IDLE;
@@ -212,15 +209,19 @@ public class SurveyContentProvider extends ContentProvider {
                 where += " AND " + selection;
             }
 
-            // Always also check for remote inserts and deletes.
-            if (tableType == LECTURES) {
-                if (insert_from_remote_lectures_status == SYNC_STATUS.IDLE) insert_from_remote_lectures_status = SYNC_STATUS.PENDING;
-                if (delete_from_remote_lectures_status == SYNC_STATUS.IDLE) delete_from_remote_lectures_status = SYNC_STATUS.PENDING;
+            if (hasID!=HAS_ID && selection==null) {
+                // querying all rows causes a check for inserts and deletes
+                setFlagsForRowChecks(tableType);
+            }else{
+                if(cursor.getCount()==0){
+                    // querying with a selection where nothing is found causes a check for inserts
+                    // (and deletes, the implementation is a bit more conservative than the pattern
+                    // requires it.
+                    setFlagsForRowChecks(tableType);
+                }
             }
-            if (tableType == ENTRIES) {
-                if (insert_from_remote_workentries_status == SYNC_STATUS.IDLE) insert_from_remote_workentries_status = SYNC_STATUS.PENDING;
-                if (delete_from_remote_workentries_status == SYNC_STATUS.IDLE) delete_from_remote_workentries_status = SYNC_STATUS.PENDING;
-            }
+
+
 
             ContentValues values = new ContentValues(2);
             values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.GET);
@@ -375,6 +376,21 @@ public class SurveyContentProvider extends ContentProvider {
         int rows_affected = database.delete(table, selection, null);
         getContext().getContentResolver().notifyChange(uri, null, false);
         return rows_affected;
+    }
+
+    private void setFlagsForRowChecks(int tableType){
+        if (tableType == LECTURES) {
+            if (insert_from_remote_lectures_status == SYNC_STATUS.IDLE)
+                insert_from_remote_lectures_status = SYNC_STATUS.PENDING;
+            if (delete_from_remote_lectures_status == SYNC_STATUS.IDLE)
+                delete_from_remote_lectures_status = SYNC_STATUS.PENDING;
+        }
+        if (tableType == ENTRIES) {
+            if (insert_from_remote_workentries_status == SYNC_STATUS.IDLE)
+                insert_from_remote_workentries_status = SYNC_STATUS.PENDING;
+            if (delete_from_remote_workentries_status == SYNC_STATUS.IDLE)
+                delete_from_remote_workentries_status = SYNC_STATUS.PENDING;
+        }
     }
 
 

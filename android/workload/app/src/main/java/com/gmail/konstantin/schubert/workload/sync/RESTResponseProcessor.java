@@ -25,7 +25,7 @@ public class RESTResponseProcessor {
 
     public RESTResponseProcessor(ContentResolver contentResolver){
 
-        dbObjectBuilder = new DBObjectBuilder(mContentResolver);
+        dbObjectBuilder = new DBObjectBuilder(contentResolver);
         this.mContentResolver = contentResolver;
     }
 

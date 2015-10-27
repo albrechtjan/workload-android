@@ -8,13 +8,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 
 import com.gmail.konstantin.schubert.workload.Lecture;
-import com.gmail.konstantin.schubert.workload.MyBaseAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 
 import java.util.List;

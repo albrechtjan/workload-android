@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.gmail.konstantin.schubert.workload.MyBaseAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.activities.AddLecture;
 

@@ -7,7 +7,7 @@ import android.net.Uri;
 import android.test.AndroidTestCase;
 import android.util.Log;
 
-import com.gmail.konstantin.schubert.workload.MyBaseAdapter;
+import com.gmail.konstantin.schubert.workload.Adapters.MyBaseAdapter;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.Adapters.WeekButtonAdapter;
 
