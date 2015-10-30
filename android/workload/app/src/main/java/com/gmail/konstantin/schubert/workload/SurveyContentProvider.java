@@ -229,7 +229,7 @@ public class SurveyContentProvider extends ContentProvider {
             database.update(qBuilder.getTables(), values, where, null);
             maybeSync(); //TODO: Does this create a deadlock where the calls in maybeSync are waiting for the cursor to be released?
         }
-
+        int i = cursor.getCount();
         return cursor;
     }
 
@@ -443,7 +443,7 @@ public class SurveyContentProvider extends ContentProvider {
     }
 
     /*
-    This function figures out what should be synched.
+    This function figures out what should be synced.
      */
     private void maybeSync(){
 

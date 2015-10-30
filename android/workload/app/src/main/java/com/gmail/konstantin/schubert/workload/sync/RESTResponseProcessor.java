@@ -29,36 +29,31 @@ public class RESTResponseProcessor {
         this.mContentResolver = contentResolver;
     }
 
-    static public List<Lecture> lectureListFromJson(String jsonList) {
+    static public List<Lecture> lectureListFromJson(String jsonList) throws IOException{
         JsonReader reader = new JsonReader(new StringReader(jsonList));
         List<Lecture> lectures = new ArrayList();
-        try {
-            reader.beginArray();
-            while (reader.hasNext()) {
-                lectures.add(buildLecture(reader));
-            }
-            reader.endArray();
-            reader.close();
-        } catch (IOException e) {
-            //TODO: something
+
+        reader.beginArray();
+        while (reader.hasNext()) {
+            lectures.add(buildLecture(reader));
         }
+        reader.endArray();
+        reader.close();
+
         return lectures;
     }
 
 
-    static public List<WorkloadEntry> entryListFromJson(String jsonList) {
+    static public List<WorkloadEntry> entryListFromJson(String jsonList) throws IOException{
         JsonReader reader = new JsonReader(new StringReader(jsonList));
         List<WorkloadEntry> entries = new ArrayList();
-        try {
-            reader.beginArray();
-            while (reader.hasNext()) {
-                entries.add(buildEntry(reader));
-            }
-            reader.endArray();
-            reader.close();
-        } catch (IOException e) {
-            //TODO: something
+        reader.beginArray();
+        while (reader.hasNext()) {
+            entries.add(buildEntry(reader));
         }
+        reader.endArray();
+        reader.close();
+
         return entries;
     }
 
@@ -70,6 +65,7 @@ public class RESTResponseProcessor {
         String semester = null;
         Week startWeek = null;
         Week endWeek = null;
+        boolean isActive = false;
 
         reader.beginObject();
         while (reader.hasNext()) {
@@ -84,12 +80,14 @@ public class RESTResponseProcessor {
                 startWeek = Week.getWeekFromISOString(reader.nextString());
             } else if (key.equals("endDay")) {
                 endWeek = Week.getWeekFromISOString(reader.nextString());
+            } else if (key.equals("isActive")) {
+                isActive = reader.nextBoolean();
             } else {
                 reader.skipValue();
             }
         }
         reader.endObject();
-        return new Lecture(id, name, semester, startWeek, endWeek, false);
+        return new Lecture(id, name, semester, startWeek, endWeek, isActive);
     }
 
     static public WorkloadEntry buildEntry(JsonReader reader) throws IOException {
