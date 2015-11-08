@@ -63,15 +63,7 @@ public class DBObjectBuilder {
             uriString = "content://" + SurveyContentProvider.AUTHORITY + "/lectures/stopsync/";
         }
 
-        ContentValues values = new ContentValues();
-        values.put(SurveyContentProvider.DB_STRINGS._ID,lecture._ID);
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.NAME, lecture.name);
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.SEMESTER, lecture.semester);
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STARTYEAR, lecture.startWeek.year());
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STARTWEEK, lecture.startWeek.week());
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ENDYEAR, lecture.endWeek.year());
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ENDWEEK, lecture.endWeek.week());
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE, lecture.isActive);
+       ContentValues values = getValues(lecture);
         mContentResolver.insert(Uri.parse(uriString), values);
     }
 
@@ -234,14 +226,9 @@ public class DBObjectBuilder {
     }
 
     public void updateLecture(Lecture lecture, boolean stopsync){
-        ContentValues values = new ContentValues();
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE, lecture.isActive);
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.NAME, lecture.name);
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ENDWEEK, lecture.endWeek.week());
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ENDYEAR, lecture.endWeek.year());
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STARTWEEK, lecture.startWeek.week());
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STARTYEAR, lecture.startWeek.year());
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.NAME, lecture.name);
+
+        ContentValues values = getValues(lecture);
+        values.remove(SurveyContentProvider.DB_STRINGS._ID); // We add the ID in the url.
 
         if (stopsync){
             mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lecture._ID) + "/stopsync/"), values, null, null);
@@ -249,6 +236,19 @@ public class DBObjectBuilder {
             mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lecture._ID)), values, null, null);
         }
 
+    }
+
+    private ContentValues getValues(Lecture lecture){
+        ContentValues values = new ContentValues();
+        values.put(SurveyContentProvider.DB_STRINGS._ID, lecture._ID);
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.NAME, lecture.name);
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.SEMESTER, lecture.semester);
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ENDWEEK, lecture.endWeek.week());
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ENDYEAR, lecture.endWeek.year());
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STARTWEEK, lecture.startWeek.week());
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STARTYEAR, lecture.startWeek.year());
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE, lecture.isActive ? 1 : 0);
+        return values;
     }
 
 

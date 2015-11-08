@@ -72,7 +72,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     // There is a lot of duplicate code and even duplicate downloads in this function.
     // Until I have the pattern fully figured out, I will favor clarity over efficiency.
 
-    private void get_workload_entries(int[] lecture_ids, int[] years, int[] weeks){
+    private void get_workload_entries(List<Integer> lecture_ids, List<Integer> years, List<Integer> weeks){
         // Update workload entries
         // If local entry is syncing it is not overwritten.
         try {
@@ -85,9 +85,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             for (WorkloadEntry remoteEntry : remoteEntries){
                 boolean found = false;
                 for (int i =0; i< Array.getLength(lecture_ids); i+=1){
-                    if (remoteEntry.week.week() == weeks[i]
-                            && remoteEntry.week.year() == years[i]
-                            && remoteEntry.lecture_id == lecture_ids[i]){
+                    if (remoteEntry.week.week() == weeks.get(i)
+                            && remoteEntry.week.year() == years.get(i)
+                            && remoteEntry.lecture_id == lecture_ids.get(i)){
                         found = true;
                     }
                 }
@@ -102,7 +102,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    private void get_lecture_entries(int[] IDs){
+    private void get_lecture_entries(List<Integer> IDs){
         // Update workload entries
         // If local entry is syncing it is not overwritten.
         try {
@@ -113,7 +113,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             for (Lecture remoteLecture : remoteLectures){
                 boolean found = false;
                 for(int i=0; i< Array.getLength(IDs); i+=1){
-                    if(remoteLecture._ID == IDs[i]){
+                    if(remoteLecture._ID == IDs.get(i)){
                         found = true;
                     }
                 }
@@ -227,7 +227,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
                 case SYNC_TASK.INCREMENTAL_DOWNLOAD_ENTRIES: {
 
-                    get_workload_entries(extras.getIntArray("LECTURE_IDs"), extras.getIntArray("YEARs"), extras.getIntArray("WEEKs"));
+                    get_workload_entries(intListFromJsonList(extras.getString("LECTURE_IDs")), intListFromJsonList(extras.getString("YEARs")), intListFromJsonList(extras.getString("WEEKs")));
                     break;
                 }
                 case SYNC_TASK.SYNC_TABLE_ENTRIES_LECTURES: {
@@ -235,14 +235,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     break;
                 }
                 case SYNC_TASK.INCREMENTAL_DOWNLOAD_LECTURES: {
-                    get_lecture_entries(extras.getIntArray("IDS"));
+                    get_lecture_entries(intListFromJsonList(extras.getString("IDS")));
                     break;
                 }
                 case SYNC_TASK.INCREMENTAL_PATCH_WORKENTRIES: {
                     DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
                     List<WorkloadEntry> workloadEntriesToPatch = new ArrayList<>();
                     boolean nosync = true;
-                    for (int localID : extras.getIntArray("LOCAL_IDs")) {
+                    for (int localID : intListFromJsonList(extras.getString("LOCAL_IDs"))) {
                         workloadEntriesToPatch.add(dbObjectBuilder.getWorkloadEntryByLocalId(localID, nosync));
 
                     }
@@ -253,7 +253,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
                     List<Lecture> lecturesToPatch = new ArrayList<>();
                     boolean nosync = true;
-                    for (int localID : extras.getIntArray("IDs")) {
+                    for (int localID : intListFromJsonList(extras.getString("IDs"))) {
                         lecturesToPatch.add(dbObjectBuilder.getLectureById(localID, nosync));
 
                     }
@@ -264,7 +264,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
                     List<WorkloadEntry> workloadEntriesToPost = new ArrayList<>();
                     boolean nosync = true;
-                    for (int localID : extras.getIntArray("LOCAL_IDs")) {
+                    for (int localID : intListFromJsonList(extras.getString("LOCAL_IDs"))) {
                         workloadEntriesToPost.add(dbObjectBuilder.getWorkloadEntryByLocalId(localID, nosync));
 
                     }
@@ -282,7 +282,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
         catch (IOException e){}
 
+    }
 
+    /*
+    This function makes some assumptions about the json string and does not
+    work for all valid json.
+     */
+    private List<Integer> intListFromJsonList(String json){
+
+        json = json.substring(1, json.length()-1);
+        String[] parts = json.split(",");
+        List<Integer> ints = new ArrayList<>();
+        for (String part : parts){
+            ints.add(Integer.parseInt(part));
+        }
+        return ints;
     }
 
 }

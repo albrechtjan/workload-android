@@ -533,34 +533,34 @@ public class SurveyContentProvider extends ContentProvider {
         if (!lectures_to_get.isEmpty()){
             Bundle syncBundle = new Bundle();
             syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_DOWNLOAD_LECTURES);
-            syncBundle.putIntArray("IDS", Ints.toArray(lectures_to_get));
+            syncBundle.putString("IDS", intListToJson(lectures_to_get));
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }
         if(!lectures_to_patch_localid.isEmpty()){
             Bundle syncBundle = new Bundle();
             syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_PATCH_LECTURES);
-            syncBundle.putIntArray("LOCAL_IDs", Ints.toArray(lectures_to_patch_localid));
+            syncBundle.putString("LOCAL_IDs", intListToJson(lectures_to_patch_localid));
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }
 
         if (!entries_to_get_lectureid.isEmpty()){
             Bundle syncBundle = new Bundle();
             syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_DOWNLOAD_ENTRIES);
-            syncBundle.putIntArray("LECTURE_IDs", Ints.toArray(entries_to_get_lectureid));
-            syncBundle.putIntArray ("YEARs", Ints.toArray(entries_to_get_year));
-            syncBundle.putIntArray ("WEEKs", Ints.toArray(entries_to_get_week));
+            syncBundle.putString("LECTURE_IDs", intListToJson(entries_to_get_lectureid));
+            syncBundle.putString("YEARs", intListToJson(entries_to_get_year));
+            syncBundle.putString("WEEKs", intListToJson(entries_to_get_week));
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }
         if(!entries_to_patch_localid.isEmpty()){
             Bundle syncBundle = new Bundle();
             syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_PATCH_WORKENTRIES);
-            syncBundle.putIntArray("LOCAL_IDs", Ints.toArray(entries_to_patch_localid));
+            syncBundle.putString("LOCAL_IDs", intListToJson(entries_to_patch_localid));
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }
         if(!entries_to_post_localid.isEmpty()){
             Bundle syncBundle = new Bundle();
             syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_POST_WORKENTRIES);
-            syncBundle.putIntArray("LOCAL_IDs", Ints.toArray(entries_to_post_localid));
+            syncBundle.putString("LOCAL_IDs", intListToJson(entries_to_post_localid));
             ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
         }
     }
@@ -571,6 +571,14 @@ public class SurveyContentProvider extends ContentProvider {
         values.put(DB_STRINGS.STATUS, SYNC_STATUS.TRANSACTING);
         String selection = "_ID=" + String.valueOf(id);
         database.update(table, values, selection, null);
+    }
+
+    private String intListToJson(List<Integer> list){
+        String json = "[";
+        for (int element : list){
+            json+= String.valueOf(element) + ",";
+        }
+        return json + "]";
     }
 
 
