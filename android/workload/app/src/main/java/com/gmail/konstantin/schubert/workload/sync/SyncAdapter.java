@@ -216,7 +216,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
 
-        android.os.Debug.waitForDebugger();
+//        android.os.Debug.waitForDebugger();
 
         int sync_task = extras.getInt("SYNC_MODUS");
         try {
@@ -278,9 +278,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
         }
         catch (AuthenticatorException e){
-             It's the responsibility of applications to INVALIDATE AUTH TOKENS WHEN THEY STOP WORKING !!!!!
-            so the AccountManager knows it needs to regenerate them.
-
+            sAccountManager.invalidateAuthToken("tu-dresden.de", "session_ID_token"); // is the second parameter correct?
         }
         catch (IOException e){}
 

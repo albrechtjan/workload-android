@@ -71,7 +71,7 @@ public class DBObjectBuilder {
         values.put(SurveyContentProvider.DB_STRINGS_LECTURE.STARTWEEK, lecture.startWeek.week());
         values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ENDYEAR, lecture.endWeek.year());
         values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ENDWEEK, lecture.endWeek.week());
-        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE, false);
+        values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE, lecture.isActive);
         mContentResolver.insert(Uri.parse(uriString), values);
     }
 

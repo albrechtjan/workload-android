@@ -76,12 +76,12 @@ public class Authenticator extends AbstractAccountAuthenticator{
         // about the authTokenType:
         // In principle we are dealing, in the current setup, with 3 auth tokens: NAME_PART_COOKIE_SHIBBOLETH, NAME_COOKIE_DJANGO, NAME_COOKIE_CSRF.
         // What I am doing currently is that I am defining a single auth token as the bundle that
-        // contains these three. Of course it would be much, much cleaner to let the AccountManager manage these 3
+        // contains these three. Of course it would be cleaner to let the AccountManager manage these 3
         // independently. But then, getAuthToken would have to be called 3 times and thus 3 intents would be issued
         // for login. The user would have to log in 3 times and ... at this point it is clear that this makes not sense.
         // A realistic alternative would be to launch the intent only once and to cache the auth tokens in the Authenticator.
         // But since it is the AccountManager's job to cache the tokens and since he is the one being notified when they are
-        // invalid, this would in my yes break the design in a much more sever way than encapsulating the 3 tokens into
+        // invalid, this would in my eyes break the design in a much more sever way than encapsulating the 3 tokens into
         // a single one ever would.
 
 
