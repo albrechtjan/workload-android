@@ -2,7 +2,8 @@ package com.gmail.konstantin.schubert.workload.sync;
 
 import android.util.Log;
 //TODO:Migrate to http://developer.android.com/about/versions/marshmallow/android-6.0-changes.html#behavior-apache-http-client
-
+//TODO: I would like to use PATCH as keyword instead of PUT
+//TODO: Place the POST and PUT/PATCH data as json in body?
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -32,7 +33,7 @@ public class RestClient {
         GET,
         POST,
         PUT,
-        DELETE;
+        DELETE
     }
 
     public int responseCode = 0;

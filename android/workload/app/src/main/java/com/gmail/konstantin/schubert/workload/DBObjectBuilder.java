@@ -27,9 +27,9 @@ public class DBObjectBuilder {
     public List<Lecture> getLectureList( boolean onlyActive, boolean noSync){
         Cursor cursor;
         if (noSync)
-            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/nosync/"), null, null, null, null);
+            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/nosync/any/"), null, null, null, null);
         else
-            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), null, null, null, null);
+            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/sync/any/"), null, null, null, null);
         List<Lecture> lectures = new ArrayList<Lecture>();
         while (cursor.moveToNext()){
             Lecture newLecture = buildLectureFromCursor(cursor);
@@ -45,9 +45,9 @@ public class DBObjectBuilder {
     public Lecture getLectureById(Integer lectureId, boolean nosync){
         Cursor cursor;
         if (nosync) {
-            cursor= mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lectureId) + "/nosync/"), null, null, null, null);
+            cursor= mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/nosync/" + String.valueOf(lectureId)), null, null, null, null);
         }else{
-            cursor= mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lectureId)), null, null, null, null);
+            cursor= mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/sync/" + String.valueOf(lectureId) ), null, null, null, null);
         }
         cursor.moveToFirst();
         Lecture lecture = buildLectureFromCursor(cursor);
@@ -56,18 +56,26 @@ public class DBObjectBuilder {
     }
 
 
-    public void addLecture(Lecture lecture, boolean stopsync){
-        String uriString = "content://" + SurveyContentProvider.AUTHORITY + "/lectures/";
-        if (stopsync){
-            //TODO: set sync value to pending
-            uriString = "content://" + SurveyContentProvider.AUTHORITY + "/lectures/stopsync/";
-        }
+    public WorkloadEntry getWorkloadEntryByLocalId(int local_id, boolean nosync){
 
-       ContentValues values = getValues(lecture);
-        mContentResolver.insert(Uri.parse(uriString), values);
+        String uri = "content://" + SurveyContentProvider.AUTHORITY + "/workentries/";
+        uri += nosync ? "nosync/" : "sync/";
+        uri += String.valueOf(local_id) + "/";
+        Cursor cursor = mContentResolver.query(Uri.parse(uri), null, null, null, null);
+        WorkloadEntry entry =  buildWorkloadEntryFromCursor(cursor);
+        cursor.close();
+        return entry;
     }
 
 
+
+    public void addLecture(Lecture lecture, boolean stopsync){
+        String uriString = "content://" + SurveyContentProvider.AUTHORITY;
+        uriString += stopsync ?  "/lectures/stopsync/" : "/lectures/sync/";
+        uriString += "/any";
+        ContentValues values = getValues(lecture);
+        mContentResolver.insert(Uri.parse(uriString), values);
+    }
 
     private WorkloadEntry buildWorkloadEntryFromCursor(Cursor cursor){
         Week week = new Week(
@@ -99,6 +107,7 @@ public class DBObjectBuilder {
         return new Lecture(_ID, name, semester, startWeek, endWeek, isActive);
     }
 
+
     public List<Lecture> getLecturesInWeek(Week thatWeek, boolean onlyActive){
         // gets lectures that are active in 'thatWeek'
         List<Lecture> allLectures = getLectureList(onlyActive, false);
@@ -111,7 +120,6 @@ public class DBObjectBuilder {
         return lecturesThatWeek;
     }
 
-
     public List<Lecture> getLecturesOfSemester(String semester, boolean onlyActive, boolean nosync){
         List<Lecture> lectures = getLectureList(onlyActive, nosync);
         List<Lecture> lecturesInSemester = new ArrayList<>();
@@ -120,10 +128,10 @@ public class DBObjectBuilder {
                 lecturesInSemester.add(lecture);
             }
         }
-
-
         return  lecturesInSemester;
     }
+
+
 
     public List<String> getSemesterList(boolean onlyActive, boolean nosync){
         //TODO: Make this more efficient
@@ -145,24 +153,12 @@ public class DBObjectBuilder {
         return semesters;
     }
 
-
-
     public Cursor getWorkloadEntry(int lecture_id, Week week){
         String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture_id)+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(week.year())+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(week.week());
-        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, where, null, null);
+        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/sync/any/"), null, where, null, null);
         return cursor;
-    }
-
-    public WorkloadEntry getWorkloadEntryByLocalId(int local_id, boolean nosync){
-        Cursor cursor;
-        if (nosync) {
-            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/" + String.valueOf(local_id) + "/nosync/"), null, null, null, null);
-        }else{
-            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/" + String.valueOf(local_id)), null, null, null, null);
-        }
-        return buildWorkloadEntryFromCursor(cursor);
     }
 
     public void addWorkloadEntry(int lecture_id, Week week, boolean stopsync){
@@ -170,18 +166,18 @@ public class DBObjectBuilder {
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR, week.year());
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK, week.week());
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID, lecture_id);
-        if (stopsync){
-            mContentResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/STOPSYNC/"), values);
-        }else {
-            mContentResolver.insert(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), values);
-        }
+        String uri = "content://" + SurveyContentProvider.AUTHORITY + "/workentries/";
+        uri += stopsync ? "stopsync/" : "sync/";
+        uri += "any/";
+        mContentResolver.insert(Uri.parse(uri), values);
+
     }
 
     public void deleteWorkloadEntry(int lecture_id, Week week, boolean stopsync){
         String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture_id)+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(week.year())+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(week.week());
-        Uri uri = Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/STOPSYNC/");
+        Uri uri = Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/stopsync/any/");
         mContentResolver.delete(uri, where, null);
 
     }
@@ -194,12 +190,13 @@ public class DBObjectBuilder {
         if (lecture != null){
             where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture._ID);
         }
-        Cursor cursor;
-        if (nosync) {
-            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/NOSYNC/"), null, where, null, null);
-        }else{
-            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, where, null, null);
-        }
+
+        String uri = "content://" + SurveyContentProvider.AUTHORITY + "/workentries/";
+        uri += nosync ? "nosync/" : "sync/";
+        uri += "any/";
+
+        Cursor cursor = mContentResolver.query(Uri.parse(uri), null, where, null, null);
+
         List<WorkloadEntry> workloadEntries = new ArrayList<WorkloadEntry>();
         while (cursor.moveToNext()){
 
@@ -218,11 +215,11 @@ public class DBObjectBuilder {
         String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(entry.lecture_id)+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(entry.week.year())+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(entry.week.week());
-        if (stopsync){
-            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/stopsync/"), values, where, null);
-        }else {
-            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), values, where, null);
-        }
+
+        String uri = "content://" + SurveyContentProvider.AUTHORITY + "/workentries/";
+        uri += stopsync ? "stopsync/" : "sync/";
+        uri += "any/";
+        mContentResolver.update(Uri.parse(uri), values, where, null);
     }
 
     public void updateLecture(Lecture lecture, boolean stopsync){
@@ -230,12 +227,10 @@ public class DBObjectBuilder {
         ContentValues values = getValues(lecture);
         values.remove(SurveyContentProvider.DB_STRINGS._ID); // We add the ID in the url.
 
-        if (stopsync){
-            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/" + String.valueOf(lecture._ID) + "/stopsync/"), values, null, null);
-        }else {
-            mContentResolver.update(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"+String.valueOf(lecture._ID)), values, null, null);
-        }
-
+        String uri = "content://" + SurveyContentProvider.AUTHORITY + "/lectures/";
+        uri += stopsync ? "stopsync/" : "sync/";
+        uri += String.valueOf(lecture._ID) + "/";
+        mContentResolver.update(Uri.parse(uri), values, null, null);
     }
 
     private ContentValues getValues(Lecture lecture){

@@ -175,8 +175,33 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         //TODO implement
     }
 
-    private void post_workentries( List<WorkloadEntry> workloadEntriesToPost){
-        //TODO implement
+    private void post_workentries( List<WorkloadEntry> workloadEntriesToPost) throws IOException, AuthenticatorException{
+        for (WorkloadEntry workloadEntry : workloadEntriesToPost){
+            try {
+                ArrayList<NameValuePair> headers = buildAuthHeaders();
+                headers.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
+                headers.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
+                headers.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
+                String url = baseUrl;
+                url += "api/entries/active/year/"+ workloadEntry.week.year() +"/";
+                url +=  workloadEntry.week.week() + "/";
+                url += "lectures/" + workloadEntry.lecture_id + "/";
+                mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, null);
+            } catch (Exception e) {
+                throw new IOException();
+            }
+//            try{
+                String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
+                TODO: If response is positive, stop the sync.
+                int i = 1;
+                i++;
+//                mRestResponseProcessor.???
+//            }
+//            catch (IOException e){
+//                throw new AuthenticatorException(e);
+//            }
+
+        }
     }
 
     private void patch_lectures(List<Lecture> lecturesToPatch){
@@ -216,7 +241,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
 
-//        android.os.Debug.waitForDebugger();
+        android.os.Debug.waitForDebugger();
 
         int sync_task = extras.getInt("SYNC_MODUS");
         try {

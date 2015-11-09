@@ -18,7 +18,6 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.gmail.konstantin.schubert.workload.sync.SyncAdapter;
-import com.google.common.primitives.Ints;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +31,14 @@ public class SurveyContentProvider extends ContentProvider {
 
     private static final String DBNAME = "survey_database";
     private static int DATABASE_VERSION = 1;
+    //TODO: Use enums.
     private static final int LECTURES = 2;
     private static final int ENTRIES = 4;
     private static final int NOSYNC = 6;
     private static final int STOPSYNC = 7;
-    private static final int HAS_ID = 8;
+    private static final int SYNC = 8;
+    private static final int HAS_ID = 9;
+    private static final int HAS_NO_ID = 10;
 
 
     public static final String ACCOUNT_TYPE = "tu-dresden.de";
@@ -130,13 +132,13 @@ public class SurveyContentProvider extends ContentProvider {
     private static final UriMatcher sURIHasIDMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
-        sURITableTypeMatcher.addURI(AUTHORITY, "/lectures/", LECTURES);
-        sURITableTypeMatcher.addURI(AUTHORITY, "/lectures/*", LECTURES);
-        sURITableTypeMatcher.addURI(AUTHORITY, "/workentries/", ENTRIES);
-        sURITableTypeMatcher.addURI(AUTHORITY, "/workentries/*", ENTRIES);
-        sURIOptionMatcher.addURI(AUTHORITY, "*/nosync/", NOSYNC);
-        sURIOptionMatcher.addURI(AUTHORITY, "*/stopsync/", STOPSYNC);  // set to idle
-        sURIHasIDMatcher.addURI(AUTHORITY, "*/#/", HAS_ID);
+        sURITableTypeMatcher.addURI(AUTHORITY, "/lectures/*/*/", LECTURES);
+        sURITableTypeMatcher.addURI(AUTHORITY, "/workentries/*/*/", ENTRIES);
+        sURIOptionMatcher.addURI(AUTHORITY, "/*/sync/*/", SYNC);
+        sURIOptionMatcher.addURI(AUTHORITY, "/*/nosync/*/", NOSYNC);
+        sURIOptionMatcher.addURI(AUTHORITY, "/*/stopsync/*/", STOPSYNC);  // set to idle
+        sURIHasIDMatcher.addURI(AUTHORITY, "/*/*/#/", HAS_ID);
+        sURIHasIDMatcher.addURI(AUTHORITY, "/*/*/any/", HAS_NO_ID);
     }
 
     // These flags indicate if the table is being checked for possible inserts or deletes.
@@ -174,6 +176,9 @@ public class SurveyContentProvider extends ContentProvider {
         int tableType = sURITableTypeMatcher.match(uri);
         int hasID = sURIHasIDMatcher.match(uri);
         int uriOption = sURIOptionMatcher.match(uri);
+        if (tableType == UriMatcher.NO_MATCH || hasID == UriMatcher.NO_MATCH || uriOption == UriMatcher.NO_MATCH){
+            throw new IllegalArgumentException(uri.toString());
+        }
 
 
         if (uriOption==STOPSYNC){
@@ -253,6 +258,9 @@ public class SurveyContentProvider extends ContentProvider {
         int tableType = sURITableTypeMatcher.match(uri);
         int hasID = sURIHasIDMatcher.match(uri);
         int uriOption = sURIOptionMatcher.match(uri);
+        if (tableType == UriMatcher.NO_MATCH || hasID == UriMatcher.NO_MATCH || uriOption == UriMatcher.NO_MATCH){
+            throw new IllegalArgumentException();
+        }
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
 
         if (hasID==HAS_ID){
@@ -297,7 +305,7 @@ public class SurveyContentProvider extends ContentProvider {
         if(uriOption==STOPSYNC){
             values.put(DB_STRINGS.STATUS, SYNC_STATUS.IDLE);
         }
-        if (uriOption == UriMatcher.NO_MATCH){
+        if (uriOption == SYNC){
             // we do a patch
             values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.PATCH);
             values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
