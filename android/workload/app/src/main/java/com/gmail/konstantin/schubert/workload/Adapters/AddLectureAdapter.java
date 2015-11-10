@@ -62,7 +62,7 @@ public class AddLectureAdapter  extends MyBaseAdapter { //BaseAdapter already im
     }
 
 
-    protected void updateMembers() {
+    public void updateMembers() {
         mLectures = this.dbObjectBuilder.getLecturesOfSemester(sSemester, false, false);
     }
 

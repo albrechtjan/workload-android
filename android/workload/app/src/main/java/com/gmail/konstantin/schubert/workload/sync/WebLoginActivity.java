@@ -41,12 +41,14 @@ public class WebLoginActivity extends Activity {
                 //TODO:<<maybe check the cookies only on certain urls?>>
                 Bundle response = new Bundle();
                 String cookieStrings = CookieManager.getInstance().getCookie(url);
+                if (cookieStrings == null) return;
 
                 if (Authenticator.getCookiesFromCookieString(cookieStrings) != null){
                     response.putString(AccountManager.KEY_ACCOUNT_NAME, "default_account");
                     response.putString(AccountManager.KEY_ACCOUNT_TYPE, getResources().getString(R.string.account_type));
                     response.putString(AccountManager.KEY_AUTHTOKEN, cookieStrings);
                     mAccountAuthenticatorResponse.onResult(response);
+                    finish();
                 }
 
 

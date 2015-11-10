@@ -192,7 +192,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
 //            try{
                 String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-                TODO: If response is positive, stop the sync.
+//                TODO: If response is positive, stop the sync.
                 int i = 1;
                 i++;
 //                mRestResponseProcessor.???

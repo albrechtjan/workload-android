@@ -9,7 +9,7 @@ import android.util.Log;
 
 import com.gmail.konstantin.schubert.workload.Adapters.MyBaseAdapter;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
-import com.gmail.konstantin.schubert.workload.Adapters.WeekButtonAdapter;
+import com.gmail.konstantin.schubert.workload.Adapters.CalendarAdapter;
 
 
 public class AdapterTests extends AndroidTestCase{
@@ -23,7 +23,7 @@ public class AdapterTests extends AndroidTestCase{
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.mBaseAdapter = new WeekButtonAdapter(mContext);
+        this.mBaseAdapter = new CalendarAdapter(mContext);
 
         mContentResolver = mContext.getContentResolver(); // I am not inheriting from ProviderTestCase and thus cannot get a mock content resolver
         //TODO: put more entries

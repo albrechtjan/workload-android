@@ -153,6 +153,7 @@ public class SurveyContentProvider extends ContentProvider {
         Log.d(TAG, "Created Database Helper");
         mAccount = CreateSyncAccount(getContext());
         ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
+//        ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true  );
         return true;
     }
 

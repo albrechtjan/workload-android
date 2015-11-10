@@ -13,35 +13,37 @@ import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
 abstract public class MyBaseAdapter extends BaseAdapter{
 
-    private final LectureObserver sLectureObserver;
+    private final MyContentObserver mLectureObserver;
     protected DBObjectBuilder dbObjectBuilder;
 
 
     public MyBaseAdapter(Context context){
 
-        sLectureObserver = new LectureObserver(new Handler(), this);
-        //TODO: Check if this works: The mLectures and the mWeeks attributes must both be updated when the content provider has a change. And the view must be notfied, so it can update!!!!
+        mLectureObserver = new MyContentObserver(new Handler(), this);
+        //TODO: Figure out which role the handler plays.
         ContentResolver resolver = context.getContentResolver();
         dbObjectBuilder = new DBObjectBuilder(resolver);
         resolver.registerContentObserver(
-                Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"),
-                false,
-                sLectureObserver);
+                Uri.parse("content://" + SurveyContentProvider.AUTHORITY),
+                //for now we are watching the whole data set with one observer.
+                //TODO: Think about using finer-tuned observers
+                true,
+                mLectureObserver);
     }
 
+    // TODO: unregister ContentObserver when activity is resumed and/or paused (?)
+    //TODO: Then also call updateMemebers every time the activity is resumed? How to do that?
 
-    protected abstract void updateMembers();
 
-    class LectureObserver extends ContentObserver {
+
+    public abstract void updateMembers();
+
+    class MyContentObserver extends ContentObserver {
         final MyBaseAdapter myBaseAdapter;
 
-        public LectureObserver(Handler handler, MyBaseAdapter myBaseAdapter) {
+        public MyContentObserver(Handler handler, MyBaseAdapter myBaseAdapter) {
             super(handler);
             this.myBaseAdapter = myBaseAdapter;
-        }
-        @Override
-        public void onChange(boolean selfChange) {
-            this.onChange(selfChange, null);
         }
 
         @Override

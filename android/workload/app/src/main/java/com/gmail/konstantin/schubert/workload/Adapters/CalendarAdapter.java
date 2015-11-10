@@ -17,20 +17,20 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public class WeekButtonAdapter extends MyBaseAdapter {
+public class CalendarAdapter extends MyBaseAdapter {
     private Context mContext;
     private List<Week> mWeeks;
     private List<Lecture> mLectures;
 
 
 
-    public WeekButtonAdapter(Context context) {
+    public CalendarAdapter(Context context) {
         super(context);
         mContext = context;
         this.updateMembers();
     }
 
-    protected void updateMembers(){
+    public void updateMembers(){
 
         this.mLectures = dbObjectBuilder.getLectureList(true, false);
         this.mWeeks = getWeeks(this.mLectures);
