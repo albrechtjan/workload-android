@@ -62,6 +62,7 @@ public class DBObjectBuilder {
         uri += nosync ? "nosync/" : "sync/";
         uri += String.valueOf(local_id) + "/";
         Cursor cursor = mContentResolver.query(Uri.parse(uri), null, null, null, null);
+        cursor.moveToFirst();
         WorkloadEntry entry =  buildWorkloadEntryFromCursor(cursor);
         cursor.close();
         return entry;

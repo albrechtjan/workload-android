@@ -189,9 +189,6 @@ public class SurveyContentProvider extends ContentProvider {
 
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
         SQLiteQueryBuilder qBuilder = new SQLiteQueryBuilder();
-        if (selection != null ) {
-            qBuilder.appendWhere(selection);
-        }
 
         if(tableType==LECTURES) qBuilder.setTables(getContext().getString(R.string.lectures_table_name));
         if(tableType==ENTRIES) qBuilder.setTables(getContext().getString(R.string.workentry_table_name));

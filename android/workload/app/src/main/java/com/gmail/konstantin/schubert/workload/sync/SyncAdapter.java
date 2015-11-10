@@ -76,7 +76,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Update workload entries
         // If local entry is syncing it is not overwritten.
         try {
-            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/entries/active/", buildAuthHeaders(), null);
+            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/entries/active/", buildAuthHeaders(null), null);
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
             List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
 //            reduce list to those that were requested
@@ -106,7 +106,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Update workload entries
         // If local entry is syncing it is not overwritten.
         try {
-            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/lectures/all/", buildAuthHeaders(), null);
+            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/lectures/all/", buildAuthHeaders(null), null);
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
             List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
             List<Lecture> requestedRemoteLectures = new ArrayList<>();
@@ -135,7 +135,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Delete anything local that is not in remote
         // Add anything to local that is in remote but not in local (as inactive)
         try {
-            ArrayList<NameValuePair> headers = buildAuthHeaders();
+            ArrayList<NameValuePair> headers = buildAuthHeaders(null);
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/lectures/all/", headers, null);
         } catch (Exception e) {
             throw new IOException();
@@ -154,7 +154,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Delete anything local that is not in remote
         // Add anything to local that is in remote but not in local (as inactive)
         try {
-            ArrayList<NameValuePair> headers = buildAuthHeaders();
+            ArrayList<NameValuePair> headers = buildAuthHeaders(null);
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl + "api/entries/active/", headers, null);
         } catch (Exception e) {
             throw new IOException();
@@ -178,14 +178,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private void post_workentries( List<WorkloadEntry> workloadEntriesToPost) throws IOException, AuthenticatorException{
         for (WorkloadEntry workloadEntry : workloadEntriesToPost){
             try {
-                ArrayList<NameValuePair> headers = buildAuthHeaders();
-                headers.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
-                headers.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
-                headers.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
                 String url = baseUrl;
                 url += "api/entries/active/year/"+ workloadEntry.week.year() +"/";
                 url +=  workloadEntry.week.week() + "/";
                 url += "lectures/" + workloadEntry.lecture_id + "/";
+                ArrayList<NameValuePair> headers = https://survey.zqa.tu-dresden.de/app/workload/api/entries/active/year/2016/9/lectures/9/thHeaders(url.toString());
+                headers.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
+                headers.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
+                headersurl.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
                 mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, null);
             } catch (Exception e) {
                 throw new IOException();
@@ -209,8 +209,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         //TODO: Actually we are only changing the active/nonactive status
     }
 
-
-    private ArrayList<NameValuePair> buildAuthHeaders() throws android.accounts.OperationCanceledException, android.accounts.AuthenticatorException, java.io.IOException{
+    /*
+    refererUrl can be null.
+     */
+    private ArrayList<NameValuePair> buildAuthHeaders(String refererUrl) throws android.accounts.OperationCanceledException, android.accounts.AuthenticatorException, java.io.IOException{
 
         Account[] accounts = sAccountManager.getAccountsByType("tu-dresden.de");//TODO: make the string a resource
         AccountManagerFuture<Bundle> future =  sAccountManager.getAuthToken(accounts[0], "session_ID_token", Bundle.EMPTY, true, null, null);
@@ -222,9 +224,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         String authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
         Intent intent = bundle.getParcelable(AccountManager.KEY_INTENT);
         if (authToken != null) {
-            NameValuePair cookies = new BasicNameValuePair("Cookie",authToken);
             ArrayList<NameValuePair> headers = new ArrayList<>();
+            NameValuePair cookies = new BasicNameValuePair("Cookie",authToken);
             headers.add(cookies);
+            if (refererUrl!=null) {
+                NameValuePair referer = new BasicNameValuePair("Referer", refererUrl);
+                headers.add(referer);
+            }
             return headers;
         }
         else if (intent != null) {
