@@ -182,10 +182,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 url += "api/entries/active/year/"+ workloadEntry.week.year() +"/";
                 url +=  workloadEntry.week.week() + "/";
                 url += "lectures/" + workloadEntry.lecture_id + "/";
-                ArrayList<NameValuePair> headers = https://survey.zqa.tu-dresden.de/app/workload/api/entries/active/year/2016/9/lectures/9/thHeaders(url.toString());
+                ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString());
                 headers.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
                 headers.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
-                headersurl.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
+                headers.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
                 mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, null);
             } catch (Exception e) {
                 throw new IOException();
