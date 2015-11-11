@@ -276,10 +276,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
 
+        //TODO: Switch to ContentProviderClient (also in DBObjectbuilder) and use the one passed in the arguments.
+        //TODO: However, I must make sure the release the provider on time (!?!)
         DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
 
 
-//        android.os.Debug.waitForDebugger();
+        android.os.Debug.waitForDebugger();
+
 
             // obviously the decisions in this functions can be sped up by
             // restricting the things the function checks via parameters. For now, we check it all

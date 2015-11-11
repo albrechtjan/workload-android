@@ -270,7 +270,7 @@ public class SurveyContentProvider extends ContentProvider {
             values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.GET);
             values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
             int rows = database.update(qBuilder.getTables(), values, where, null);
-            maybeSync(); //TODO: Does this create a deadlock where the calls in maybeSync are waiting for the cursor to be released?
+            maybeSync();
         }
 
         return cursor;
@@ -495,6 +495,7 @@ public class SurveyContentProvider extends ContentProvider {
         if (accountManager.addAccountExplicitly(newAccount, null, null)) {
 
         } else {
+            Log.d(TAG, "tried to create an account, but the account either exists or some error occured.");
             /*
              * The account exists or some other error occurred. Log this, report it,
              * or handle it internally.
@@ -504,24 +505,10 @@ public class SurveyContentProvider extends ContentProvider {
     }
 
     private void maybeSync(){
+        Log.d(TAG, "requesting sync");
         ContentResolver.requestSync(mAccount, AUTHORITY, new Bundle());
     }
 
-    private void mark_as_transacting(int id, String table){
-        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
-        ContentValues values = new ContentValues(1);
-        values.put(DB_STRINGS.STATUS, SYNC_STATUS.TRANSACTING);
-        String selection = "_ID=" + String.valueOf(id);
-        database.update(table, values, selection, null);
-    }
-
-    private String intListToJson(List<Integer> list){
-        String json = "[";
-        for (int element : list){
-            json+= String.valueOf(element) + ",";
-        }
-        return json + "]";
-    }
 
 
 }
