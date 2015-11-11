@@ -254,15 +254,8 @@ public class SurveyContentProvider extends ContentProvider {
 
 
 
-        // Update has a double function: It might affect rows that contain user data or it might affect rows that are used for the sync management
-        // 1. If user data is to be updated, the operation will only work if the corresponding entry is:
-        //    - Not TRANSACTING, unless the operation is PUSH or
-        //    - The operation is GET, the status is TRANSACTING and the STOPSYNC option is activated
-        // Otherwise the operation fails and -1 is returned.
-        // In general, the update will never work if the status is TRANSACTING and would need to be transacting after the update.
 
 
-        // 3. In any case, the following restrictions apply.
         //    The STOPSYNC option can change a TRANSACTING row to IDLE, otherwise it fails and -1 is returned.
         //    The NOSYNC option always fails for update (is this a good idea?)
 
@@ -301,14 +294,8 @@ public class SurveyContentProvider extends ContentProvider {
         }
         cursor_all.moveToFirst();
         int status =   cursor_all.getInt(cursor_all.getColumnIndex(DB_STRINGS.STATUS));
-        int operation =   cursor_all.getInt(cursor_all.getColumnIndex(DB_STRINGS.OPERATION));
-        if(valuesHaveData(values)){
-            if((status == SYNC_STATUS.TRANSACTING) && (!(operation == SYNC_OPERATION.GET && uriOption == STOPSYNC))){
-//                throw new UnsupportedOperationException("You cannot update when entry is transacting, unless you use get and stopsync.");
-                return -1;
-            }
+//        int operation =   cursor_all.getInt(cursor_all.getColumnIndex(DB_STRINGS.OPERATION));
 
-        }
 
         if(uriOption==STOPSYNC){
             if(status!=SYNC_STATUS.TRANSACTING) {

@@ -168,7 +168,7 @@ public class RESTResponseProcessor {
         }
         for(WorkloadEntry remoteWorkloadEntry : remoteWorkloadEntries){
             if(!isInList(remoteWorkloadEntry, localWorkloadEntries)){
-                this.dbObjectBuilder.addWorkloadEntry(remoteWorkloadEntry.lecture_id, remoteWorkloadEntry.week, stopsync);
+                this.dbObjectBuilder.addWorkloadEntry(remoteWorkloadEntry.lecture_id, remoteWorkloadEntry.week, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
             }
         }
     }
