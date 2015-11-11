@@ -283,7 +283,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
 
-        android.os.Debug.waitForDebugger();
+//        android.os.Debug.waitForDebugger();
 
         int sync_task = extras.getInt("SYNC_MODUS");
         try {

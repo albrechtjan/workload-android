@@ -163,13 +163,13 @@ public class DBObjectBuilder {
         return cursor;
     }
 
-    public void addWorkloadEntry(int lecture_id, Week week, boolean stopsync){
+    public void addWorkloadEntry(int lecture_id, Week week, String syncSteerCommand){
         ContentValues values = new ContentValues(3);
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR, week.year());
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK, week.week());
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID, lecture_id);
         String uri = "content://" + SurveyContentProvider.AUTHORITY + "/workentries/";
-        uri += stopsync ? "stopsync/" : "sync/";
+        uri += SurveyContentProvider.SYNC_STEER_COMMAND.SYNC+"/";
         uri += "any/";
         mContentResolver.insert(Uri.parse(uri), values);
 
@@ -221,7 +221,10 @@ public class DBObjectBuilder {
         String uri = "content://" + SurveyContentProvider.AUTHORITY + "/workentries/";
         uri += syncSteerCommand + "/";
         uri += "any/";
-        mContentResolver.update(Uri.parse(uri), values, where, null);
+        int result = mContentResolver.update(Uri.parse(uri), values, where, null);
+        if (result<0){
+//            throw new UnsupportedOperationException();
+        }
     }
 
     public void updateLecture(Lecture lecture, boolean stopsync){
@@ -232,7 +235,10 @@ public class DBObjectBuilder {
         String uri = "content://" + SurveyContentProvider.AUTHORITY + "/lectures/";
         uri += stopsync ? "stopsync/" : "sync/";
         uri += String.valueOf(lecture._ID) + "/";
-        mContentResolver.update(Uri.parse(uri), values, null, null);
+        int result = mContentResolver.update(Uri.parse(uri), values, null, null);
+        if (result<0){
+            throw new UnsupportedOperationException();
+        }
     }
 
     private ContentValues getValues(Lecture lecture){
