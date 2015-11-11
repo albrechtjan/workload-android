@@ -8,6 +8,7 @@ import android.os.Bundle;
 
 import com.gmail.konstantin.schubert.workload.sync.SyncAdapter;
 
+import java.io.IOError;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -54,6 +55,25 @@ public class DBObjectBuilder {
         Lecture lecture = buildLectureFromCursor(cursor);
         cursor.close();
         return lecture;
+    }
+
+    public Cursor getPending(String table){
+        String uri = "content://" + SurveyContentProvider.AUTHORITY;
+        uri += table + "/";
+        uri +="nosync/any/";
+        String where = SurveyContentProvider.DB_STRINGS.STATUS + "=" + SurveyContentProvider.SYNC_STATUS.PENDING;
+        return  mContentResolver.query(Uri.parse(uri), null, where, null, null);
+    }
+
+    public void mark_as_transacting(int id, String table){
+        String uri = "content://" + SurveyContentProvider.AUTHORITY;
+        uri += table + "/";
+        uri +="nosync/";
+        uri += String.valueOf(id)+"/";
+        ContentValues values = new ContentValues(1);
+        values.put(SurveyContentProvider.DB_STRINGS.STATUS, SurveyContentProvider.SYNC_STATUS.TRANSACTING);
+        int rows_affected = mContentResolver.update(Uri.parse(uri), new ContentValues(), null, null);
+        if (rows_affected!=1) throw new IOError(new Throwable());
     }
 
 

@@ -6,14 +6,19 @@ import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.os.Bundle;
 import android.util.Log;
 
 import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.Lecture;
+import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.WorkloadEntry;
 
@@ -74,7 +79,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     // There is a lot of duplicate code and even duplicate downloads in this function.
     // Until I have the pattern fully figured out, I will favor clarity over efficiency.
 
-    private void get_workload_entries(List<Integer> lecture_ids, List<Integer> years, List<Integer> weeks){
+    private void get_workload_entry(int lecture_id, int year, int week){
         // Update workload entries
         // If local entry is syncing it is not overwritten.
         try {
@@ -85,15 +90,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 //            This is all extremely inefficient obviously, but right now I am favoring clarity over performance
             List<WorkloadEntry> requestedRemoteEntries = new ArrayList<>();
             for (WorkloadEntry remoteEntry : remoteEntries){
-                boolean found = false;
-                for (int i =0; i< Array.getLength(lecture_ids); i+=1){
-                    if (remoteEntry.week.week() == weeks.get(i)
-                            && remoteEntry.week.year() == years.get(i)
-                            && remoteEntry.lecture_id == lecture_ids.get(i)){
-                        found = true;
-                    }
-                }
-                if(found){
+                if (remoteEntry.week.week() == week
+                        && remoteEntry.week.year() == year
+                        && remoteEntry.lecture_id == lecture_id){
                     requestedRemoteEntries.add(remoteEntry);
                 }
             }
@@ -105,7 +104,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    private void get_lecture_entries(List<Integer> IDs){
+    private void get_lecture(int id){
         // Update workload entries
         // If local entry is syncing it is not overwritten.
         try {
@@ -114,14 +113,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
             List<Lecture> requestedRemoteLectures = new ArrayList<>();
             for (Lecture remoteLecture : remoteLectures){
-                boolean found = false;
-                for(int i=0; i< Array.getLength(IDs); i+=1){
-                    if(remoteLecture._ID == IDs.get(i)){
-                        found = true;
-                    }
-                }
-                if(found){
+                if(remoteLecture._ID == id){
                     requestedRemoteLectures.add(remoteLecture);
+                    break;
                 }
             }
             mRestResponseProcessor.updateLectureRows(requestedRemoteLectures);
@@ -174,73 +168,72 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
 
-    private void patch_workentries( List<WorkloadEntry> workloadEntriesToPatch) throws IOException, AuthenticatorException{
+    private void patch_workentry( WorkloadEntry workloadEntry) throws IOException, AuthenticatorException{
         //TODO: Remove duplicate code with post_workentries
-        for (WorkloadEntry workloadEntry : workloadEntriesToPatch){
-            try {
-                String url = baseUrl;
-                url += "api/entries/active/year/"+ workloadEntry.week.year() +"/";
-                url +=  workloadEntry.week.week() + "/";
-                url += "lectures/" + workloadEntry.lecture_id + "/";
-                ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString());
-                ArrayList<NameValuePair> urlArgs = new ArrayList<>();
-                urlArgs.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
-                urlArgs.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
-                urlArgs.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
-                mRestClient.Execute(RestClient.RequestMethod.PUT, url, headers, urlArgs);
-            } catch (Exception e) {
-                throw new IOException();
-            }
 
-            String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-            DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
-            // when calling updateWorkloadEntry, we are also doing an update of the time entries, but they should be correct, so it should be fine.
-            if (response==null){
-                // retry later
-                //TODO: dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.RETRYSYNC);
-                //TODO: First implement the stopsync in the content provider
-                throw new IOException();
-            } else {
-                // we succeeded and stop the sync
-                dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
-            }
+        try {
+            String url = baseUrl;
+            url += "api/entries/active/year/"+ workloadEntry.week.year() +"/";
+            url +=  workloadEntry.week.week() + "/";
+            url += "lectures/" + workloadEntry.lecture_id + "/";
+            ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString());
+            ArrayList<NameValuePair> urlArgs = new ArrayList<>();
+            urlArgs.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
+            urlArgs.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
+            urlArgs.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
+            mRestClient.Execute(RestClient.RequestMethod.PUT, url, headers, urlArgs);
+        } catch (Exception e) {
+            throw new IOException();
         }
-    }
 
-    private void post_workentries( List<WorkloadEntry> workloadEntriesToPost) throws IOException, AuthenticatorException{
-        for (WorkloadEntry workloadEntry : workloadEntriesToPost){
-            try {
-                String url = baseUrl;
-                url += "api/entries/active/year/"+ workloadEntry.week.year() +"/";
-                url +=  workloadEntry.week.week() + "/";
-                url += "lectures/" + workloadEntry.lecture_id + "/";
-                ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString());
-                ArrayList<NameValuePair> urlArgs = new ArrayList<>();
-                urlArgs.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
-                urlArgs.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
-                urlArgs.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
-                mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, urlArgs);
-            } catch (Exception e) {
-                throw new IOException();
-            }
-
-            String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-            DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
-            // when calling updateWorkloadEntry, we are also doing an update of the time entries, but they should be correct, so it should be fine.
-            if (response==null){
-                // retry later
-                //TODO: dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.RETRYSYNC);
-                //TODO: First implement the stopsync in the content provider
-                throw new IOException();
-            } else {
-                // we succeeded and stop the sync
-                dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
-            }
+        String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
+        DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
+        // when calling updateWorkloadEntry, we are also doing an update of the time entries, but they should be correct, so it should be fine.
+        if (response==null){
+            // retry later
+            //TODO: dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.RETRYSYNC);
+            //TODO: First implement the stopsync in the content provider
+            throw new IOException();
+        } else {
+            // we succeeded and stop the sync
+            dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
         }
     }
 
 
-    private void patch_lectures(List<Lecture> lecturesToPatch){
+    private void post_workentry( WorkloadEntry workloadEntry) throws IOException, AuthenticatorException{
+        try {
+            String url = baseUrl;
+            url += "api/entries/active/year/"+ workloadEntry.week.year() +"/";
+            url +=  workloadEntry.week.week() + "/";
+            url += "lectures/" + workloadEntry.lecture_id + "/";
+            ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString());
+            ArrayList<NameValuePair> urlArgs = new ArrayList<>();
+            urlArgs.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
+            urlArgs.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
+            urlArgs.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
+            mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, urlArgs);
+        } catch (Exception e) {
+            throw new IOException();
+        }
+
+        String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
+        DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
+        // when calling updateWorkloadEntry, we are also doing an update of the time entries, but they should be correct, so it should be fine.
+        if (response==null){
+            // retry later
+            //TODO: dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.RETRYSYNC);
+            //TODO: First implement the stopsync in the content provider
+            throw new IOException();
+        } else {
+            // we succeeded and stop the sync
+            dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
+        }
+
+    }
+
+
+    private void patch_lecture(Lecture lectureToPatch){
         //TODO: Implement
         //TODO: Actually we are only changing the active/nonactive status
     }
@@ -283,66 +276,75 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
 
+        DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
+
+
 //        android.os.Debug.waitForDebugger();
 
-        int sync_task = extras.getInt("SYNC_MODUS");
-        try {
-            switch (sync_task) {
-                case SYNC_TASK.SYNC_TABLE_ENTRIES_WORKENTRIES: {
-                    sync_table_entries_workentries();
-                    break;
-                }
-                case SYNC_TASK.INCREMENTAL_DOWNLOAD_ENTRIES: {
+            // obviously the decisions in this functions can be sped up by
+            // restricting the things the function checks via parameters. For now, we check it all
 
-                    get_workload_entries(intListFromJsonList(extras.getString("LECTURE_IDs")), intListFromJsonList(extras.getString("YEARs")), intListFromJsonList(extras.getString("WEEKs")));
-                    break;
-                }
-                case SYNC_TASK.SYNC_TABLE_ENTRIES_LECTURES: {
-                    sync_table_entries_lectures();
-                    break;
-                }
-                case SYNC_TASK.INCREMENTAL_DOWNLOAD_LECTURES: {
-                    get_lecture_entries(intListFromJsonList(extras.getString("IDS")));
-                    break;
-                }
-                case SYNC_TASK.INCREMENTAL_PATCH_WORKENTRIES: {
-                    DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
-                    List<WorkloadEntry> workloadEntriesToPatch = new ArrayList<>();
-                    boolean nosync = true;
-                    for (int localID : intListFromJsonList(extras.getString("LOCAL_IDs"))) {
-                        workloadEntriesToPatch.add(dbObjectBuilder.getWorkloadEntryByLocalId(localID, nosync));
+            // there is a table_sync_status and table_sync_operation for each table
+            // also each row has these defined.
+            // These values are used to decide what is synced, and how. Finer-grained syncing methods
+            // can anchored in this function.
 
-                    }
-                    patch_workentries(workloadEntriesToPatch);
-                    break;
-                }
-                case SYNC_TASK.INCREMENTAL_PATCH_LECTURES: {
-                    DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
-                    List<Lecture> lecturesToPatch = new ArrayList<>();
-                    boolean nosync = true;
-                    for (int localID : intListFromJsonList(extras.getString("IDs"))) {
-                        lecturesToPatch.add(dbObjectBuilder.getLectureById(localID, nosync));
+            try {
+            // VERY rough checks, and we will download everything
+                //TODO: un-comment the checks
+//            if (insert_from_remote_lectures_status == SYNC_STATUS.PENDING || delete_from_remote_lectures_status == SYNC_STATUS.PENDING ) {
+//                insert_from_remote_lectures_status = SYNC_STATUS.TRANSACTING;
+//                delete_from_remote_lectures_status = SYNC_STATUS.TRANSACTING;
+                sync_table_entries_lectures();
+//            }
 
-                    }
-                    patch_lectures(lecturesToPatch);
-                    break;
-                }
-                case SYNC_TASK.INCREMENTAL_POST_WORKENTRIES: {
-                    DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
-                    List<WorkloadEntry> workloadEntriesToPost = new ArrayList<>();
-                    boolean nosync = true;
-                    for (int localID : intListFromJsonList(extras.getString("LOCAL_IDs"))) {
-                        workloadEntriesToPost.add(dbObjectBuilder.getWorkloadEntryByLocalId(localID, nosync));
+//            if(insert_from_remote_workentries_status == SYNC_STATUS.PENDING || delete_from_remote_workentries_status == SYNC_STATUS.PENDING ) {
+//                insert_from_remote_workentries_status = SYNC_STATUS.TRANSACTING;
+//                delete_from_remote_workentries_status = SYNC_STATUS.TRANSACTING;
+                sync_table_entries_workentries();
+//            }
 
-                    }
-                    post_workentries(workloadEntriesToPost);
-                    break;
-                }
 
-                default: {
-                    throw new IllegalArgumentException("specified sync task invalid");
+            Cursor cursor = dbObjectBuilder.getPending(getContext().getString(R.string.lectures_table_name));
+            while (cursor.moveToNext()){
+                int sync_operation = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS.OPERATION));
+                int id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
+                if(sync_operation == SurveyContentProvider.SYNC_OPERATION.GET){
+                    get_lecture(id);
+                    dbObjectBuilder.mark_as_transacting(id, getContext().getString(R.string.lectures_table_name));
                 }
+                else if (sync_operation == SurveyContentProvider.SYNC_OPERATION.PATCH){
+                    patch_lecture(dbObjectBuilder.getLectureById(id, true)); // id is same as local-id since the ids are unique and identifiying for lectures across local AND remote
+                    dbObjectBuilder.mark_as_transacting(id, getContext().getString(R.string.lectures_table_name));
+                }
+                // possibly add more
             }
+            cursor.close();
+
+
+            cursor = dbObjectBuilder.getPending(getContext().getString(R.string.workentry_table_name));
+            while (cursor.moveToNext()){
+                int sync_operation = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS.OPERATION));
+                int local_id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
+                int lecture_id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID));
+                int year = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR));
+                int week = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK));
+                if(sync_operation == SurveyContentProvider.SYNC_OPERATION.GET){
+                    get_workload_entry(lecture_id,year,week);
+                    dbObjectBuilder.mark_as_transacting(local_id, getContext().getString(R.string.workentry_table_name));
+                }
+                else if (sync_operation == SurveyContentProvider.SYNC_OPERATION.PATCH){
+                    patch_workentry(dbObjectBuilder.getWorkloadEntryByLocalId(local_id, true));
+                    dbObjectBuilder.mark_as_transacting(local_id, getContext().getString(R.string.workentry_table_name));
+                }
+                else if (sync_operation == SurveyContentProvider.SYNC_OPERATION.POST){
+                    post_workentry(dbObjectBuilder.getWorkloadEntryByLocalId(local_id, true));
+                    dbObjectBuilder.mark_as_transacting(local_id, getContext().getString(R.string.workentry_table_name));
+                }
+                // possibly add more
+            }
+            cursor.close();
+
         }
         catch (AuthenticatorException e){
             sAccountManager.invalidateAuthToken("tu-dresden.de", "session_ID_token"); // is the second parameter correct?
@@ -352,21 +354,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             throw new IOError(e);
         }
 
-    }
-
-    /*
-    This function makes some assumptions about the json string and does not
-    work for all valid json.
-     */
-    private List<Integer> intListFromJsonList(String json){
-
-        json = json.substring(1, json.length()-1);
-        String[] parts = json.split(",");
-        List<Integer> ints = new ArrayList<>();
-        for (String part : parts){
-            ints.add(Integer.parseInt(part));
-        }
-        return ints;
     }
 
 }

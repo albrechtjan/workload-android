@@ -17,9 +17,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.gmail.konstantin.schubert.workload.sync.SyncAdapter;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -47,6 +44,38 @@ public class SurveyContentProvider extends ContentProvider {
     public static final String ACCOUNT = "default_account";
     Account mAccount;
 
+    public int getInsert_from_remote_lectures_status() {
+        return insert_from_remote_lectures_status;
+    }
+
+    public void setInsert_from_remote_lectures_status(int insert_from_remote_lectures_status) {
+        this.insert_from_remote_lectures_status = insert_from_remote_lectures_status;
+    }
+
+    public int getDelete_from_remote_lectures_status() {
+        return delete_from_remote_lectures_status;
+    }
+
+    public void setDelete_from_remote_lectures_status(int delete_from_remote_lectures_status) {
+        this.delete_from_remote_lectures_status = delete_from_remote_lectures_status;
+    }
+
+    public int getInsert_from_remote_workentries_status() {
+        return insert_from_remote_workentries_status;
+    }
+
+    public void setInsert_from_remote_workentries_status(int insert_from_remote_workentries_status) {
+        this.insert_from_remote_workentries_status = insert_from_remote_workentries_status;
+    }
+
+    public int getDelete_from_remote_workentries_status() {
+        return delete_from_remote_workentries_status;
+    }
+
+    public void setDelete_from_remote_workentries_status(int delete_from_remote_workentries_status) {
+        this.delete_from_remote_workentries_status = delete_from_remote_workentries_status;
+    }
+
 
     // there is no point in trying to match the API in the database model
     // because the API is designed to work for certain perspectives on the same data
@@ -66,7 +95,7 @@ public class SurveyContentProvider extends ContentProvider {
         //  available lectures
     }
 
-    private static class SYNC_STATUS {
+    public static class SYNC_STATUS {
         public static final int IDLE = 0;
         public static final int PENDING = 1;
         public static final int TRANSACTING = 2;
@@ -240,7 +269,7 @@ public class SurveyContentProvider extends ContentProvider {
             ContentValues values = new ContentValues(2);
             values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.GET);
             values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
-            database.update(qBuilder.getTables(), values, where, null);
+            int rows = database.update(qBuilder.getTables(), values, where, null);
             maybeSync(); //TODO: Does this create a deadlock where the calls in maybeSync are waiting for the cursor to be released?
         }
 
@@ -355,8 +384,8 @@ public class SurveyContentProvider extends ContentProvider {
 
         if (uriOption == STOPSYNC){
             //TODO: Do this only if variables are TRANSACTING
-            if (tableType == LECTURES) insert_from_remote_lectures_status = SYNC_STATUS.IDLE;
-            if (tableType == ENTRIES) insert_from_remote_workentries_status = SYNC_STATUS.IDLE;
+            if (tableType == LECTURES) setInsert_from_remote_lectures_status(SYNC_STATUS.IDLE);
+            if (tableType == ENTRIES) setInsert_from_remote_workentries_status(SYNC_STATUS.IDLE);
         }
 
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
@@ -396,8 +425,8 @@ public class SurveyContentProvider extends ContentProvider {
 
         if (uriOption == STOPSYNC){
             //TODO: Do this only if variables are TRANSACTING
-            if (tableType == LECTURES) delete_from_remote_lectures_status = SYNC_STATUS.IDLE;
-            if (tableType == ENTRIES) delete_from_remote_workentries_status = SYNC_STATUS.IDLE;
+            if (tableType == LECTURES) setDelete_from_remote_lectures_status(SYNC_STATUS.IDLE);
+            if (tableType == ENTRIES) setDelete_from_remote_workentries_status(SYNC_STATUS.IDLE);
         }
 
         String table;
@@ -412,16 +441,16 @@ public class SurveyContentProvider extends ContentProvider {
 
     private void setFlagsForRowChecks(int tableType){
         if (tableType == LECTURES) {
-            if (insert_from_remote_lectures_status == SYNC_STATUS.IDLE)
-                insert_from_remote_lectures_status = SYNC_STATUS.PENDING;
-            if (delete_from_remote_lectures_status == SYNC_STATUS.IDLE)
-                delete_from_remote_lectures_status = SYNC_STATUS.PENDING;
+            if (getInsert_from_remote_lectures_status() == SYNC_STATUS.IDLE)
+                setInsert_from_remote_lectures_status(SYNC_STATUS.PENDING);
+            if (getDelete_from_remote_lectures_status() == SYNC_STATUS.IDLE)
+                setDelete_from_remote_lectures_status(SYNC_STATUS.PENDING);
         }
         if (tableType == ENTRIES) {
-            if (insert_from_remote_workentries_status == SYNC_STATUS.IDLE)
-                insert_from_remote_workentries_status = SYNC_STATUS.PENDING;
-            if (delete_from_remote_workentries_status == SYNC_STATUS.IDLE)
-                delete_from_remote_workentries_status = SYNC_STATUS.PENDING;
+            if (getInsert_from_remote_workentries_status() == SYNC_STATUS.IDLE)
+                setInsert_from_remote_workentries_status(SYNC_STATUS.PENDING);
+            if (getDelete_from_remote_workentries_status() == SYNC_STATUS.IDLE)
+                setDelete_from_remote_workentries_status(SYNC_STATUS.PENDING);
         }
     }
 
@@ -474,127 +503,8 @@ public class SurveyContentProvider extends ContentProvider {
         return newAccount;
     }
 
-    /*
-    This function figures out what should be synced.
-     */
     private void maybeSync(){
-
-        // obviously the decisions in this functions can be sped up by
-        // restricting the things the function checks via parameters. For now, we check it all
-
-        // there is a table_sync_status and table_sync_operation for each table
-        // also each row has these defined.
-        // These values are used to decide what is synced, and how. Finer-grained syncing methods
-        // can anchored in this function.
-
-        // VERY rough checks, and we will download everything
-        if (insert_from_remote_lectures_status == SYNC_STATUS.PENDING || delete_from_remote_lectures_status == SYNC_STATUS.PENDING ) {
-            insert_from_remote_lectures_status = SYNC_STATUS.TRANSACTING;
-            delete_from_remote_lectures_status = SYNC_STATUS.TRANSACTING;
-            Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.SYNC_TABLE_ENTRIES_LECTURES);
-            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
-        }
-
-        if(insert_from_remote_workentries_status == SYNC_STATUS.PENDING || delete_from_remote_workentries_status == SYNC_STATUS.PENDING ) {
-            Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.SYNC_TABLE_ENTRIES_WORKENTRIES);
-            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
-            insert_from_remote_workentries_status = SYNC_STATUS.TRANSACTING;
-            delete_from_remote_workentries_status = SYNC_STATUS.TRANSACTING;
-        }
-
-        SQLiteDatabase database = mOpenHelper.getReadableDatabase();
-        SQLiteQueryBuilder qBuilder = new SQLiteQueryBuilder();
-        String table = getContext().getResources().getString(R.string.lectures_table_name);
-        qBuilder.setTables(table);
-        qBuilder.appendWhere(DB_STRINGS.STATUS+"="+SYNC_STATUS.PENDING);
-        Cursor cursor = qBuilder.query(database, null, null, null, null, null, null);
-        List<Integer> lectures_to_get = new ArrayList<>();
-        List<Integer> lectures_to_patch_localid = new ArrayList<>();
-        while (cursor.moveToNext()){
-            int sync_operation = cursor.getInt(cursor.getColumnIndex(DB_STRINGS.OPERATION));
-            int id = cursor.getInt(cursor.getColumnIndex(DB_STRINGS._ID));
-            if(sync_operation == SYNC_OPERATION.GET){
-                lectures_to_get.add(id);
-                mark_as_transacting(id, table);
-            }
-            else if (sync_operation == SYNC_OPERATION.PATCH){
-                lectures_to_patch_localid.add(id); // id is same as local-id since the ids are unique and identifiying for lectures across local AND remote
-                mark_as_transacting(id, table);
-            }
-            // possibly add more
-        }
-        cursor.close();
-
-        qBuilder = new SQLiteQueryBuilder();
-        table = getContext().getResources().getString(R.string.workentry_table_name);
-        qBuilder.setTables(table);
-        qBuilder.appendWhere(DB_STRINGS.STATUS + "=" + SYNC_STATUS.PENDING);
-        cursor = qBuilder.query(database, null, null, null, null, null, null);
-        List<Integer> entries_to_get_lectureid = new ArrayList<>();
-        List<Integer> entries_to_get_year = new ArrayList<>();
-        List<Integer> entries_to_get_week = new ArrayList<>();
-        List<Integer> entries_to_patch_localid = new ArrayList<>();
-        List<Integer> entries_to_post_localid = new ArrayList<>();
-        while (cursor.moveToNext()){
-            int sync_operation = cursor.getInt(cursor.getColumnIndex(DB_STRINGS.OPERATION));
-            int id = cursor.getInt(cursor.getColumnIndex(DB_STRINGS._ID));
-            int local_id = cursor.getInt(cursor.getColumnIndex(DB_STRINGS._ID));
-            int lecture_id = cursor.getInt(cursor.getColumnIndex(DB_STRINGS_WORKENTRY.LECTURE_ID));
-            int year = cursor.getInt(cursor.getColumnIndex(DB_STRINGS_WORKENTRY.YEAR));
-            int week = cursor.getInt(cursor.getColumnIndex(DB_STRINGS_WORKENTRY.WEEK));
-            if(sync_operation == SYNC_OPERATION.GET){
-                entries_to_get_lectureid.add(lecture_id);
-                entries_to_get_year.add(year);
-                entries_to_get_week.add(week);
-                mark_as_transacting(id, table);
-            }
-            else if (sync_operation == SYNC_OPERATION.PATCH){
-                entries_to_patch_localid.add(local_id);
-                mark_as_transacting(id, table);
-            }
-            else if (sync_operation == SYNC_OPERATION.POST){
-                entries_to_post_localid.add(local_id);
-                mark_as_transacting(id, table);
-            }
-            // possibly add more
-        }
-        cursor.close();
-
-        if (!lectures_to_get.isEmpty()){
-            Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_DOWNLOAD_LECTURES);
-            syncBundle.putString("IDS", intListToJson(lectures_to_get));
-            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
-        }
-        if(!lectures_to_patch_localid.isEmpty()){
-            Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_PATCH_LECTURES);
-            syncBundle.putString("LOCAL_IDs", intListToJson(lectures_to_patch_localid));
-            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
-        }
-
-        if (!entries_to_get_lectureid.isEmpty()){
-            Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_DOWNLOAD_ENTRIES);
-            syncBundle.putString("LECTURE_IDs", intListToJson(entries_to_get_lectureid));
-            syncBundle.putString("YEARs", intListToJson(entries_to_get_year));
-            syncBundle.putString("WEEKs", intListToJson(entries_to_get_week));
-            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
-        }
-        if(!entries_to_patch_localid.isEmpty()){
-            Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_PATCH_WORKENTRIES);
-            syncBundle.putString("LOCAL_IDs", intListToJson(entries_to_patch_localid));
-            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
-        }
-        if(!entries_to_post_localid.isEmpty()){
-            Bundle syncBundle = new Bundle();
-            syncBundle.putInt("SYNC_MODUS", SyncAdapter.SYNC_TASK.INCREMENTAL_POST_WORKENTRIES);
-            syncBundle.putString("LOCAL_IDs", intListToJson(entries_to_post_localid));
-            ContentResolver.requestSync(mAccount, AUTHORITY, syncBundle);
-        }
+        ContentResolver.requestSync(mAccount, AUTHORITY, new Bundle());
     }
 
     private void mark_as_transacting(int id, String table){
