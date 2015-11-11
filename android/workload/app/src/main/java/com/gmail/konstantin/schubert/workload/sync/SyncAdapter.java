@@ -14,11 +14,13 @@ import android.util.Log;
 
 import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.Lecture;
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.WorkloadEntry;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import java.io.IOError;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -99,6 +101,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
         catch (Exception e ){
             //TODO
+            throw new Error(e);
         }
     }
 
@@ -171,8 +174,37 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
 
-    private void patch_workentries( List<WorkloadEntry> workloadEntriesToPatch){
-        //TODO implement
+    private void patch_workentries( List<WorkloadEntry> workloadEntriesToPatch) throws IOException, AuthenticatorException{
+        //TODO: Remove duplicate code with post_workentries
+        for (WorkloadEntry workloadEntry : workloadEntriesToPatch){
+            try {
+                String url = baseUrl;
+                url += "api/entries/active/year/"+ workloadEntry.week.year() +"/";
+                url +=  workloadEntry.week.week() + "/";
+                url += "lectures/" + workloadEntry.lecture_id + "/";
+                ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString());
+                ArrayList<NameValuePair> urlArgs = new ArrayList<>();
+                urlArgs.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
+                urlArgs.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
+                urlArgs.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
+                mRestClient.Execute(RestClient.RequestMethod.PUT, url, headers, urlArgs);
+            } catch (Exception e) {
+                throw new IOException();
+            }
+
+            String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
+            DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
+            // when calling updateWorkloadEntry, we are also doing an update of the time entries, but they should be correct, so it should be fine.
+            if (response==null){
+                // retry later
+                //TODO: dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.RETRYSYNC);
+                //TODO: First implement the stopsync in the content provider
+                throw new IOException();
+            } else {
+                // we succeeded and stop the sync
+                dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
+            }
+        }
     }
 
     private void post_workentries( List<WorkloadEntry> workloadEntriesToPost) throws IOException, AuthenticatorException{
@@ -183,26 +215,30 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 url +=  workloadEntry.week.week() + "/";
                 url += "lectures/" + workloadEntry.lecture_id + "/";
                 ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString());
-                headers.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
-                headers.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
-                headers.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
-                mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, null);
+                ArrayList<NameValuePair> urlArgs = new ArrayList<>();
+                urlArgs.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
+                urlArgs.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
+                urlArgs.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
+                mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, urlArgs);
             } catch (Exception e) {
                 throw new IOException();
             }
-//            try{
-                String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-//                TODO: If response is positive, stop the sync.
-                int i = 1;
-                i++;
-//                mRestResponseProcessor.???
-//            }
-//            catch (IOException e){
-//                throw new AuthenticatorException(e);
-//            }
 
+            String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
+            DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
+            // when calling updateWorkloadEntry, we are also doing an update of the time entries, but they should be correct, so it should be fine.
+            if (response==null){
+                // retry later
+                //TODO: dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.RETRYSYNC);
+                //TODO: First implement the stopsync in the content provider
+                throw new IOException();
+            } else {
+                // we succeeded and stop the sync
+                dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
+            }
         }
     }
+
 
     private void patch_lectures(List<Lecture> lecturesToPatch){
         //TODO: Implement
@@ -311,7 +347,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         catch (AuthenticatorException e){
             sAccountManager.invalidateAuthToken("tu-dresden.de", "session_ID_token"); // is the second parameter correct?
         }
-        catch (IOException e){}
+        catch (IOException e){
+            //TODO: Handle this better.
+            throw new IOError(e);
+        }
 
     }
 

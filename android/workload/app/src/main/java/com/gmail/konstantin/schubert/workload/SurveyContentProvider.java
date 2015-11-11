@@ -37,8 +37,9 @@ public class SurveyContentProvider extends ContentProvider {
     private static final int NOSYNC = 6;
     private static final int STOPSYNC = 7;
     private static final int SYNC = 8;
-    private static final int HAS_ID = 9;
-    private static final int HAS_NO_ID = 10;
+    private static final int RETRYSYNC = 9;
+    private static final int HAS_ID = 10;
+    private static final int HAS_NO_ID = 11;
 
 
     public static final String ACCOUNT_TYPE = "tu-dresden.de";
@@ -96,6 +97,14 @@ public class SurveyContentProvider extends ContentProvider {
         public static final String LECTURE_ID = "LECTURE_ID";
     }
 
+    public static class SYNC_STEER_COMMAND{
+        public final static String SYNC = "sync";
+        public final static String NOSYNC = "nosync";
+        public final static String STOPSYNC = "stopsync";
+        public final static String RETRYSYNC = "retrysync";
+    }
+
+
     private static final String SQL_CREATE_LECTURES = "CREATE TABLE " +
             "lectures " +
             "(" +
@@ -110,7 +119,6 @@ public class SurveyContentProvider extends ContentProvider {
             DB_STRINGS.STATUS + " INT DEFAULT 0, " +
             DB_STRINGS.OPERATION + "  INT DEFAULT 0" +
             ")";
-
 
     private static final String SQL_CREATE_WORKENTRIES = "CREATE TABLE " +
             "workentries " +                       // Table's name
@@ -137,6 +145,7 @@ public class SurveyContentProvider extends ContentProvider {
         sURIOptionMatcher.addURI(AUTHORITY, "/*/sync/*/", SYNC);
         sURIOptionMatcher.addURI(AUTHORITY, "/*/nosync/*/", NOSYNC);
         sURIOptionMatcher.addURI(AUTHORITY, "/*/stopsync/*/", STOPSYNC);  // set to idle
+        sURIOptionMatcher.addURI(AUTHORITY, "/*/retrysync/*/", RETRYSYNC);  // set to idle
         sURIHasIDMatcher.addURI(AUTHORITY, "/*/*/#/", HAS_ID);
         sURIHasIDMatcher.addURI(AUTHORITY, "/*/*/any/", HAS_NO_ID);
     }
@@ -240,13 +249,28 @@ public class SurveyContentProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 
-        // 1. An update will only work if
-        //    - the affected entries are all IDLE, OR
-        //    - for all affected entries, the operation is GET, the status is TRANSACTING and the STOPSYNC option is activated.
-        //  Otherwise, the update fails.
+        //TODO: Implement RETRYSYNC
+
+        TODO: can we restrict UPDATE to a single row
+
+        // Update has a double function: It might affect rows that contain user data or it might affect rows that are used for the sync management
+        // 1. If user data is to be updated, the operation will only work if the corresponding entry is:
+        //    - IDLE, OR
+        //    - The operation is PUSH or PATCH, and the status is RETRY
+        //    - The operation is GET, the status is TRANSACTING and the STOPSYNC or RETRYSYNC option is activated
+        // Otherwise the operation fails.
+        // In general, the update will never work if the status is TRANSACTING and would need to be transacting after the update.
+
         // 2. A PATCH to remote is initiated if
         //    - the update worked and neither the NOSYNC nor the STOPSYNC options are active.
-        //    This implies that all entries are idle.
+        //
+
+        // 3. If no user data is to b updated, the operation works if:
+        //    The STOPSYNC option can change a TRANSACTING row to IDLE, otherwise it fails
+        //    The SYNC option can change an IDLE or RETRY row to TRANSACTING, otherwise it fails.
+        //    The NOSYNC option always fails for update (is this a good idea?)
+        //    The RETRY option can change a TRANSACTING or RETRY row to RETRY
+        //
 
         // In case of no update, the return value is -1. No exception is thrown.
         // TODO: Maybe better return an exception?

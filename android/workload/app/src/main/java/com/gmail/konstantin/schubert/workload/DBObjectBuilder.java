@@ -24,6 +24,7 @@ public class DBObjectBuilder {
         this.mContentResolver = contentResolver;
     }
 
+
     public List<Lecture> getLectureList( boolean onlyActive, boolean noSync){
         Cursor cursor;
         if (noSync)
@@ -208,7 +209,7 @@ public class DBObjectBuilder {
         return workloadEntries;
     }
 
-    public void updateWorkloadEntry(WorkloadEntry entry, boolean stopsync){
+    public void updateWorkloadEntry(WorkloadEntry entry, String syncSteerCommand){
         ContentValues values = new ContentValues();
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK, entry.getHoursForHomework());
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE, entry.getHoursInLecture());
@@ -218,7 +219,7 @@ public class DBObjectBuilder {
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(entry.week.week());
 
         String uri = "content://" + SurveyContentProvider.AUTHORITY + "/workentries/";
-        uri += stopsync ? "stopsync/" : "sync/";
+        uri += syncSteerCommand + "/";
         uri += "any/";
         mContentResolver.update(Uri.parse(uri), values, where, null);
     }

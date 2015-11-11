@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.R;
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.Week;
 import com.gmail.konstantin.schubert.workload.WorkloadEntry;
 import com.gmail.konstantin.schubert.workload.activities.EnterWorkload;
@@ -111,7 +112,7 @@ public class EnterWorkloadAdapter extends MyBaseAdapter {
     }
 
     public void saveWorkload() {
-        this.dbObjectBuilder.updateWorkloadEntry(mWorkloadEntry, false);
+        this.dbObjectBuilder.updateWorkloadEntry(mWorkloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
     }
 
     public void updateMembers() {

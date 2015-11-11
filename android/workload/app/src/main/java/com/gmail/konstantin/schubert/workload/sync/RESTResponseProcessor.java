@@ -151,7 +151,7 @@ public class RESTResponseProcessor {
     public void updateWorkloadRows(List<WorkloadEntry> remoteWorkloadEntries){
         boolean stopsync = true;
         for (WorkloadEntry workloadEntry : remoteWorkloadEntries){
-            dbObjectBuilder.updateWorkloadEntry(workloadEntry, stopsync);
+            dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
         }
 
     }
