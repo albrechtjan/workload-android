@@ -336,21 +336,26 @@ public class SurveyContentProvider extends ContentProvider {
             }
         }
         else if(uriOption==NOSYNC){
-            throw new UnsupportedOperationException("You cannot use nosync option in update. Use stopsync if you are updating from a get.");
+
         }
         else if(uriOption==SYNC){
             if(status == SYNC_STATUS.RETRY || status==SYNC_STATUS.IDLE){
                 values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
             }
         }else if(uriOption==RETRY){
-            values.put(DB_STRINGS.STATUS, SYNC_STATUS.RETRY);
+            if(status == SYNC_STATUS.TRANSACTING) {
+                values.put(DB_STRINGS.STATUS, SYNC_STATUS.RETRY);
+            }
         }
 
 
         if(uriOption==STOPSYNC){
-            values.put(DB_STRINGS.STATUS, SYNC_STATUS.IDLE);
+            if(status == SYNC_STATUS.TRANSACTING) {
+                values.put(DB_STRINGS.STATUS, SYNC_STATUS.IDLE);
+            }
         }
         if (uriOption == SYNC){
+            //TODO: Do this only if current status is IDLE or RETRY??!?!?
             // we do a patch
             values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.PATCH);
             values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);

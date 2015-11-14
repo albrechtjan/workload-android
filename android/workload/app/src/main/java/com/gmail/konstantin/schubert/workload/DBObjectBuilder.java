@@ -58,7 +58,7 @@ public class DBObjectBuilder {
     }
 
     public Cursor getPending(String table){
-        String uri = "content://" + SurveyContentProvider.AUTHORITY;
+        String uri = "content://" + SurveyContentProvider.AUTHORITY+ "/";
         uri += table + "/";
         uri +="nosync/any/";
         String where = SurveyContentProvider.DB_STRINGS.STATUS + "=" + SurveyContentProvider.SYNC_STATUS.PENDING;
@@ -66,7 +66,7 @@ public class DBObjectBuilder {
     }
 
     public void mark_as_transacting(int id, String table){
-        String uri = "content://" + SurveyContentProvider.AUTHORITY;
+        String uri = "content://" + SurveyContentProvider.AUTHORITY+ "/";
         uri += table + "/";
         uri +="nosync/";
         uri += String.valueOf(id)+"/";

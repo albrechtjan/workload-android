@@ -134,17 +134,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             ArrayList<NameValuePair> headers = buildAuthHeaders(null);
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/lectures/all/", headers, null);
-        } catch (Exception e) {
+        } catch (IOException e){
+            throw new AuthenticatorException();
+        }
+        catch (Exception e) {
             throw new IOException();
         }
         String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-        try {
-            List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
-            mRestResponseProcessor.insert_delete_lectures_from_remote(remoteLectures);
-        }
-        catch(IOException e){
-            throw new AuthenticatorException(e);
-        }
+
+        List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
+        mRestResponseProcessor.insert_delete_lectures_from_remote(remoteLectures);
     }
 
     private void sync_table_entries_workentries() throws IOException, AuthenticatorException {
@@ -153,8 +152,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             ArrayList<NameValuePair> headers = buildAuthHeaders(null);
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl + "api/entries/active/", headers, null);
-        } catch (Exception e) {
-            throw new IOException();
+        } catch (IOException e) {
+            throw new AuthenticatorException();
+        }catch (Exception e){
+            throw  new IOException();
         }
         try{
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
@@ -292,7 +293,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             // These values are used to decide what is synced, and how. Finer-grained syncing methods
             // can anchored in this function.
 
-            try {
+        try {
             // VERY rough checks, and we will download everything
                 //TODO: un-comment the checks
 //            if (insert_from_remote_lectures_status == SYNC_STATUS.PENDING || delete_from_remote_lectures_status == SYNC_STATUS.PENDING ) {

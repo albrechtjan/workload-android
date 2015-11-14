@@ -7,6 +7,7 @@ import android.util.Log;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -103,22 +104,21 @@ public class RestClient {
         return _header;
     }
 
-    private void executeRequest(HttpUriRequest request, String url) {
+    private void executeRequest(HttpUriRequest request, String url) throws IOException, ClientProtocolException{
         HttpClient client = new DefaultHttpClient();
         HttpResponse httpResponse;
-        try {
-            httpResponse = client.execute(request);
-            responseCode = httpResponse.getStatusLine().getStatusCode();
-            message = httpResponse.getStatusLine().getReasonPhrase();
-            HttpEntity entity = httpResponse.getEntity();
 
-            if (entity != null) {
-                InputStream instream = entity.getContent();
-                response = convertStreamToString(instream);
-                instream.close();
-            }
-        } catch (Exception e) {
+        httpResponse = client.execute(request);
+        responseCode = httpResponse.getStatusLine().getStatusCode();
+        message = httpResponse.getStatusLine().getReasonPhrase();
+        HttpEntity entity = httpResponse.getEntity();
+
+        if (entity != null) {
+            InputStream instream = entity.getContent();
+            response = convertStreamToString(instream);
+            instream.close();
         }
+
     }
 
     private static String convertStreamToString(InputStream is) {

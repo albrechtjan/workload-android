@@ -93,9 +93,9 @@ public class RESTResponseProcessor {
     static public WorkloadEntry buildEntry(JsonReader reader) throws IOException {
 
         int lecture_id = -1;
-        Long hoursInLecture = null;
-        Long hoursForHomework = null;
-        Long hoursStudying = null;
+        float hoursInLecture = -1;
+        float hoursForHomework = -1;
+        float hoursStudying = -1;
         Week week = null;
 
         reader.beginObject();
@@ -104,11 +104,11 @@ public class RESTResponseProcessor {
             if (key.equals("lecture_id")) {
                 lecture_id = reader.nextInt();
             } else if (key.equals("hoursInLecture")) {
-                hoursInLecture = reader.nextLong();
+                hoursInLecture = (float) reader.nextDouble();
             } else if (key.equals("hoursForHomework")) {
-                hoursForHomework = reader.nextLong();
+                hoursForHomework = (float) reader.nextDouble();
             } else if (key.equals("hoursStudying")) {
-                hoursStudying = reader.nextLong();
+                hoursStudying = (float) reader.nextDouble();
             } else if (key.equals("week")) {
                week = Week.getWeekFromISOString(reader.nextString());
             } else {
