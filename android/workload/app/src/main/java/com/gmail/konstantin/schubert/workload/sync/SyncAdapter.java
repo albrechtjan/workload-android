@@ -212,7 +212,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             ArrayList<NameValuePair> urlArgs = new ArrayList<>();
             urlArgs.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
             urlArgs.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
-            urlArgs.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
+            urlArgs.add(new BasicNameValuePair("hoursStudying", String.valueOf(workloadEntry.getHoursStudying())));
             mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, urlArgs);
         } catch (Exception e) {
             throw new IOException();

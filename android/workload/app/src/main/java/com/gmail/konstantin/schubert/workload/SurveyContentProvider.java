@@ -323,10 +323,33 @@ public class SurveyContentProvider extends ContentProvider {
         }
         cursor_all.moveToFirst();
         int status =   cursor_all.getInt(cursor_all.getColumnIndex(DB_STRINGS.STATUS));
-//        int operation =   cursor_all.getInt(cursor_all.getColumnIndex(DB_STRINGS.OPERATION));
+        int operation =   cursor_all.getInt(cursor_all.getColumnIndex(DB_STRINGS.OPERATION));
 
+        if(status!=SYNC_STATUS.IDLE && operation!=SYNC_OPERATION.GET){
+            // In this case, the row entries are protected.
+            // You can only update the row if
+            //  * the sync option is specified, indicating that the change occurred locally
+            //  * the stopsync option is specified, the values carry no data AND the values contain
+            //    an OPERATION entry matching to the row's operation.
+            if(uriOption!=SYNC){
+                if(uriOption==STOPSYNC && !valuesHaveData(values) && values.getAsInteger(DB_STRINGS.OPERATION)==operation){
 
-        if(uriOption==STOPSYNC){
+                }
+                else{
+                    throw new IllegalArgumentException("The row entry is protected. Update only possible under limited conditions," +
+                            " please refer to the comments in the code");
+                }
+            }
+        }
+
+        if(uriOption!=SYNC){
+            if (values.keySet().contains(DB_STRINGS.OPERATION)){
+                throw new UnsupportedOperationException("Unless you are initiating a new sync, " +
+                        "you must pass sync operation type in the values.");
+            }
+            if(values.getAsInteger(DB_STRINGS.OPERATION)!=operation){
+                // the operation we are trying to stop is not the one currently ongoing.
+            }
             if(status!=SYNC_STATUS.TRANSACTING) {
 //                throw new UnsupportedOperationException("You cannot do a stopsync if the line is not transacting");
                 return -1;
