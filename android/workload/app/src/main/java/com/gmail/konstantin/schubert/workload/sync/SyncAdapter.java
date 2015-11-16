@@ -62,7 +62,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     }
 
-    
+
     private void get_table_entries_lectures() throws IOException, AuthenticatorException{
         // Delete anything local that is not in remote
         // Add anything to local that is in remote but not in local (as inactive)

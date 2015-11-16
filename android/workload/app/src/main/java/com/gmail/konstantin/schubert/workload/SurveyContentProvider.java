@@ -36,6 +36,7 @@ public class SurveyContentProvider extends ContentProvider {
     private static final int STOPSYNC = 7;
     private static final int SYNC = 8;
     private static final int RETRY = 9;
+    private static final int MARK_TRANSACTING = 12;
     private static final int HAS_ID = 10;
     private static final int HAS_NO_ID = 11;
 
@@ -95,7 +96,7 @@ public class SurveyContentProvider extends ContentProvider {
 
     public static class SYNC_STEER_COMMAND{
         public final static String SYNC = "sync";
-        public final static String NOSYNC = "nosync";
+        public final static String MARK_TRANSACTING = "mark-transacting";
         public final static String STOPSYNC = "stopsync";
         public final static String RETRYSYNC = "retrysync";
         public final static String GET_OVERWRITE = "get-overwrite";
@@ -142,6 +143,7 @@ public class SurveyContentProvider extends ContentProvider {
         sURIOptionMatcher.addURI(AUTHORITY, "/*/sync/*/", SYNC);
         sURIOptionMatcher.addURI(AUTHORITY, "/*/stopsync/*/", STOPSYNC);  // set to idle
         sURIOptionMatcher.addURI(AUTHORITY, "/*/retrysync/*/", RETRY);  // set to retry
+        sURIOptionMatcher.addURI(AUTHORITY, "/*/"+SYNC_STEER_COMMAND.MARK_TRANSACTING+"/*/", MARK_TRANSACTING);
         sURIOptionMatcher.addURI(AUTHORITY, "/*/get-overwrite/*/", GET_OVERWRITE);
         sURIHasIDMatcher.addURI(AUTHORITY, "/*/*/#/", HAS_ID);
         sURIHasIDMatcher.addURI(AUTHORITY, "/*/*/any/", HAS_NO_ID);
@@ -167,12 +169,6 @@ public class SurveyContentProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 
-        // 1. A query will never fail.
-        // 2. Any queried entry causes a remote GET on this entry IF the entry is idle.
-        // 3. Querying all rows causes a check for inserts/deletes that occurred remotely.
-        // 4. Querying with a selection where nothing is found causes a check for remote inserts.
-        // 4. If a remote get or a check for remote inserts fails, it goes back to IDLE.
-        // 4. the /nosync/ parameter prevents any remote operations.
 
         int tableType = sURITableTypeMatcher.match(uri);
         int hasID = sURIHasIDMatcher.match(uri);
@@ -204,14 +200,6 @@ public class SurveyContentProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 
-        //    The STOPSYNC option can change a TRANSACTING row to IDLE, otherwise it fails and -1 is returned.
-        //    The NOSYNC option always fails for update (is this a good idea?)
-
-        //    The SYNC option can change an IDLE or RETRY row to TRANSACTING, otherwise it is ignored.
-        //    The RETRY option can change a TRANSACTING row to RETRY, otherwise it is ignored.
-        //
-
-
         int tableType = sURITableTypeMatcher.match(uri);
         int hasID = sURIHasIDMatcher.match(uri);
         int uriOption = sURIOptionMatcher.match(uri);
@@ -234,7 +222,7 @@ public class SurveyContentProvider extends ContentProvider {
             table = getContext().getResources().getString(R.string.workentry_table_name);
         }
 
-        // we restrict UPDATE to a single row. This is only for now, might want to change this.
+        //TODO: we restrict UPDATE to a single row. This is only for now, might want to change this.
         String[] columns = {DB_STRINGS._ID, DB_STRINGS.OPERATION, DB_STRINGS.STATUS};
         Cursor cursor_all = database.query(table, columns, selection, selectionArgs, null, null, null);
         if (cursor_all.getCount() > 1 ){
@@ -268,6 +256,10 @@ public class SurveyContentProvider extends ContentProvider {
         }else if(uriOption==RETRY) {
             if (status == SYNC_STATUS.TRANSACTING) {
                 values.put(DB_STRINGS.STATUS, SYNC_STATUS.RETRY);
+            }
+        }else if (uriOption==MARK_TRANSACTING){
+            if(status == SYNC_STATUS.PENDING){
+                values.put(DB_STRINGS.STATUS,SYNC_STATUS.TRANSACTING);
             }
         }
         else{

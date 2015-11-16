@@ -61,10 +61,9 @@ public class DBObjectBuilder {
     public void mark_as_transacting(int id, String table){
         String uri = "content://" + SurveyContentProvider.AUTHORITY+ "/";
         uri += table + "/";
-        uri +="nosync/";
+        uri += SurveyContentProvider.SYNC_STEER_COMMAND.MARK_TRANSACTING+"/";
         uri += String.valueOf(id)+"/";
-        ContentValues values = new ContentValues(1);
-        values.put(SurveyContentProvider.DB_STRINGS.STATUS, SurveyContentProvider.SYNC_STATUS.TRANSACTING);
+
         int rows_affected = mContentResolver.update(Uri.parse(uri), new ContentValues(), null, null);
         if (rows_affected!=1) throw new IOError(new Throwable());
     }
