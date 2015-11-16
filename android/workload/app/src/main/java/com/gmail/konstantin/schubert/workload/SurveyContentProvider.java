@@ -280,11 +280,6 @@ public class SurveyContentProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 
-
-
-
-
-
         //    The STOPSYNC option can change a TRANSACTING row to IDLE, otherwise it fails and -1 is returned.
         //    The NOSYNC option always fails for update (is this a good idea?)
 
@@ -325,20 +320,16 @@ public class SurveyContentProvider extends ContentProvider {
         int status =   cursor_all.getInt(cursor_all.getColumnIndex(DB_STRINGS.STATUS));
         int operation =   cursor_all.getInt(cursor_all.getColumnIndex(DB_STRINGS.OPERATION));
 
-        if(status!=SYNC_STATUS.IDLE && operation!=SYNC_OPERATION.GET){
-            // In this case, the row entries are protected.
-            // You can only update the row if
-            //  * the sync option is specified, indicating that the change occurred locally
-            //  * the stopsync option is specified, the values carry no data AND the values contain
-            //    an OPERATION entry matching to the row's operation.
-            if(uriOption!=SYNC){
-                if(uriOption==STOPSYNC && !valuesHaveData(values) && values.getAsInteger(DB_STRINGS.OPERATION)==operation){
-
-                }
-                else{
-                    throw new IllegalArgumentException("The row entry is protected. Update only possible under limited conditions," +
-                            " please refer to the comments in the code");
-                }
+        if(uriOption==STOPSYNC && valuesHaveData(values)){
+            // we seem to be returning from a get to the remote
+            if(status==SYNC_STATUS.TRANSACTING && operation==SYNC_OPERATION.GET){
+                // this is the expected case,
+            }
+            else if(status==SYNC_STATUS.IDLE) {
+                //we can also write to the row
+            }else{
+                // do not overwrite
+                return -1;
             }
         }
 
