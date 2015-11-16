@@ -34,16 +34,6 @@ import java.util.List;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
-    public static class SYNC_TASK {
-        public static final int SYNC_TABLE_ENTRIES_LECTURES = 0;
-        public static final int SYNC_TABLE_ENTRIES_WORKENTRIES = 1;
-        public static final int INCREMENTAL_DOWNLOAD_LECTURES = 2;
-        public static final int INCREMENTAL_DOWNLOAD_ENTRIES = 3;
-        public static final int INCREMENTAL_PATCH_LECTURES = 4;
-        public static final int INCREMENTAL_PATCH_WORKENTRIES = 5;
-        public static final int INCREMENTAL_POST_WORKENTRIES = 6;
-
-    }
 
     public final static String TAG = "WorkloadSyncAdapter";
     public final static String baseUrl = "https://survey.zqa.tu-dresden.de/app/workload/";
@@ -72,63 +62,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     }
 
-    //TODO: Do we really want the remote end to only give the entries of active lectures?
-    // That means it will look as if remote deletes/adds a lot of entries when a lecture is activated or
-    // de-activated. Is that what we want?
-
-    // There is a lot of duplicate code and even duplicate downloads in this function.
-    // Until I have the pattern fully figured out, I will favor clarity over efficiency.
-
-    private void get_workload_entry(int lecture_id, int year, int week){
-        // Update workload entries
-        // If local entry is syncing it is not overwritten.
-        try {
-            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/entries/active/", buildAuthHeaders(null), null);
-            String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-            List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
-//            reduce list to those that were requested
-//            This is all extremely inefficient obviously, but right now I am favoring clarity over performance
-            List<WorkloadEntry> requestedRemoteEntries = new ArrayList<>();
-            for (WorkloadEntry remoteEntry : remoteEntries){
-                if (remoteEntry.week.week() == week
-                        && remoteEntry.week.year() == year
-                        && remoteEntry.lecture_id == lecture_id){
-                    requestedRemoteEntries.add(remoteEntry);
-                }
-            }
-            mRestResponseProcessor.updateWorkloadRows(requestedRemoteEntries);
-        }
-        catch (Exception e ){
-            //TODO
-            throw new Error(e);
-        }
-    }
-
-    private void get_lecture(int id){
-        // Update workload entries
-        // If local entry is syncing it is not overwritten.
-        try {
-            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/lectures/all/", buildAuthHeaders(null), null);
-            String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-            List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
-            List<Lecture> requestedRemoteLectures = new ArrayList<>();
-            for (Lecture remoteLecture : remoteLectures){
-                if(remoteLecture._ID == id){
-                    requestedRemoteLectures.add(remoteLecture);
-                    break;
-                }
-            }
-            mRestResponseProcessor.updateLectureRows(requestedRemoteLectures);
-        }
-        catch (Exception e ){
-            //TODO
-        }
-    }
-
-
-
-
-    private void sync_table_entries_lectures() throws IOException, AuthenticatorException{
+    
+    private void get_table_entries_lectures() throws IOException, AuthenticatorException{
         // Delete anything local that is not in remote
         // Add anything to local that is in remote but not in local (as inactive)
         try {
@@ -143,10 +78,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
 
         List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
-        mRestResponseProcessor.insert_delete_lectures_from_remote(remoteLectures);
+        mRestResponseProcessor.update_lectures_from_remote(remoteLectures);
     }
 
-    private void sync_table_entries_workentries() throws IOException, AuthenticatorException {
+    private void get_table_entries_workentries() throws IOException, AuthenticatorException {
         // Delete anything local that is not in remote
         // Add anything to local that is in remote but not in local (as inactive)
         try {
@@ -160,7 +95,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         try{
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
             List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
-            mRestResponseProcessor.insert_delete_workloadentries_from_remote(remoteEntries);
+            mRestResponseProcessor.update_workloadentries_from_remote(remoteEntries);
         }
         catch (IOException e){
             throw new AuthenticatorException(e);
@@ -285,46 +220,28 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         android.os.Debug.waitForDebugger();
 
 
-            // obviously the decisions in this functions can be sped up by
-            // restricting the things the function checks via parameters. For now, we check it all
-
-            // there is a table_sync_status and table_sync_operation for each table
-            // also each row has these defined.
-            // These values are used to decide what is synced, and how. Finer-grained syncing methods
-            // can anchored in this function.
-
         try {
 
-            sync_table_entries_lectures();
-            sync_table_entries_workentries();
+            get_table_entries_lectures();
+            get_table_entries_workentries();
 
 
-
-            Cursor cursor = dbObjectBuilder.getAll(getContext().getString(R.string.lectures_table_name));
+            Cursor cursor = dbObjectBuilder.getPending(getContext().getString(R.string.lectures_table_name));
             while (cursor.moveToNext()){
                 int sync_operation = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS.OPERATION));
                 int id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
-                get_lecture(id);
-                //TODO: This is utterly inefficient of course, we should be getting all entries at once
                 if (sync_operation == SurveyContentProvider.SYNC_OPERATION.PATCH) {
                     dbObjectBuilder.mark_as_transacting(id, getContext().getString(R.string.lectures_table_name));
                     patch_lecture(dbObjectBuilder.getLectureById(id)); // id is same as local-id since the ids are unique and identifying for lectures across local AND remote
                 }
-                // possibly add more
             }
             cursor.close();
 
 
-            cursor = dbObjectBuilder.getAll(getContext().getString(R.string.workentry_table_name));
+            cursor = dbObjectBuilder.getPending(getContext().getString(R.string.workentry_table_name));
             while (cursor.moveToNext()){
                 int sync_operation = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS.OPERATION));
                 int local_id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
-                int lecture_id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID));
-                int year = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR));
-                int week = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK));
-
-                get_workload_entry(lecture_id,year,week);
-                //TODO: This is utterly inefficient of course, we should be getting all entries at once
 
                 if (sync_operation == SurveyContentProvider.SYNC_OPERATION.PATCH) {
                     dbObjectBuilder.mark_as_transacting(local_id, getContext().getString(R.string.workentry_table_name));
@@ -334,7 +251,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     dbObjectBuilder.mark_as_transacting(local_id, getContext().getString(R.string.workentry_table_name));
                     post_workentry(dbObjectBuilder.getWorkloadEntryByLocalId(local_id));
                 }
-                // possibly add more
             }
             cursor.close();
 

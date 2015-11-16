@@ -50,10 +50,12 @@ public class DBObjectBuilder {
         return lecture;
     }
 
-    public Cursor getAll(String table){
+    public Cursor getPending(String table){
         String uri = "content://" + SurveyContentProvider.AUTHORITY+ "/";
-        uri += table + "/null/any/";
-        return  mContentResolver.query(Uri.parse(uri), null, null, null, null);
+        uri += table + "/";
+        uri +="null/any/";
+        String where = SurveyContentProvider.DB_STRINGS.STATUS + "=" + SurveyContentProvider.SYNC_STATUS.PENDING;
+        return  mContentResolver.query(Uri.parse(uri), null, where, null, null);
     }
 
     public void mark_as_transacting(int id, String table){

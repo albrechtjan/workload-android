@@ -121,7 +121,7 @@ public class RESTResponseProcessor {
     }
 
 
-    public void insert_delete_lectures_from_remote(List<Lecture> remoteLectures) {
+    public void update_lectures_from_remote(List<Lecture> remoteLectures) {
         // updates the available lectures from the remote end to the local end.
         // Remote always supersedes local, even if syncing
         List<Lecture> localLectures = this.dbObjectBuilder.getLectureList(false);  // all lectures (active and inactive) that are listed locally
@@ -136,28 +136,18 @@ public class RESTResponseProcessor {
         for (Lecture remoteLecture : remoteLectures){
             if(!isInList(remoteLecture, localLectures)){
                this.dbObjectBuilder.addLecture(remoteLecture,true);
+            }else{
+                this.dbObjectBuilder.updateLecture(remoteLecture, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
+
             }
         }
     }
 
 
-    public void updateLectureRows(List<Lecture> remoteLectures){
-        for(Lecture lecture : remoteLectures) {
-            dbObjectBuilder.updateLecture(lecture, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
-        }
-    }
-
-    public void updateWorkloadRows(List<WorkloadEntry> remoteWorkloadEntries){
-        for (WorkloadEntry workloadEntry : remoteWorkloadEntries){
-            dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
-        }
-
-    }
 
 
-    public  void insert_delete_workloadentries_from_remote(List<WorkloadEntry> remoteWorkloadEntries){
-        boolean nosync = true;
-        boolean stopsync = true;
+    public  void update_workloadentries_from_remote(List<WorkloadEntry> remoteWorkloadEntries){
+
         List<WorkloadEntry> localWorkloadEntries = this.dbObjectBuilder.getWorkloadEntries(null);
         for(WorkloadEntry localWorkloadEntry : localWorkloadEntries){
             if(!isInList(localWorkloadEntry, remoteWorkloadEntries)){
@@ -167,6 +157,8 @@ public class RESTResponseProcessor {
         for(WorkloadEntry remoteWorkloadEntry : remoteWorkloadEntries){
             if(!isInList(remoteWorkloadEntry, localWorkloadEntries)){
                 this.dbObjectBuilder.addWorkloadEntry(remoteWorkloadEntry.lecture_id, remoteWorkloadEntry.week, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
+            }else{
+                dbObjectBuilder.updateWorkloadEntry(remoteWorkloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
             }
         }
     }
