@@ -32,7 +32,7 @@ public class CalendarAdapter extends MyBaseAdapter {
 
     public void updateMembers(){
 
-        this.mLectures = dbObjectBuilder.getLectureList(true, false);
+        this.mLectures = dbObjectBuilder.getLectureList(true);
         this.mWeeks = getWeeks(this.mLectures);
     }
 

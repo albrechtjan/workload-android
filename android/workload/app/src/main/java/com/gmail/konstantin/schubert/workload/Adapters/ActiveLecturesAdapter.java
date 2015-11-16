@@ -60,7 +60,7 @@ public class ActiveLecturesAdapter  extends MyBaseAdapter { //BaseAdapter alread
 
 
     public void updateMembers() {
-        mActiveLectures = this.dbObjectBuilder.getLectureList(true, false);
+        mActiveLectures = this.dbObjectBuilder.getLectureList(true);
     }
 
     ;

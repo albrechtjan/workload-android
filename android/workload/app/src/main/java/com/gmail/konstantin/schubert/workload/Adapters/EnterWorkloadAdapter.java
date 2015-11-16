@@ -33,7 +33,7 @@ public class EnterWorkloadAdapter extends MyBaseAdapter {
         super(context);
         mContext = context;
         sWeek = week;
-        sLecture = this.dbObjectBuilder.getLectureById(lectureId, false);
+        sLecture = this.dbObjectBuilder.getLectureById(lectureId);
         updateMembers();
     }
 

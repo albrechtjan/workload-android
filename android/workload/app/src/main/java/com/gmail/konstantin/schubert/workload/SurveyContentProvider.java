@@ -16,8 +16,6 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-
-import java.util.List;
 import java.util.Set;
 
 public class SurveyContentProvider extends ContentProvider {
@@ -37,6 +35,7 @@ public class SurveyContentProvider extends ContentProvider {
     private static final int SYNC = 8;
     private static final int RETRY = 9;
     private static final int MARK_TRANSACTING = 12;
+    private static final int DO_NOTHING = 13;
     private static final int HAS_ID = 10;
     private static final int HAS_NO_ID = 11;
 
@@ -141,6 +140,7 @@ public class SurveyContentProvider extends ContentProvider {
         sURITableTypeMatcher.addURI(AUTHORITY, "/lectures/*/*/", LECTURES);
         sURITableTypeMatcher.addURI(AUTHORITY, "/workentries/*/*/", ENTRIES);
         sURIOptionMatcher.addURI(AUTHORITY, "/*/sync/*/", SYNC);
+        sURIOptionMatcher.addURI(AUTHORITY, "/*/null/*/", DO_NOTHING);
         sURIOptionMatcher.addURI(AUTHORITY, "/*/stopsync/*/", STOPSYNC);  // set to idle
         sURIOptionMatcher.addURI(AUTHORITY, "/*/retrysync/*/", RETRY);  // set to retry
         sURIOptionMatcher.addURI(AUTHORITY, "/*/"+SYNC_STEER_COMMAND.MARK_TRANSACTING+"/*/", MARK_TRANSACTING);
@@ -226,7 +226,7 @@ public class SurveyContentProvider extends ContentProvider {
         String[] columns = {DB_STRINGS._ID, DB_STRINGS.OPERATION, DB_STRINGS.STATUS};
         Cursor cursor_all = database.query(table, columns, selection, selectionArgs, null, null, null);
         if (cursor_all.getCount() > 1 ){
-            throw new IllegalArgumentException("You cannot update more than one row at once.");
+            throw new IllegalArgumentException("You cannot update more than one row at once." + uri.toString() + " " + selection + " " +cursor_all.getCount());
         }
 
 
@@ -300,6 +300,9 @@ public class SurveyContentProvider extends ContentProvider {
             table = getContext().getResources().getString(R.string.lectures_table_name);
         }else{
             table = getContext().getResources().getString(R.string.workentry_table_name);
+            if (workentry_exists(database,values)){
+                throw new IllegalArgumentException("You are trying to insert an existing work entry");
+            }
         }
         if (uriOption==SYNC){
             // we do a post
@@ -309,6 +312,16 @@ public class SurveyContentProvider extends ContentProvider {
         long id = database.insert(table, null, values);
         maybeSync();
         return Uri.parse(uri + String.valueOf(id));
+
+    }
+
+    private boolean workentry_exists(SQLiteDatabase db, ContentValues values){
+        String[] cols = {DB_STRINGS._ID};
+        String where = DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + values.get(DB_STRINGS_WORKENTRY.LECTURE_ID);
+        where += " AND " + DB_STRINGS_WORKENTRY.YEAR + "=" + values.get(DB_STRINGS_WORKENTRY.YEAR);
+        where += " AND " + DB_STRINGS_WORKENTRY.WEEK + "=" + values.get(DB_STRINGS_WORKENTRY.WEEK);
+        Cursor c = db.query(getContext().getResources().getString(R.string.workentry_table_name), cols, where, null, null, null, null);
+        return c.getCount()>0;
 
     }
 

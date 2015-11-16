@@ -218,6 +218,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
 
         android.os.Debug.waitForDebugger();
+        Log.d(TAG,"Starting sync!");
 
 
         try {

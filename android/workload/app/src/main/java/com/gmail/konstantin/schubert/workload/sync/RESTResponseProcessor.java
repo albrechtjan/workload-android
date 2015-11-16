@@ -149,11 +149,7 @@ public class RESTResponseProcessor {
     public  void update_workloadentries_from_remote(List<WorkloadEntry> remoteWorkloadEntries){
 
         List<WorkloadEntry> localWorkloadEntries = this.dbObjectBuilder.getWorkloadEntries(null);
-        for(WorkloadEntry localWorkloadEntry : localWorkloadEntries){
-            if(!isInList(localWorkloadEntry, remoteWorkloadEntries)){
-                dbObjectBuilder.deleteWorkloadEntry(localWorkloadEntry.lecture_id, localWorkloadEntry.week);
-            }
-        }
+
         for(WorkloadEntry remoteWorkloadEntry : remoteWorkloadEntries){
             if(!isInList(remoteWorkloadEntry, localWorkloadEntries)){
                 this.dbObjectBuilder.addWorkloadEntry(remoteWorkloadEntry.lecture_id, remoteWorkloadEntry.week, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);

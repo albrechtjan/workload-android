@@ -39,7 +39,7 @@ public class WorkloadEntry implements Serializable{
     @Override
     public boolean equals(Object otherObject){
         WorkloadEntry other = (WorkloadEntry) otherObject;
-        return (other.lecture_id == this.lecture_id) && other.week.equals(this.week);
+        return (other.lecture_id == this.lecture_id) && (other.week.compareTo(this.week) == 0);
     }
 
 
