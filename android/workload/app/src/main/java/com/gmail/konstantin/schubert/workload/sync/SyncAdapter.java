@@ -294,56 +294,45 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             // can anchored in this function.
 
         try {
-            // VERY rough checks, and we will download everything
-                //TODO: un-comment the checks
-//            if (insert_from_remote_lectures_status == SYNC_STATUS.PENDING || delete_from_remote_lectures_status == SYNC_STATUS.PENDING ) {
-//                insert_from_remote_lectures_status = SYNC_STATUS.TRANSACTING;
-//                delete_from_remote_lectures_status = SYNC_STATUS.TRANSACTING;
-                sync_table_entries_lectures();
-//            }
 
-//            if(insert_from_remote_workentries_status == SYNC_STATUS.PENDING || delete_from_remote_workentries_status == SYNC_STATUS.PENDING ) {
-//                insert_from_remote_workentries_status = SYNC_STATUS.TRANSACTING;
-//                delete_from_remote_workentries_status = SYNC_STATUS.TRANSACTING;
-                sync_table_entries_workentries();
-//            }
+            sync_table_entries_lectures();
+            sync_table_entries_workentries();
 
 
-            Cursor cursor = dbObjectBuilder.getPending(getContext().getString(R.string.lectures_table_name));
+
+            Cursor cursor = dbObjectBuilder.getAll(getContext().getString(R.string.lectures_table_name));
             while (cursor.moveToNext()){
                 int sync_operation = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS.OPERATION));
                 int id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
-                if(sync_operation == SurveyContentProvider.SYNC_OPERATION.GET){
-                    get_lecture(id);
+                get_lecture(id);
+                //TODO: This is utterly inefficient of course, we should be getting all entries at once
+                if (sync_operation == SurveyContentProvider.SYNC_OPERATION.PATCH) {
                     dbObjectBuilder.mark_as_transacting(id, getContext().getString(R.string.lectures_table_name));
-                }
-                else if (sync_operation == SurveyContentProvider.SYNC_OPERATION.PATCH){
-                    patch_lecture(dbObjectBuilder.getLectureById(id, true)); // id is same as local-id since the ids are unique and identifiying for lectures across local AND remote
-                    dbObjectBuilder.mark_as_transacting(id, getContext().getString(R.string.lectures_table_name));
+                    patch_lecture(dbObjectBuilder.getLectureById(id)); // id is same as local-id since the ids are unique and identifying for lectures across local AND remote
                 }
                 // possibly add more
             }
             cursor.close();
 
 
-            cursor = dbObjectBuilder.getPending(getContext().getString(R.string.workentry_table_name));
+            cursor = dbObjectBuilder.getAll(getContext().getString(R.string.workentry_table_name));
             while (cursor.moveToNext()){
                 int sync_operation = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS.OPERATION));
                 int local_id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
                 int lecture_id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID));
                 int year = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR));
                 int week = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK));
-                if(sync_operation == SurveyContentProvider.SYNC_OPERATION.GET){
-                    get_workload_entry(lecture_id,year,week);
+
+                get_workload_entry(lecture_id,year,week);
+                //TODO: This is utterly inefficient of course, we should be getting all entries at once
+
+                if (sync_operation == SurveyContentProvider.SYNC_OPERATION.PATCH) {
                     dbObjectBuilder.mark_as_transacting(local_id, getContext().getString(R.string.workentry_table_name));
+                    patch_workentry(dbObjectBuilder.getWorkloadEntryByLocalId(local_id));
                 }
-                else if (sync_operation == SurveyContentProvider.SYNC_OPERATION.PATCH){
-                    patch_workentry(dbObjectBuilder.getWorkloadEntryByLocalId(local_id, true));
+                else if (sync_operation == SurveyContentProvider.SYNC_OPERATION.POST) {
                     dbObjectBuilder.mark_as_transacting(local_id, getContext().getString(R.string.workentry_table_name));
-                }
-                else if (sync_operation == SurveyContentProvider.SYNC_OPERATION.POST){
-                    post_workentry(dbObjectBuilder.getWorkloadEntryByLocalId(local_id, true));
-                    dbObjectBuilder.mark_as_transacting(local_id, getContext().getString(R.string.workentry_table_name));
+                    post_workentry(dbObjectBuilder.getWorkloadEntryByLocalId(local_id));
                 }
                 // possibly add more
             }

@@ -124,7 +124,7 @@ public class RESTResponseProcessor {
     public void insert_delete_lectures_from_remote(List<Lecture> remoteLectures) {
         // updates the available lectures from the remote end to the local end.
         // Remote always supersedes local, even if syncing
-        List<Lecture> localLectures = this.dbObjectBuilder.getLectureList(false, true);  // all lectures (active and inactive) that are listed locally
+        List<Lecture> localLectures = this.dbObjectBuilder.getLectureList(false);  // all lectures (active and inactive) that are listed locally
         // delete local lectures that are not in the remote list
         for (Lecture localLecture : localLectures) {
             if (!isInList(localLecture, remoteLectures)) {
@@ -142,16 +142,14 @@ public class RESTResponseProcessor {
 
 
     public void updateLectureRows(List<Lecture> remoteLectures){
-        boolean stopsync = true;
         for(Lecture lecture : remoteLectures) {
-            dbObjectBuilder.updateLecture(lecture, stopsync);
+            dbObjectBuilder.updateLecture(lecture, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
         }
     }
 
     public void updateWorkloadRows(List<WorkloadEntry> remoteWorkloadEntries){
-        boolean stopsync = true;
         for (WorkloadEntry workloadEntry : remoteWorkloadEntries){
-            dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
+            dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
         }
 
     }
@@ -160,10 +158,10 @@ public class RESTResponseProcessor {
     public  void insert_delete_workloadentries_from_remote(List<WorkloadEntry> remoteWorkloadEntries){
         boolean nosync = true;
         boolean stopsync = true;
-        List<WorkloadEntry> localWorkloadEntries = this.dbObjectBuilder.getWorkloadEntries(null, nosync);
+        List<WorkloadEntry> localWorkloadEntries = this.dbObjectBuilder.getWorkloadEntries(null);
         for(WorkloadEntry localWorkloadEntry : localWorkloadEntries){
             if(!isInList(localWorkloadEntry, remoteWorkloadEntries)){
-                dbObjectBuilder.deleteWorkloadEntry(localWorkloadEntry.lecture_id, localWorkloadEntry.week,stopsync);
+                dbObjectBuilder.deleteWorkloadEntry(localWorkloadEntry.lecture_id, localWorkloadEntry.week);
             }
         }
         for(WorkloadEntry remoteWorkloadEntry : remoteWorkloadEntries){

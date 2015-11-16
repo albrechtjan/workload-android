@@ -32,7 +32,7 @@ public class SurveyContentProvider extends ContentProvider {
     //TODO: Use enums.
     private static final int LECTURES = 2;
     private static final int ENTRIES = 4;
-    private static final int NOSYNC = 6;
+    private static final int GET_OVERWRITE = 4;
     private static final int STOPSYNC = 7;
     private static final int SYNC = 8;
     private static final int RETRY = 9;
@@ -44,38 +44,6 @@ public class SurveyContentProvider extends ContentProvider {
     public static final String ACCOUNT = "default_account";
     Account mAccount;
 
-    public int getInsert_from_remote_lectures_status() {
-        return insert_from_remote_lectures_status;
-    }
-
-    public void setInsert_from_remote_lectures_status(int insert_from_remote_lectures_status) {
-        this.insert_from_remote_lectures_status = insert_from_remote_lectures_status;
-    }
-
-    public int getDelete_from_remote_lectures_status() {
-        return delete_from_remote_lectures_status;
-    }
-
-    public void setDelete_from_remote_lectures_status(int delete_from_remote_lectures_status) {
-        this.delete_from_remote_lectures_status = delete_from_remote_lectures_status;
-    }
-
-    public int getInsert_from_remote_workentries_status() {
-        return insert_from_remote_workentries_status;
-    }
-
-    public void setInsert_from_remote_workentries_status(int insert_from_remote_workentries_status) {
-        this.insert_from_remote_workentries_status = insert_from_remote_workentries_status;
-    }
-
-    public int getDelete_from_remote_workentries_status() {
-        return delete_from_remote_workentries_status;
-    }
-
-    public void setDelete_from_remote_workentries_status(int delete_from_remote_workentries_status) {
-        this.delete_from_remote_workentries_status = delete_from_remote_workentries_status;
-    }
-
 
     // there is no point in trying to match the API in the database model
     // because the API is designed to work for certain perspectives on the same data
@@ -85,11 +53,8 @@ public class SurveyContentProvider extends ContentProvider {
 
 
     public static class SYNC_OPERATION {
-        public static final int NONE = 0;
-        public static final int GET = 1;  // == query
         public static final int PATCH = 2;  // == update
         public static final int POST = 3; // == insert
-        public static final int DELETE = 4; // == delete
         // Honestly, I think the easiest way is to simply not delete anything, just mark rows as deleted.
         // That's unless something disappears remotely that can only deleted remotely, such as a lecture in the list of
         //  available lectures
@@ -133,6 +98,7 @@ public class SurveyContentProvider extends ContentProvider {
         public final static String NOSYNC = "nosync";
         public final static String STOPSYNC = "stopsync";
         public final static String RETRYSYNC = "retrysync";
+        public final static String GET_OVERWRITE = "get-overwrite";
     }
 
 
@@ -174,18 +140,12 @@ public class SurveyContentProvider extends ContentProvider {
         sURITableTypeMatcher.addURI(AUTHORITY, "/lectures/*/*/", LECTURES);
         sURITableTypeMatcher.addURI(AUTHORITY, "/workentries/*/*/", ENTRIES);
         sURIOptionMatcher.addURI(AUTHORITY, "/*/sync/*/", SYNC);
-        sURIOptionMatcher.addURI(AUTHORITY, "/*/nosync/*/", NOSYNC);
         sURIOptionMatcher.addURI(AUTHORITY, "/*/stopsync/*/", STOPSYNC);  // set to idle
-        sURIOptionMatcher.addURI(AUTHORITY, "/*/retrysync/*/", RETRY);  // set to idle
+        sURIOptionMatcher.addURI(AUTHORITY, "/*/retrysync/*/", RETRY);  // set to retry
+        sURIOptionMatcher.addURI(AUTHORITY, "/*/get-overwrite/*/", GET_OVERWRITE);
         sURIHasIDMatcher.addURI(AUTHORITY, "/*/*/#/", HAS_ID);
         sURIHasIDMatcher.addURI(AUTHORITY, "/*/*/any/", HAS_NO_ID);
     }
-
-    // These flags indicate if the table is being checked for possible inserts or deletes.
-    private int insert_from_remote_lectures_status;
-    private int delete_from_remote_lectures_status;
-    private int insert_from_remote_workentries_status;
-    private int delete_from_remote_workentries_status;
 
     @Override
     public boolean onCreate() {
@@ -222,11 +182,6 @@ public class SurveyContentProvider extends ContentProvider {
         }
 
 
-        if (uriOption==STOPSYNC){
-            throw new UnsupportedOperationException();
-        }
-
-
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
         SQLiteQueryBuilder qBuilder = new SQLiteQueryBuilder();
 
@@ -241,38 +196,7 @@ public class SurveyContentProvider extends ContentProvider {
         Cursor cursor = qBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
-        if (uriOption != NOSYNC) {
-            // we sync
-            // but only idle entries can be GET-ed
-            String where = DB_STRINGS.STATUS + "=" + SYNC_STATUS.IDLE;
-            if(hasID == HAS_ID){
-                where += " AND " + DB_STRINGS._ID + "=" + String.valueOf(ContentUris.parseId(uri));
-            }
-            if (selection != null){
-                where += " AND " + selection;
-            }
-
-            if (hasID!=HAS_ID && selection==null) {
-                // querying all rows causes a check for inserts and deletes
-                setFlagsForRowChecks(tableType);
-            }else{
-                if(cursor.getCount()==0){
-                    // querying with a selection where nothing is found causes a check for inserts
-                    // (and deletes, the implementation is a bit more conservative than the pattern
-                    // requires it.
-                    setFlagsForRowChecks(tableType);
-                }
-            }
-
-
-
-            ContentValues values = new ContentValues(2);
-            values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.GET);
-            values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
-            int rows = database.update(qBuilder.getTables(), values, where, null);
-            maybeSync();
-        }
-
+        maybeSync();
         return cursor;
     }
 
@@ -310,70 +234,47 @@ public class SurveyContentProvider extends ContentProvider {
             table = getContext().getResources().getString(R.string.workentry_table_name);
         }
 
-        // we restrict UPDATE to a single row
+        // we restrict UPDATE to a single row. This is only for now, might want to change this.
         String[] columns = {DB_STRINGS._ID, DB_STRINGS.OPERATION, DB_STRINGS.STATUS};
         Cursor cursor_all = database.query(table, columns, selection, selectionArgs, null, null, null);
         if (cursor_all.getCount() > 1 ){
             throw new IllegalArgumentException("You cannot update more than one row at once.");
         }
+
+
         cursor_all.moveToFirst();
         int status =   cursor_all.getInt(cursor_all.getColumnIndex(DB_STRINGS.STATUS));
         int operation =   cursor_all.getInt(cursor_all.getColumnIndex(DB_STRINGS.OPERATION));
 
-        if(uriOption==STOPSYNC && valuesHaveData(values)){
-            // we seem to be returning from a get to the remote
-            if(status==SYNC_STATUS.TRANSACTING && operation==SYNC_OPERATION.GET){
-                // this is the expected case,
-            }
-            else if(status==SYNC_STATUS.IDLE) {
-                //we can also write to the row
-            }else{
+        if(uriOption==GET_OVERWRITE){
+            if(status!=SYNC_STATUS.IDLE) {
                 // do not overwrite
                 return -1;
             }
         }
-
-        if(uriOption!=SYNC){
-            if (values.keySet().contains(DB_STRINGS.OPERATION)){
-                throw new UnsupportedOperationException("Unless you are initiating a new sync, " +
-                        "you must pass sync operation type in the values.");
-            }
-            if(values.getAsInteger(DB_STRINGS.OPERATION)!=operation){
-                // the operation we are trying to stop is not the one currently ongoing.
-            }
-            if(status!=SYNC_STATUS.TRANSACTING) {
-//                throw new UnsupportedOperationException("You cannot do a stopsync if the line is not transacting");
-                return -1;
-            }
-            else{
-                values.put(DB_STRINGS.STATUS,SYNC_STATUS.IDLE);
-            }
-        }
-        else if(uriOption==NOSYNC){
-
-        }
         else if(uriOption==SYNC){
-            if(status == SYNC_STATUS.RETRY || status==SYNC_STATUS.IDLE){
+            if(status==SYNC_STATUS.IDLE || status==SYNC_STATUS.RETRY){
                 values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
-            }
-        }else if(uriOption==RETRY){
-            if(status == SYNC_STATUS.TRANSACTING) {
-                values.put(DB_STRINGS.STATUS, SYNC_STATUS.RETRY);
+                if(status==SYNC_STATUS.IDLE) {
+                    // only in this case, the operation can be changed.
+                    values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.PATCH);
+                }
             }
         }
-
-
-        if(uriOption==STOPSYNC){
+        else if (uriOption==STOPSYNC){
             if(status == SYNC_STATUS.TRANSACTING) {
                 values.put(DB_STRINGS.STATUS, SYNC_STATUS.IDLE);
             }
+        }else if(uriOption==RETRY) {
+            if (status == SYNC_STATUS.TRANSACTING) {
+                values.put(DB_STRINGS.STATUS, SYNC_STATUS.RETRY);
+            }
         }
-        if (uriOption == SYNC){
-            //TODO: Do this only if current status is IDLE or RETRY??!?!?
-            // we do a patch
-            values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.PATCH);
-            values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
+        else{
+            throw new IllegalArgumentException("Illegal uriOption. Maybe you wanted to use /get-overwrite/ ?");
         }
+
+
         int rows_updated = database.update(table, values, selection, null);
         maybeSync();
         return rows_updated;
@@ -401,12 +302,6 @@ public class SurveyContentProvider extends ContentProvider {
         int tableType = sURITableTypeMatcher.match(uri);
         int uriOption = sURIOptionMatcher.match(uri);
 
-        if (uriOption == STOPSYNC){
-            //TODO: Do this only if variables are TRANSACTING
-            if (tableType == LECTURES) setInsert_from_remote_lectures_status(SYNC_STATUS.IDLE);
-            if (tableType == ENTRIES) setInsert_from_remote_workentries_status(SYNC_STATUS.IDLE);
-        }
-
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
         String table;
         if (tableType == LECTURES){
@@ -414,7 +309,7 @@ public class SurveyContentProvider extends ContentProvider {
         }else{
             table = getContext().getResources().getString(R.string.workentry_table_name);
         }
-        if (uriOption != NOSYNC && uriOption!=STOPSYNC){
+        if (uriOption==SYNC){
             // we do a post
             values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.POST);
             values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
@@ -442,11 +337,6 @@ public class SurveyContentProvider extends ContentProvider {
             else selection += " AND _ID=" + String.valueOf(ContentUris.parseId(uri));
         }
 
-        if (uriOption == STOPSYNC){
-            //TODO: Do this only if variables are TRANSACTING
-            if (tableType == LECTURES) setDelete_from_remote_lectures_status(SYNC_STATUS.IDLE);
-            if (tableType == ENTRIES) setDelete_from_remote_workentries_status(SYNC_STATUS.IDLE);
-        }
 
         String table;
         if (tableType == LECTURES) table = getContext().getResources().getString(R.string.lectures_table_name);
@@ -456,21 +346,6 @@ public class SurveyContentProvider extends ContentProvider {
         int rows_affected = database.delete(table, selection, null);
         getContext().getContentResolver().notifyChange(uri, null, false);
         return rows_affected;
-    }
-
-    private void setFlagsForRowChecks(int tableType){
-        if (tableType == LECTURES) {
-            if (getInsert_from_remote_lectures_status() == SYNC_STATUS.IDLE)
-                setInsert_from_remote_lectures_status(SYNC_STATUS.PENDING);
-            if (getDelete_from_remote_lectures_status() == SYNC_STATUS.IDLE)
-                setDelete_from_remote_lectures_status(SYNC_STATUS.PENDING);
-        }
-        if (tableType == ENTRIES) {
-            if (getInsert_from_remote_workentries_status() == SYNC_STATUS.IDLE)
-                setInsert_from_remote_workentries_status(SYNC_STATUS.PENDING);
-            if (getDelete_from_remote_workentries_status() == SYNC_STATUS.IDLE)
-                setDelete_from_remote_workentries_status(SYNC_STATUS.PENDING);
-        }
     }
 
 

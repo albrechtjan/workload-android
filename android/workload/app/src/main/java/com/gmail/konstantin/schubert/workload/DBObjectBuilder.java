@@ -26,12 +26,9 @@ public class DBObjectBuilder {
     }
 
 
-    public List<Lecture> getLectureList( boolean onlyActive, boolean noSync){
-        Cursor cursor;
-        if (noSync)
-            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/nosync/any/"), null, null, null, null);
-        else
-            cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/sync/any/"), null, null, null, null);
+    public List<Lecture> getLectureList( boolean onlyActive){
+
+        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/null/any/"), null, null, null, null);
         List<Lecture> lectures = new ArrayList<Lecture>();
         while (cursor.moveToNext()){
             Lecture newLecture = buildLectureFromCursor(cursor);
@@ -44,25 +41,19 @@ public class DBObjectBuilder {
     }
 
 
-    public Lecture getLectureById(Integer lectureId, boolean nosync){
-        Cursor cursor;
-        if (nosync) {
-            cursor= mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/nosync/" + String.valueOf(lectureId)), null, null, null, null);
-        }else{
-            cursor= mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/sync/" + String.valueOf(lectureId) ), null, null, null, null);
-        }
+    public Lecture getLectureById(Integer lectureId){
+
+        Cursor cursor= mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/null/" + String.valueOf(lectureId)), null, null, null, null);
         cursor.moveToFirst();
         Lecture lecture = buildLectureFromCursor(cursor);
         cursor.close();
         return lecture;
     }
 
-    public Cursor getPending(String table){
+    public Cursor getAll(String table){
         String uri = "content://" + SurveyContentProvider.AUTHORITY+ "/";
-        uri += table + "/";
-        uri +="nosync/any/";
-        String where = SurveyContentProvider.DB_STRINGS.STATUS + "=" + SurveyContentProvider.SYNC_STATUS.PENDING;
-        return  mContentResolver.query(Uri.parse(uri), null, where, null, null);
+        uri += table + "/null/any/";
+        return  mContentResolver.query(Uri.parse(uri), null, null, null, null);
     }
 
     public void mark_as_transacting(int id, String table){
@@ -77,10 +68,9 @@ public class DBObjectBuilder {
     }
 
 
-    public WorkloadEntry getWorkloadEntryByLocalId(int local_id, boolean nosync){
+    public WorkloadEntry getWorkloadEntryByLocalId(int local_id){
 
-        String uri = "content://" + SurveyContentProvider.AUTHORITY + "/workentries/";
-        uri += nosync ? "nosync/" : "sync/";
+        String uri = "content://" + SurveyContentProvider.AUTHORITY + "/workentries/null/";
         uri += String.valueOf(local_id) + "/";
         Cursor cursor = mContentResolver.query(Uri.parse(uri), null, null, null, null);
         cursor.moveToFirst();
@@ -132,7 +122,7 @@ public class DBObjectBuilder {
 
     public List<Lecture> getLecturesInWeek(Week thatWeek, boolean onlyActive){
         // gets lectures that are active in 'thatWeek'
-        List<Lecture> allLectures = getLectureList(onlyActive, false);
+        List<Lecture> allLectures = getLectureList(onlyActive);
         List<Lecture> lecturesThatWeek = new ArrayList<Lecture>();
         for (Lecture lecture : allLectures){
             if (lecture.startWeek.compareTo(thatWeek)<=0 && thatWeek.compareTo(lecture.endWeek)<=0) {
@@ -142,8 +132,8 @@ public class DBObjectBuilder {
         return lecturesThatWeek;
     }
 
-    public List<Lecture> getLecturesOfSemester(String semester, boolean onlyActive, boolean nosync){
-        List<Lecture> lectures = getLectureList(onlyActive, nosync);
+    public List<Lecture> getLecturesOfSemester(String semester, boolean onlyActive){
+        List<Lecture> lectures = getLectureList(onlyActive);
         List<Lecture> lecturesInSemester = new ArrayList<>();
         for (Lecture lecture : lectures){
             if (lecture.semester.equals(semester)){
@@ -155,10 +145,10 @@ public class DBObjectBuilder {
 
 
 
-    public List<String> getSemesterList(boolean onlyActive, boolean nosync){
+    public List<String> getSemesterList(boolean onlyActive){
         //TODO: Make this more efficient
         List<String> semesters = new ArrayList<>();
-        List<Lecture> lectures = getLectureList(onlyActive, nosync);
+        List<Lecture> lectures = getLectureList(onlyActive);
         //Wow, this would be two lines in python. Am I doing this wrong?
         for (Lecture lecture : lectures ){
             boolean found =false;
@@ -179,7 +169,7 @@ public class DBObjectBuilder {
         String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture_id)+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(week.year())+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(week.week());
-        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/sync/any/"), null, where, null, null);
+        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/null/any/"), null, where, null, null);
         return cursor;
     }
 
@@ -195,7 +185,7 @@ public class DBObjectBuilder {
 
     }
 
-    public void deleteWorkloadEntry(int lecture_id, Week week, boolean stopsync){
+    public void deleteWorkloadEntry(int lecture_id, Week week){
         String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture_id)+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(week.year())+" AND ";
         where += SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(week.week());
@@ -204,7 +194,7 @@ public class DBObjectBuilder {
 
     }
 
-    public List<WorkloadEntry> getWorkloadEntries(Lecture lecture, boolean nosync){
+    public List<WorkloadEntry> getWorkloadEntries(Lecture lecture){
         /* Gets the workload entries for a given lecture.
         * If passed null it will get the entries for all lectures.
         * */
@@ -213,10 +203,7 @@ public class DBObjectBuilder {
             where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture._ID);
         }
 
-        String uri = "content://" + SurveyContentProvider.AUTHORITY + "/workentries/";
-        uri += nosync ? "nosync/" : "sync/";
-        uri += "any/";
-
+        String uri = "content://" + SurveyContentProvider.AUTHORITY + "/workentries/null/any/";
         Cursor cursor = mContentResolver.query(Uri.parse(uri), null, where, null, null);
 
         List<WorkloadEntry> workloadEntries = new ArrayList<WorkloadEntry>();
@@ -247,13 +234,13 @@ public class DBObjectBuilder {
         }
     }
 
-    public void updateLecture(Lecture lecture, boolean stopsync){
+    public void updateLecture(Lecture lecture, String syncSteerCommand){
 
         ContentValues values = getValues(lecture);
         values.remove(SurveyContentProvider.DB_STRINGS._ID); // We add the ID in the url.
 
         String uri = "content://" + SurveyContentProvider.AUTHORITY + "/lectures/";
-        uri += stopsync ? "stopsync/" : "sync/";
+        uri += syncSteerCommand + "/";
         uri += String.valueOf(lecture._ID) + "/";
         int result = mContentResolver.update(Uri.parse(uri), values, null, null);
         if (result<0){
