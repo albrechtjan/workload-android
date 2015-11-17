@@ -156,7 +156,11 @@ public class SurveyContentProvider extends ContentProvider {
         Log.d(TAG, "Created Database Helper");
         mAccount = CreateSyncAccount(getContext());
         ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
-//        ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true  );
+        ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
+        //TODO: Remove periodic sync and do this instead: http://developer.android.com/training/sync-adapters/running-sync-adapter.html#RunByMessage
+        ContentResolver.addPeriodicSync(mAccount, AUTHORITY, Bundle.EMPTY, 10 * 60);
+
+        // Run on server data change
         return true;
     }
 
@@ -192,7 +196,7 @@ public class SurveyContentProvider extends ContentProvider {
 
         Cursor cursor = qBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
-        //TODO: Request sync from activity adapter if appropriate
+        //TODO: Request sync if appropriate. Maybe Request sync from activity? Or add a SYNC url option????
         return cursor;
     }
 
@@ -419,7 +423,5 @@ public class SurveyContentProvider extends ContentProvider {
         Log.d(TAG, "requesting sync");
         ContentResolver.requestSync(mAccount, AUTHORITY, new Bundle());
     }
-
-
 
 }
