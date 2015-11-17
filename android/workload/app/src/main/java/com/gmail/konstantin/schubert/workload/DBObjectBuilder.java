@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.gmail.konstantin.schubert.workload.sync.SyncAdapter;
 
@@ -20,6 +21,7 @@ public class DBObjectBuilder {
     //TODO: However, at this point I am not sure how the database would need to look like to this end.
 
     private ContentResolver mContentResolver;
+    private static final String TAG = DBObjectBuilder.class.getSimpleName();
 
     public DBObjectBuilder(ContentResolver contentResolver){
         this.mContentResolver = contentResolver;
@@ -231,7 +233,7 @@ public class DBObjectBuilder {
         uri += "any/";
         int result = mContentResolver.update(Uri.parse(uri), values, where, null);
         if (result<0){
-//            throw new UnsupportedOperationException();
+            Log.d(TAG, "Could not update WorkloadEntry. Maybe SYNC_STATUS of row is not IDLE");
         }
     }
 
@@ -245,7 +247,7 @@ public class DBObjectBuilder {
         uri += String.valueOf(lecture._ID) + "/";
         int result = mContentResolver.update(Uri.parse(uri), values, null, null);
         if (result<0){
-            throw new UnsupportedOperationException();
+            Log.d(TAG, "Could not update Lecture. Maybe SYNC_STATUS of row is not IDLE");
         }
     }
 

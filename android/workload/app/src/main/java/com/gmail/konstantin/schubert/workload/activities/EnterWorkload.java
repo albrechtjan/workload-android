@@ -45,8 +45,11 @@ public class EnterWorkload extends MyBaseListActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        EnterWorkloadAdapter adaper = (EnterWorkloadAdapter) getListAdapter();
-        adaper.saveWorkload();
+        // TODO: Currently we save an entry only on edit.
+        // This way we prevent the framework from updating empty entries and overwriting remote changes
+        // when the entries are just being looked at.
+//        EnterWorkloadAdapter adapter = (EnterWorkloadAdapter) getListAdapter();
+//        adapter.saveWorkload();
     }
 
 }

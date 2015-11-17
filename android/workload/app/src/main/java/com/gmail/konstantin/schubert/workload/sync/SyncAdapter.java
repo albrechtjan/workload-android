@@ -103,40 +103,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     }
 
-
-    private void patch_workentry( WorkloadEntry workloadEntry) throws IOException, AuthenticatorException{
-        //TODO: Remove duplicate code with post_workentries
-
-        try {
-            String url = baseUrl;
-            url += "api/entries/active/year/"+ workloadEntry.week.year() +"/";
-            url +=  workloadEntry.week.week() + "/";
-            url += "lectures/" + workloadEntry.lecture_id + "/";
-            ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString());
-            ArrayList<NameValuePair> urlArgs = new ArrayList<>();
-            urlArgs.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
-            urlArgs.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
-            urlArgs.add(new BasicNameValuePair("hoursInStudying", String.valueOf(workloadEntry.getHoursStudying())));
-            mRestClient.Execute(RestClient.RequestMethod.PUT, url, headers, urlArgs);
-        } catch (Exception e) {
-            throw new IOException();
-        }
-
-        String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-        DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
-        // when calling updateWorkloadEntry, we are also doing an update of the time entries, but they should be correct, so it should be fine.
-        if (response==null){
-            // retry later
-            //TODO: dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.RETRYSYNC);
-            //TODO: First implement the stopsync in the content provider
-            throw new IOException();
-        } else {
-            // we succeeded and stop the sync
-            dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
-        }
-    }
-
-
     private void post_workentry( WorkloadEntry workloadEntry) throws IOException, AuthenticatorException{
         try {
             String url = baseUrl;
@@ -162,10 +128,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             //TODO: First implement the stopsync in the content provider
             throw new IOException();
         } else {
-            // we succeeded and stop the sync
+            // we succeeded and now we stop the sync
             dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
         }
-
     }
 
 
@@ -213,11 +178,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
 
         //TODO: Switch to ContentProviderClient (also in DBObjectbuilder) and use the one passed in the arguments.
-        //TODO: However, I must make sure the release the provider on time (!?!)
+        //TODO: However, I must make sure the release the provider on time ? No I think the sync framework does this for me.
         DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
 
 
-        android.os.Debug.waitForDebugger();
+//        android.os.Debug.waitForDebugger();
         Log.d(TAG,"Starting sync!");
 
 
@@ -231,7 +196,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             while (cursor.moveToNext()){
                 int sync_operation = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS.OPERATION));
                 int id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
-                if (sync_operation == SurveyContentProvider.SYNC_OPERATION.PATCH) {
+                if (sync_operation == SurveyContentProvider.SYNC_OPERATION.POST) {
                     dbObjectBuilder.mark_as_transacting(id, getContext().getString(R.string.lectures_table_name));
                     patch_lecture(dbObjectBuilder.getLectureById(id)); // id is same as local-id since the ids are unique and identifying for lectures across local AND remote
                 }
@@ -244,16 +209,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 int sync_operation = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS.OPERATION));
                 int local_id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
 
-                if (sync_operation == SurveyContentProvider.SYNC_OPERATION.PATCH) {
-                    dbObjectBuilder.mark_as_transacting(local_id, getContext().getString(R.string.workentry_table_name));
-                    patch_workentry(dbObjectBuilder.getWorkloadEntryByLocalId(local_id));
-                }
-                else if (sync_operation == SurveyContentProvider.SYNC_OPERATION.POST) {
+                if (sync_operation == SurveyContentProvider.SYNC_OPERATION.POST) {
                     dbObjectBuilder.mark_as_transacting(local_id, getContext().getString(R.string.workentry_table_name));
                     post_workentry(dbObjectBuilder.getWorkloadEntryByLocalId(local_id));
                 }
             }
             cursor.close();
+
+            Log.d(TAG,"Sucessfully finalized sync");
 
         }
         catch (AuthenticatorException e){

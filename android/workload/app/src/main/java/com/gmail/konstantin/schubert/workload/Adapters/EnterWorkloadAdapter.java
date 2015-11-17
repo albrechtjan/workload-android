@@ -69,6 +69,7 @@ public class EnterWorkloadAdapter extends MyBaseAdapter {
             }
 
             public void afterTextChanged(Editable s) {
+
                 if (!s.toString().isEmpty()) {
                     Float hours = Float.valueOf(s.toString());
                     switch (position) {
@@ -82,6 +83,8 @@ public class EnterWorkloadAdapter extends MyBaseAdapter {
                             fAdapter.mWorkloadEntry.setHoursForHomework(hours);
                             break;
                     }
+                    saveWorkload(); // Other than in the online version,
+                    // we only save an entry if it was edited!
                 }
             }
 

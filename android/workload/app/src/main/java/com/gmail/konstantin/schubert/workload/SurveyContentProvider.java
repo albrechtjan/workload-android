@@ -53,7 +53,8 @@ public class SurveyContentProvider extends ContentProvider {
 
 
     public static class SYNC_OPERATION {
-        public static final int PATCH = 2;  // == update
+//        public static final int PATCH = 2;  // == update
+        // we do not distinguish between patch and post any more, we always post
         public static final int POST = 3; // == insert
         // Honestly, I think the easiest way is to simply not delete anything, just mark rows as deleted.
         // That's unless something disappears remotely that can only deleted remotely, such as a lecture in the list of
@@ -191,8 +192,7 @@ public class SurveyContentProvider extends ContentProvider {
 
         Cursor cursor = qBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
-
-        maybeSync();
+        //TODO: Request sync from activity adapter if appropriate
         return cursor;
     }
 
@@ -240,35 +240,47 @@ public class SurveyContentProvider extends ContentProvider {
                 return -1;
             }
         }
-        else if(uriOption==SYNC){
-            if(status==SYNC_STATUS.IDLE || status==SYNC_STATUS.RETRY){
+        else if(uriOption==SYNC) {
+            if (status == SYNC_STATUS.IDLE || status == SYNC_STATUS.RETRY) {
                 values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
-                if(status==SYNC_STATUS.IDLE) {
-                    // only in this case, the operation can be changed.
-                    values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.PATCH);
-                }
+                values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.POST);
+            } else if ((status == SYNC_STATUS.TRANSACTING || status == SYNC_STATUS.PENDING) && operation == SYNC_OPERATION.POST) {
+                // I hope this works
+                values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
+                values.put(DB_STRINGS.OPERATION, SYNC_OPERATION.POST);
+            } else {
+                Log.w(TAG,"Could not mark row as pending sync");
             }
         }
         else if (uriOption==STOPSYNC){
             if(status == SYNC_STATUS.TRANSACTING) {
                 values.put(DB_STRINGS.STATUS, SYNC_STATUS.IDLE);
             }
+            else{
+                Log.d(TAG,"Cannot mark row as idle. Current status is not TRANSACTING, but " + status);
+            }
         }else if(uriOption==RETRY) {
             if (status == SYNC_STATUS.TRANSACTING) {
                 values.put(DB_STRINGS.STATUS, SYNC_STATUS.RETRY);
+            }else{
+                Log.d(TAG,"Cannot mark row as RETRY. Current status is not TRANSACTING, but " + status);
             }
         }else if (uriOption==MARK_TRANSACTING){
-            if(status == SYNC_STATUS.PENDING){
+            if(status == SYNC_STATUS.PENDING || status == SYNC_STATUS.RETRY){
                 values.put(DB_STRINGS.STATUS,SYNC_STATUS.TRANSACTING);
+            }else{
+                Log.d(TAG,"Cannot mark row as transacting. Current status is not PENDING or RETRY, but " + status);
             }
         }
         else{
-            throw new IllegalArgumentException("Illegal uriOption. Maybe you wanted to use /get-overwrite/ ?");
+            throw new IllegalArgumentException("Illegal uriOption.");
         }
 
 
         int rows_updated = database.update(table, values, selection, null);
-        maybeSync();
+        if(uriOption==SYNC) {
+            maybeSync();
+        }
         return rows_updated;
     }
 
