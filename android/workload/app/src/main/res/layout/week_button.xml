@@ -4,5 +4,7 @@
     android:layout_width="@dimen/week_button_size"
     android:layout_height="@dimen/week_button_size"
     android:id="@+id/week_button"
-    android:backgroundTint="@color/primary_brightish"
     android:minHeight="@dimen/week_button_size"/>
+
+<!--I should probably just use a different item instead of a button if I want to get the same look as in the lists.-->
+<!--In fact, I want the grid elements to equally stretch until a certain size, before increasing the amount of elements in the row by one.-->
