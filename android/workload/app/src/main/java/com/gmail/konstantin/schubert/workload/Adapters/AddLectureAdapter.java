@@ -5,10 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.R;
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
 import java.util.List;
 
@@ -37,12 +39,20 @@ public class AddLectureAdapter  extends MyBaseAdapter { //BaseAdapter already im
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             lectureRow = (RelativeLayout) inflater.inflate(R.layout.add_lecture_row, parent, false);
         }
+        final Lecture lecture = mLectures.get(position);
 
         TextView label = (TextView) lectureRow.findViewById(R.id.add_lecture_name_text_view);
-        label.setText(mLectures.get(position).name);
+        label.setText(lecture.name);
 
+        final Switch activeSwitch = (Switch) lectureRow.findViewById(R.id.add_lecture_select_switch);
+        activeSwitch.setChecked(lecture.isActive);
 
-
+        activeSwitch.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                lecture.isActive = activeSwitch.isChecked();
+                dbObjectBuilder.updateLecture(lecture, SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
+            }
+        });
 
         return lectureRow;
     }
