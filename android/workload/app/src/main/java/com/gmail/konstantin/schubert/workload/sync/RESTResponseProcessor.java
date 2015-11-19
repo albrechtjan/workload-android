@@ -135,7 +135,7 @@ public class RESTResponseProcessor {
         // add remote lectures that are not in local lectures
         for (Lecture remoteLecture : remoteLectures){
             if(!isInList(remoteLecture, localLectures)){
-               this.dbObjectBuilder.addLecture(remoteLecture,true);
+               this.dbObjectBuilder.addLecture(remoteLecture,SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
             }else{
                 this.dbObjectBuilder.updateLecture(remoteLecture, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
 
@@ -152,7 +152,7 @@ public class RESTResponseProcessor {
 
         for(WorkloadEntry remoteWorkloadEntry : remoteWorkloadEntries){
             if(!isInList(remoteWorkloadEntry, localWorkloadEntries)){
-                this.dbObjectBuilder.addWorkloadEntry(remoteWorkloadEntry.lecture_id, remoteWorkloadEntry.week, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
+                this.dbObjectBuilder.addWorkloadEntry(remoteWorkloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
             }else{
                 dbObjectBuilder.updateWorkloadEntry(remoteWorkloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
             }

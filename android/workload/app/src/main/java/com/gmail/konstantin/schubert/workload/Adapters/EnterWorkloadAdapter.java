@@ -121,7 +121,7 @@ public class EnterWorkloadAdapter extends MyBaseAdapter {
     public void updateMembers() {
         Cursor cursor = this.dbObjectBuilder.getWorkloadEntry(sLecture._ID, sWeek);
         if (cursor.getCount()==0){
-            this.dbObjectBuilder.addWorkloadEntry(sLecture._ID, sWeek, SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
+            this.dbObjectBuilder.addWorkloadEntry(new WorkloadEntry(sWeek,sLecture._ID,0,0,0), SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
             cursor = this.dbObjectBuilder.getWorkloadEntry(sLecture._ID,sWeek);
         }
         mWorkloadEntry = new WorkloadEntry(cursor);

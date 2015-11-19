@@ -84,9 +84,9 @@ public class DBObjectBuilder {
 
 
 
-    public void addLecture(Lecture lecture, boolean stopsync){
+    public void addLecture(Lecture lecture, String syncSteerCommand){
         String uriString = "content://" + SurveyContentProvider.AUTHORITY;
-        uriString += stopsync ?  "/lectures/stopsync/" : "/lectures/sync/";
+        uriString +="/lectures/"+syncSteerCommand+"/";
         uriString += "/any";
         ContentValues values = getValues(lecture);
         mContentResolver.insert(Uri.parse(uriString), values);
@@ -176,26 +176,21 @@ public class DBObjectBuilder {
         return cursor;
     }
 
-    public void addWorkloadEntry(int lecture_id, Week week, String syncSteerCommand){
+    public void addWorkloadEntry(WorkloadEntry entry, String syncSteerCommand){
         ContentValues values = new ContentValues(3);
-        values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR, week.year());
-        values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK, week.week());
-        values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID, lecture_id);
+        values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR, entry.week.year());
+        values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK, entry.week.week());
+        values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID, entry.lecture_id);
+        values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK, entry.getHoursForHomework());
+        values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE, entry.getHoursInLecture());
+        values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_STUDYING, entry.getHoursStudying());
         String uri = "content://" + SurveyContentProvider.AUTHORITY + "/workentries/";
-        uri += SurveyContentProvider.SYNC_STEER_COMMAND.SYNC+"/";
+        uri += syncSteerCommand+"/";
         uri += "any/";
         mContentResolver.insert(Uri.parse(uri), values);
 
     }
 
-    public void deleteWorkloadEntry(int lecture_id, Week week){
-        String where = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(lecture_id)+" AND ";
-        where += SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(week.year())+" AND ";
-        where += SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(week.week());
-        Uri uri = Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/stopsync/any/");
-        mContentResolver.delete(uri, where, null);
-
-    }
 
     public List<WorkloadEntry> getWorkloadEntries(Lecture lecture){
         /* Gets the workload entries for a given lecture.
