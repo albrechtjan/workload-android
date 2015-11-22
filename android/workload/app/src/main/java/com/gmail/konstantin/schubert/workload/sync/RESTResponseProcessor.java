@@ -4,6 +4,7 @@ package com.gmail.konstantin.schubert.workload.sync;
 import android.content.ContentResolver;
 import android.net.Uri;
 import android.util.JsonReader;
+import android.util.MalformedJsonException;
 
 import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.Lecture;
@@ -32,14 +33,17 @@ public class RESTResponseProcessor {
     static public List<Lecture> lectureListFromJson(String jsonList) throws IOException{
         JsonReader reader = new JsonReader(new StringReader(jsonList));
         List<Lecture> lectures = new ArrayList();
-
-        reader.beginArray();
-        while (reader.hasNext()) {
-            lectures.add(buildLecture(reader));
+        try {
+            reader.beginArray();
+            while (reader.hasNext()) {
+                lectures.add(buildLecture(reader));
+            }
+            reader.endArray();
+            reader.close();
         }
-        reader.endArray();
-        reader.close();
-
+        catch (MalformedJsonException e){
+            throw  new MalformedJsonException(jsonList);
+        }
         return lectures;
     }
 

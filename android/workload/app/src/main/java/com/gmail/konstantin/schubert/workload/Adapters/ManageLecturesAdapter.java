@@ -8,37 +8,49 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 
 import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.R;
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
 import java.util.List;
 
-public class ActiveLecturesAdapter  extends MyBaseAdapter { //BaseAdapter already implements Listadapter
+public class ManageLecturesAdapter extends MyBaseAdapter { //BaseAdapter already implements Listadapter
 
     private List<Lecture> mActiveLectures;
     private Context mContext;
 
-    public ActiveLecturesAdapter(Context context) {
+    public ManageLecturesAdapter(Context context) {
         super(context);
         mContext = context;
         updateMembers();
     }
 
     public View getView(final int position, View convertView, ViewGroup parent) {
-        RelativeLayout lectureRow; //A button for the lecture wrapped in a LinearLayout
+        RelativeLayout lectureRow;
         if (convertView != null) {
             lectureRow = (RelativeLayout) convertView;
         } else {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            lectureRow = (RelativeLayout) inflater.inflate(R.layout.lecture_row_modern, parent, false);
+            lectureRow = (RelativeLayout) inflater.inflate(R.layout.lecture_row_modern_trashcan, parent, false);
         }
 
+        final Lecture lecture = mActiveLectures.get(position);
         TextView label = (TextView) lectureRow.getChildAt(0);
-        label.setText(mActiveLectures.get(position).name);
+        label.setText(lecture.name);
+
+        ImageButton deleteButton = (ImageButton) lectureRow.getChildAt(1);
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                lecture.isActive = false;
+                dbObjectBuilder.updateLecture(lecture, SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
+                i need to update the members (in an efficient way) and issue a re-draw
+            }
+        });
 
 
         return lectureRow;
@@ -62,8 +74,6 @@ public class ActiveLecturesAdapter  extends MyBaseAdapter { //BaseAdapter alread
     public void updateMembers() {
         mActiveLectures = this.dbObjectBuilder.getLectureList(true);
     }
-
-    ;
 
 
 }

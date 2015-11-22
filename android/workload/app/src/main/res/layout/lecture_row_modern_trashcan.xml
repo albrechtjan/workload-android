@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="70dp">
+
+
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Lecture Name"
+        android:id="@+id/add_lecture_name_text_view_trashcan"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_vertical|center_horizontal"
+        android:layout_toLeftOf="@+id/delete_lecture_button"
+     />
+
+
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_margin="20dp"
+        android:id="@id/delete_lecture_button"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/ic_delete_black_24dp"
+        />
+
+
+
+</RelativeLayout>

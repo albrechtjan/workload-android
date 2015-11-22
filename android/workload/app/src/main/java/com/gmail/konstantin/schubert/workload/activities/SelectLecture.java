@@ -29,4 +29,14 @@ public class SelectLecture extends MyBaseListActivity {
         setTitle("Choose a lecture");
     }
 
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        SelectLectureAdapter selectLectureAdapter = (SelectLectureAdapter) getListAdapter();
+        selectLectureAdapter.updateMembers();
+        do I need to do more to trigger a re-draw?
+    }
+
+
 }

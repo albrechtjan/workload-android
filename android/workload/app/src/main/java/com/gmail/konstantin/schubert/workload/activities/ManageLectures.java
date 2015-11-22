@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 
-import com.gmail.konstantin.schubert.workload.Adapters.ActiveLecturesAdapter;
+import com.gmail.konstantin.schubert.workload.Adapters.ManageLecturesAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 
 
@@ -20,7 +20,7 @@ public class ManageLectures extends MyBaseListActivity {
         super.onCreate(savedInstanceState);
         mContext = this;
         setContentView(R.layout.activity_active_lectures);
-        setListAdapter(new ActiveLecturesAdapter(this));
+        setListAdapter(new ManageLecturesAdapter(this));
         setTitle("Active Lectures");
 
         ImageButton addLectureButton = (ImageButton) findViewById(R.id.add_lecture_button);
@@ -32,4 +32,14 @@ public class ManageLectures extends MyBaseListActivity {
         });
 
     }
+
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        ManageLecturesAdapter manageLecturesAdapter = (ManageLecturesAdapter) getListAdapter();
+        manageLecturesAdapter.updateMembers();
+        do I need to do more to trigger a re-draw?
+    }
+
 }
