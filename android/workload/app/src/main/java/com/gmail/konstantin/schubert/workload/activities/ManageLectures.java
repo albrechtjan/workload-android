@@ -38,8 +38,9 @@ public class ManageLectures extends MyBaseListActivity {
     public void onResume(){
         super.onResume();
         ManageLecturesAdapter manageLecturesAdapter = (ManageLecturesAdapter) getListAdapter();
+        //TODO: Make this more efficient
         manageLecturesAdapter.updateMembers();
-        do I need to do more to trigger a re-draw?
+        manageLecturesAdapter.notifyDataSetChanged();
     }
 
 }

@@ -48,7 +48,9 @@ public class ManageLecturesAdapter extends MyBaseAdapter { //BaseAdapter already
             public void onClick(View v) {
                 lecture.isActive = false;
                 dbObjectBuilder.updateLecture(lecture, SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
-                i need to update the members (in an efficient way) and issue a re-draw
+                //TODO: Make this more efficient
+                updateMembers();
+                notifyDataSetChanged();
             }
         });
 
