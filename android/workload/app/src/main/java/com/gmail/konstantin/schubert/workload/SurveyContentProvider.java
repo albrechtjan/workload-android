@@ -40,8 +40,9 @@ public class SurveyContentProvider extends ContentProvider {
     private static final int HAS_NO_ID = 11;
 
 
+    //TODO: Figure out how to use string resources here
     public static final String ACCOUNT_TYPE = "tu-dresden.de";
-    public static final String ACCOUNT = "default_account";
+    public static final String ACCOUNT = "Uni-Account";
     Account mAccount;
 
 
@@ -283,26 +284,17 @@ public class SurveyContentProvider extends ContentProvider {
 
         int rows_updated = database.update(table, values, selection, null);
         if(uriOption==SYNC) {
-            maybeSync();
+            ContentResolver.requestSync(mAccount, AUTHORITY, new Bundle());
         }
+        getContext().getContentResolver().notifyChange(uri, null, false);
         return rows_updated;
     }
-
-    private boolean valuesHaveData(ContentValues values){
-        // figure out if we want to update actual data
-        Set<String> keys = values.keySet();
-        keys.remove(DB_STRINGS.OPERATION);
-        keys.remove(DB_STRINGS.STATUS);
-        return !keys.isEmpty();
-    }
-
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
 
         // Operation succeeds if row does not yet exist locally.
         // Otherwise, -1 is returned.
-        // If row already exists remotely, it will instead be updated.
         // If the STOPSYNC option is passed, it is assumed that the remote end
         // has been successfully checked for inserted entries, and the
         // insert_from_remote_*_status variables are set accordingly.
@@ -326,7 +318,8 @@ public class SurveyContentProvider extends ContentProvider {
             values.put(DB_STRINGS.STATUS, SYNC_STATUS.PENDING);
         }
         long id = database.insert(table, null, values);
-        maybeSync();
+        ContentResolver.requestSync(mAccount, AUTHORITY, new Bundle());
+        getContext().getContentResolver().notifyChange(uri, null, false);
         return Uri.parse(uri + String.valueOf(id));
 
     }
@@ -351,7 +344,6 @@ public class SurveyContentProvider extends ContentProvider {
 
         int tableType = sURITableTypeMatcher.match(uri);
         int hasID = sURIHasIDMatcher.match(uri);
-        int uriOption = sURIOptionMatcher.match(uri);
 
         if (hasID==HAS_ID){
             if (selection == null) selection = "_ID=" + String.valueOf(ContentUris.parseId(uri));
@@ -368,22 +360,6 @@ public class SurveyContentProvider extends ContentProvider {
         getContext().getContentResolver().notifyChange(uri, null, false);
         return rows_affected;
     }
-
-
-
-    //TODO: replace comparisons of Integer objects with equals!
-//
-//    7. Be aware of ContentResolver.notifyChange()
-//
-//    One tricky thing. ContentResolver.notifyChange() is a function used by ContentProviders to notify Android that the local database has been changed. This serves two functions, first,
-//   it will cause cursors following that contenturi to update, and in turn requery and invalidate and redraw a ListView, etc...
-    //   TODO: are my view adapters written in a way so the view updates automatically?
-//   It's very magical, the database changes and your ListView just updates automatically.
-// Awesome. Also, when the database changes, Android will request Sync for you,
-// even outside your normal schedule, so that those changes get taken off the device and synced to the server as rapidly as possible. Also awesome.
-//
-//    There's one edge case though. If you pull from the server, and push an update into the ContentProvider, it will dutifully call notifyChange() and android will go, "Oh, database changes, better put them on the server!" (Doh!) Well written ContentProviders will have some tests to see if the changes came from the network or from the user, and will set the boolean syncToNetwork flag false if so, to prevent this wasteful double-sync. If you're feeding data into a ContentProvider, it behooves you to figure out how to get this working -- Otherwise you'll end up always performing two syncs when only one is needed
-
 
     protected static final class MainDatabaseHelper extends SQLiteOpenHelper {
         MainDatabaseHelper(Context context) {
@@ -419,9 +395,5 @@ public class SurveyContentProvider extends ContentProvider {
         return newAccount;
     }
 
-    private void maybeSync(){
-        Log.d(TAG, "requesting sync");
-        ContentResolver.requestSync(mAccount, AUTHORITY, new Bundle());
-    }
 
 }

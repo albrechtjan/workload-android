@@ -11,8 +11,9 @@
     <string name="title_activity_select_lecture">SelectLecture</string>
     <string name="title_activity_enter_workload">EnterWorkload</string>
     <string name="content_provider_authority">de.tu-dresden.zqa.survey</string>
-    <string name="account_type">tu-dresden.de</string>
     <string name="title_activity_web_login">Shibboleth Login</string>
     <string name="workentry_table_name">workentries</string>
     <string name="lectures_table_name">lectures</string>
+    <string name="account_type">tu-dresden.de</string>
+    <string name="account_name">Uni-Account</string>
 </resources>
