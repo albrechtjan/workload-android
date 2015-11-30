@@ -27,6 +27,9 @@ public class CalendarAdapter extends MyBaseAdapter {
     public CalendarAdapter(Context context) {
         super(context);
         mContext = context;
+        mContext.getContentResolver().registerContentObserver(..
+        update the members and re-draw when the lectures or the entries (because of the color-coding of the buttons) change
+        );
         this.updateMembers();
     }
 
@@ -86,7 +89,7 @@ public class CalendarAdapter extends MyBaseAdapter {
     private List<Week> getWeeks(List<Lecture> lectures){
         if(lectures.isEmpty()){
             // if there are not lectures, then the list of weeks is empty as well.
-            return new LinkedList<Week>();
+            return new LinkedList<>();
         }
         Week week = firstWeek(lectures).copy();
         List<Week> weeks = new LinkedList<Week>();
