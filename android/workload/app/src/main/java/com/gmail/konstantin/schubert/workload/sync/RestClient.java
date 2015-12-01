@@ -42,7 +42,7 @@ public class RestClient {
     public String response;
 
     public void Execute(RequestMethod method, String url, ArrayList<NameValuePair> headers, ArrayList<NameValuePair> params) throws Exception {
-        Log.d(TAG, "Executing Rest Method");
+        Log.d(TAG, "Executing Rest Method "+ method.toString()+" on " + url);
         switch (method) {
             case GET: {
                 // add parameters

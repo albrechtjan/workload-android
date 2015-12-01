@@ -2,6 +2,10 @@ package com.gmail.konstantin.schubert.workload.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.ContentObserver;
+import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +13,7 @@ import android.widget.Button;
 
 import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.R;
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.Week;
 import com.gmail.konstantin.schubert.workload.activities.SelectLecture;
 
@@ -27,10 +32,23 @@ public class CalendarAdapter extends MyBaseAdapter {
     public CalendarAdapter(Context context) {
         super(context);
         mContext = context;
-        mContext.getContentResolver().registerContentObserver(..
-        update the members and re-draw when the lectures or the entries (because of the color-coding of the buttons) change
+        updateMembers();
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        mContext.getContentResolver().registerContentObserver(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/"),true, new ContentObserver(handler) {
+            @Override
+            public void onChange(boolean selfChange) {
+                this.onChange(selfChange, null);
+            }
+
+            @Override
+            public void onChange(boolean selfChange, Uri uri) {
+                updateMembers();
+                notifyDataSetChanged();
+            }
+        }
         );
-        this.updateMembers();
+
     }
 
     public void updateMembers(){

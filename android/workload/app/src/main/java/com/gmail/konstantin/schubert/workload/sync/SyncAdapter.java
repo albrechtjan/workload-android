@@ -6,13 +6,10 @@ import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQueryBuilder;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -27,7 +24,6 @@ import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOError;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -134,9 +130,30 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
 
-    private void patch_lecture(Lecture lectureToPatch){
-        //TODO: Implement
-        //TODO: Actually we are only changing the active/nonactive status
+    private void patch_lecture(Lecture lectureToPatch) throws  IOException, AuthenticatorException{
+        try {
+            String url = baseUrl;
+            url += "api/lectures/all/"+ lectureToPatch._ID +"/";
+            ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString());
+            ArrayList<NameValuePair> urlArgs = new ArrayList<>();
+            urlArgs.add(new BasicNameValuePair("isActive",String.valueOf(lectureToPatch.isActive)));
+            mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, urlArgs);
+        } catch (Exception e) {
+            throw new IOException();
+        }
+
+        String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
+        DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
+        // when calling updateWorkloadEntry, we are also doing an update of the time entries, but they should be correct, so it should be fine.
+        if (response==null){
+            // retry later
+            //TODO: dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.RETRYSYNC);
+            //TODO: First implement the stopsync in the content provider
+            throw new IOException();
+        } else {
+            // we succeeded and now we stop the sync
+            dbObjectBuilder.updateLecture(lectureToPatch, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
+        }
     }
 
     /*
@@ -192,19 +209,19 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             get_table_entries_workentries();
 
 
-            Cursor cursor = dbObjectBuilder.getPending(getContext().getString(R.string.lectures_table_name));
+            Cursor cursor = dbObjectBuilder.getNotIdle(getContext().getString(R.string.lectures_table_name));
             while (cursor.moveToNext()){
                 int sync_operation = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS.OPERATION));
                 int id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
                 if (sync_operation == SurveyContentProvider.SYNC_OPERATION.POST) {
                     dbObjectBuilder.mark_as_transacting(id, getContext().getString(R.string.lectures_table_name));
-                    patch_lecture(dbObjectBuilder.getLectureById(id)); // id is same as local-id since the ids are unique and identifying for lectures across local AND remote
+                    patch_lecture(dbObjectBuilder.buildLectureFromCursor(cursor)); // id is same as local-id since the ids are unique and identifying for lectures across local AND remote
                 }
             }
             cursor.close();
 
 
-            cursor = dbObjectBuilder.getPending(getContext().getString(R.string.workentry_table_name));
+            cursor = dbObjectBuilder.getNotIdle(getContext().getString(R.string.workentry_table_name));
             while (cursor.moveToNext()){
                 int sync_operation = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS.OPERATION));
                 int local_id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));

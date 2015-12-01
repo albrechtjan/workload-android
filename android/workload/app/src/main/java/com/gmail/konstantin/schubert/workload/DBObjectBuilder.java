@@ -52,11 +52,11 @@ public class DBObjectBuilder {
         return lecture;
     }
 
-    public Cursor getPending(String table){
+    public Cursor getNotIdle(String table){
         String uri = "content://" + SurveyContentProvider.AUTHORITY+ "/";
         uri += table + "/";
         uri +="null/any/";
-        String where = SurveyContentProvider.DB_STRINGS.STATUS + "=" + SurveyContentProvider.SYNC_STATUS.PENDING;
+        String where = SurveyContentProvider.DB_STRINGS.STATUS + "<>" + SurveyContentProvider.SYNC_STATUS.IDLE;
         return  mContentResolver.query(Uri.parse(uri), null, where, null, null);
     }
 
@@ -92,7 +92,7 @@ public class DBObjectBuilder {
         mContentResolver.insert(Uri.parse(uriString), values);
     }
 
-    private WorkloadEntry buildWorkloadEntryFromCursor(Cursor cursor){
+    public WorkloadEntry buildWorkloadEntryFromCursor(Cursor cursor){
         Week week = new Week(
                 cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR)),
                 cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK))
@@ -105,7 +105,7 @@ public class DBObjectBuilder {
 
     }
 
-    private Lecture buildLectureFromCursor(Cursor cursor){
+    public Lecture buildLectureFromCursor(Cursor cursor){
 
         int _ID= cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
         String name = cursor.getString( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.NAME) );
@@ -228,7 +228,7 @@ public class DBObjectBuilder {
         uri += "any/";
         int result = mContentResolver.update(Uri.parse(uri), values, where, null);
         if (result<0){
-            Log.d(TAG, "Could not update WorkloadEntry. Maybe SYNC_STATUS of row is not IDLE");
+            Log.d(TAG, "Could not update "+uri+". Maybe SYNC_STATUS of row is not IDLE");
         }
     }
 
@@ -242,7 +242,7 @@ public class DBObjectBuilder {
         uri += String.valueOf(lecture._ID) + "/";
         int result = mContentResolver.update(Uri.parse(uri), values, null, null);
         if (result<0){
-            Log.d(TAG, "Could not update Lecture. Maybe SYNC_STATUS of row is not IDLE");
+            Log.d(TAG, "Could not update "+uri+". Maybe SYNC_STATUS of row is not IDLE");
         }
     }
 

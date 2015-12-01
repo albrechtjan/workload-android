@@ -40,9 +40,7 @@ public class SurveyContentProvider extends ContentProvider {
     private static final int HAS_NO_ID = 11;
 
 
-    //TODO: Figure out how to use string resources here
-    public static final String ACCOUNT_TYPE = "tu-dresden.de";
-    public static final String ACCOUNT = "Uni-Account";
+
     Account mAccount;
 
 
@@ -281,8 +279,12 @@ public class SurveyContentProvider extends ContentProvider {
             throw new IllegalArgumentException("Illegal uriOption.");
         }
 
-
-        int rows_updated = database.update(table, values, selection, null);
+        int rows_updated = 1;
+        try {
+            rows_updated = database.update(table, values, selection, null);
+        } catch (java.lang.IllegalArgumentException e){
+            Log.d(TAG,"Logging exception: "+e.toString());
+        }
         if(uriOption==SYNC) {
             ContentResolver.requestSync(mAccount, AUTHORITY, new Bundle());
         }
@@ -376,8 +378,7 @@ public class SurveyContentProvider extends ContentProvider {
 
     public static Account CreateSyncAccount(Context context) {
         // Create the account type and default account
-        Account newAccount = new Account(
-                ACCOUNT, ACCOUNT_TYPE);
+        Account newAccount = new Account("Uni-Account", "tu-dresden.de");
         // Get an instance of the Android account manager
         AccountManager accountManager =
                 (AccountManager) context.getSystemService(

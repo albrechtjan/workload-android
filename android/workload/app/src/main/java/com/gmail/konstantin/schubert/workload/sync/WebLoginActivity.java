@@ -44,7 +44,7 @@ public class WebLoginActivity extends Activity {
                 if (cookieStrings == null) return;
 
                 if (Authenticator.getCookiesFromCookieString(cookieStrings) != null){
-                    response.putString(AccountManager.KEY_ACCOUNT_NAME, "default_account");
+                    response.putString(AccountManager.KEY_ACCOUNT_NAME, getResources().getString(R.string.account_name));
                     response.putString(AccountManager.KEY_ACCOUNT_TYPE, getResources().getString(R.string.account_type));
                     response.putString(AccountManager.KEY_AUTHTOKEN, cookieStrings);
                     mAccountAuthenticatorResponse.onResult(response);
