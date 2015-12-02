@@ -124,6 +124,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             //TODO: First implement the stopsync in the content provider
             throw new IOException();
         } else {
+            //TODO: Figure out why I am getting json back here! What's wrong with the remote?
+            //TODO: Also handle 404s
             // we succeeded and now we stop the sync
             dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
         }
@@ -150,7 +152,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             //TODO: dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.RETRYSYNC);
             //TODO: First implement the stopsync in the content provider
             throw new IOException();
-        } else {
+        } else if(response.contains("DOCTYPE html")){
+            //TODO: When debug mode is off, we must handle 404s!
+            // we got an error message most likely
+            //TODO: Handle this!
+        }else {
             // we succeeded and now we stop the sync
             dbObjectBuilder.updateLecture(lectureToPatch, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
         }
