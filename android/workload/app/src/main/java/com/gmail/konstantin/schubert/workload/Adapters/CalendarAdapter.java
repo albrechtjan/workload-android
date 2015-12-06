@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.R;
@@ -76,13 +77,11 @@ public class CalendarAdapter extends MyBaseAdapter {
 
 
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        final Button weekButton;
+        final TextView weekButton;
         if (convertView == null) {
-            // if it's not recycled, initialize some attributes
-            //TODO: Use View.inflate instead of the LayoutInflater?
-            weekButton = (Button) inflater.inflate(R.layout.week_button, null);
+            weekButton = (TextView) inflater.inflate(R.layout.week_button, null);
         } else {
-            weekButton = (Button) convertView;
+            weekButton = (TextView) convertView;
         }
 
         final Week week = mWeeks.get(position);
