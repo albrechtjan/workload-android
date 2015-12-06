@@ -3,15 +3,19 @@ package com.gmail.konstantin.schubert.workload.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.GridView;
+import android.widget.ListView;
 
 import com.gmail.konstantin.schubert.workload.Adapters.EnterWorkloadAdapter;
 import com.gmail.konstantin.schubert.workload.R;
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.Week;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class EnterWorkload extends MyBaseListActivity {
+public class EnterWorkload extends MyBaseListActivity{
     public final static String MESSAGE_YEAR = "com.gmail.konstantin.schubert.workload.YEAR";
     public final static String MESSAGE_WEEK = "com.gmail.konstantin.schubert.workload.WEEK";
     public final static String MESSAGE_LECTURE = "com.gmail.konstantin.schubert.workload.LECTURE";
@@ -22,15 +26,13 @@ public class EnterWorkload extends MyBaseListActivity {
     public final static List<String> ROW_TITLES = Arrays.asList("attending", "homework", "studying");
 
 
-    //TODO: Figure out if a ListActivity is really what we want here. Figure out what to do as we cannot inherit from MyBaseAcitivy
-
     private Week mWeek;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_select_lecture);
+        setContentView(R.layout.enter_workload);
         Intent launchIntent = getIntent();
         Integer year = launchIntent.getIntExtra(MESSAGE_YEAR, -1);
         Integer weekNumber = launchIntent.getIntExtra(MESSAGE_WEEK, -1);
@@ -45,11 +47,10 @@ public class EnterWorkload extends MyBaseListActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        // TODO: Currently we save an entry only on edit.
-        // This way we prevent the framework from updating empty entries and overwriting remote changes
-        // when the entries are just being looked at.
-//        EnterWorkloadAdapter adapter = (EnterWorkloadAdapter) getListAdapter();
-//        adapter.saveWorkload();
+
+        EnterWorkloadAdapter adapter = (EnterWorkloadAdapter) getListAdapter();
+        adapter.saveEditsIfUserHasEdited();
+
     }
 
 }

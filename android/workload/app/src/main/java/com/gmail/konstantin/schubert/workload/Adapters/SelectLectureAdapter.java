@@ -45,7 +45,7 @@ public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter implemen
         label.setText(mLecturesThisWeek.get(position).name);
 
 
-        label.setOnClickListener(new View.OnClickListener() {
+        lectureRow.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
                 Intent intent = new Intent(mContext, EnterWorkload.class);

@@ -4,60 +4,13 @@
     android:layout_height="match_parent"
     android:id="@+id/enter_workload">
 
+
     <ListView android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:divider="@null"
-        android:dividerHeight="0dp"
+        android:divider="@color/primary_brightish"
+        android:dividerHeight="1px"
         />
-
-
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Hours spent doing homework"
-            android:layout_weight="0.7"
-            android:id="@+id/workload_homework_label" />
-
-        <EditText
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:inputType="numberDecimal"
-            android:ems="10"
-            android:layout_weight="0.3"
-            android:id="@+id/workload_homework_edit" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.7"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Hours spent studying"
-            android:id="@+id/workload_studying_label" />
-
-        <EditText
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:inputType="numberDecimal"
-            android:ems="10"
-            android:id="@+id/workload_studying_edit"
-            android:layout_weight="0.3"/>
-    </LinearLayout>
 
 
 </LinearLayout>
