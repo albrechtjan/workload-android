@@ -28,7 +28,6 @@ public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter implemen
         super(context);
         mContext = context;
         mWeek = week;
-        //mWeek and mContext must be initialized before updateMembers is called!
         updateMembers();
     }
 

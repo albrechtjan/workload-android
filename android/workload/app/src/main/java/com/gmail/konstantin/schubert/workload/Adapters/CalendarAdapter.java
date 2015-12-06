@@ -9,7 +9,6 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.gmail.konstantin.schubert.workload.Lecture;
@@ -27,14 +26,14 @@ public class CalendarAdapter extends MyBaseAdapter {
     private Context mContext;
     private List<Week> mWeeks;
     private List<Lecture> mLectures;
+    private final String sSemester;
 
 
-
-    public CalendarAdapter(Context context) {
+    public CalendarAdapter(Context context, String semester) {
         super(context);
         mContext = context;
+        sSemester = semester;
         updateMembers();
-
         Handler handler = new Handler(Looper.getMainLooper());
         mContext.getContentResolver().registerContentObserver(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/"),true, new ContentObserver(handler) {
             @Override
@@ -54,7 +53,7 @@ public class CalendarAdapter extends MyBaseAdapter {
 
     public void updateMembers(){
 
-        this.mLectures = dbObjectBuilder.getLectureList(true);
+        this.mLectures = dbObjectBuilder.getLecturesOfSemester(sSemester, true);
         this.mWeeks = getWeeks(this.mLectures);
     }
 
