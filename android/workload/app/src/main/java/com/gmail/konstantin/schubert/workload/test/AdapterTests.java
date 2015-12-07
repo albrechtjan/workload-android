@@ -23,7 +23,7 @@ public class AdapterTests extends AndroidTestCase{
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.mBaseAdapter = new CalendarAdapter(mContext);
+        this.mBaseAdapter = new CalendarAdapter(mContext,"SS2015");
 
         mContentResolver = mContext.getContentResolver(); // I am not inheriting from ProviderTestCase and thus cannot get a mock content resolver
         //TODO: put more entries

@@ -5,45 +5,40 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.Adapters.CalendarAdapter;
+import com.gmail.konstantin.schubert.workload.Semester;
 
 
 public class Calendar extends MyBaseActivity {
 
-     String sSemester;
+     Semester sSemester;
 
-    I should probably introduce a semester class that supports to_string(), Semester(String), get_next(), get_previous()
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
+        sSemester = new Semester(get_current_semester());
 
-        Intent launchIntent = getIntent();
-        String semester = launchIntent.getStringExtra("semester");
-        if (semester==null){
-            sSemester = get_current_semester();
-        }
-        else{
-            sSemester = semester;
-        }
-
-        GridView gridview = (GridView) findViewById(R.id.gridview);
-        gridview.setAdapter(new CalendarAdapter(this,sSemester));
+        final GridView gridview = (GridView) findViewById(R.id.gridview);
+        gridview.setAdapter(new CalendarAdapter(this,sSemester.to_string()));
+        final TextView semesterText = (TextView) findViewById(R.id.calendar_semester);
+        semesterText.setText(sSemester.to_string());
         View.OnClickListener semesterButtonListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                Intent intent = new Intent(Calendar.this, SelectLecture.class);
-                intent.putExtra(SelectLecture.MESSAGE_WEEK, week.week());
                 if(v.getId()==R.id.next_semester_button) {
-                    intent.putExtra("semester",get_next_semester(sSemester));
+                    Calendar.this.sSemester = Calendar.this.sSemester.get_next();
                 }else if(v.getId()==R.id.previous_semester_button){
-                    intent.putExtra("semester",get_previous_semester(sSemester));
+                    Calendar.this.sSemester = Calendar.this.sSemester.get_previous();
                 }
-                Calendar.this.startActivity(intent);
+                gridview.setAdapter(new CalendarAdapter(Calendar.this, sSemester.to_string()));
+                semesterText.setText(sSemester.to_string());
+
             }
         };
         ImageView previousSemesterButton = (ImageView) findViewById(R.id.previous_semester_button);
@@ -59,7 +54,7 @@ public class Calendar extends MyBaseActivity {
         beginSummerSemester.set(java.util.Calendar.MONTH, 4);
         beginSummerSemester.set(java.util.Calendar.DAY_OF_MONTH, 1);
         java.util.Calendar beginWinterSemester = (java.util.Calendar) now.clone();
-        beginWinterSemester.set(java.util.Calendar.MONTH,10);
+        beginWinterSemester.set(java.util.Calendar.MONTH, 10);
         beginWinterSemester.set(java.util.Calendar.DAY_OF_MONTH, 1);
 
         int thisYear = now.get(java.util.Calendar.YEAR);
