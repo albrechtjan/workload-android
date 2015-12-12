@@ -2,6 +2,7 @@ package com.gmail.konstantin.schubert.workload.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.transition.TransitionManager;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -36,8 +37,9 @@ public class Calendar extends MyBaseActivity {
                 }else if(v.getId()==R.id.previous_semester_button){
                     Calendar.this.sSemester = Calendar.this.sSemester.get_previous();
                 }
-                gridview.setAdapter(new CalendarAdapter(Calendar.this, sSemester.to_string()));
                 semesterText.setText(sSemester.to_string());
+                gridview.setAdapter(new CalendarAdapter(Calendar.this, sSemester.to_string()));
+
 
             }
         };
