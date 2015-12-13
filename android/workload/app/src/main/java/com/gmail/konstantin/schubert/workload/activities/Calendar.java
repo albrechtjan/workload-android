@@ -1,5 +1,7 @@
 package com.gmail.konstantin.schubert.workload.activities;
 
+import android.accounts.Account;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
 import android.transition.TransitionManager;
@@ -11,6 +13,7 @@ import android.widget.TextView;
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.Adapters.CalendarAdapter;
 import com.gmail.konstantin.schubert.workload.Semester;
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
 
 public class Calendar extends MyBaseActivity {

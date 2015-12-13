@@ -288,6 +288,7 @@ public class SurveyContentProvider extends ContentProvider {
         if(uriOption==SYNC) {
             ContentResolver.requestSync(mAccount, AUTHORITY, new Bundle());
         }
+        Log.d(TAG,"Updated " + rows_updated + " rows.");
         getContext().getContentResolver().notifyChange(uri, null, false);
         return rows_updated;
     }

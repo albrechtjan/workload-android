@@ -1,11 +1,15 @@
 package com.gmail.konstantin.schubert.workload.Adapters;
 
+import android.accounts.Account;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,11 +52,11 @@ public class CalendarAdapter extends MyBaseAdapter {
             }
         }
         );
-
+        ContentResolver.requestSync(SurveyContentProvider.CreateSyncAccount(mContext), SurveyContentProvider.AUTHORITY, new Bundle());
     }
 
     public void updateMembers(){
-
+        Log.d("CalendarAdapter","updating members");
         this.mLectures = dbObjectBuilder.getLecturesOfSemester(sSemester,true);
         this.mWeeks = getWeeks(this.mLectures);
     }
