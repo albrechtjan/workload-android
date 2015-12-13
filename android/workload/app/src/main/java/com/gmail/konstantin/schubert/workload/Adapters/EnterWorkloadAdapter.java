@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +32,7 @@ public class EnterWorkloadAdapter extends BaseAdapter {
     private Cursor mCursor;
     private boolean userHasEdited;
     private List<EditText> editTexts = new ArrayList<>();
+    private final static String TAG = "EnterWorkloadAdapter";
 
     public EnterWorkloadAdapter(Context context, Week week, int lectureId) {
         super();
@@ -118,11 +120,11 @@ public class EnterWorkloadAdapter extends BaseAdapter {
     private Cursor getCursor(int lecture_id, Week sWeek){
         DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(mContext.getContentResolver());
         Cursor cursor = dbObjectBuilder.getWorkloadEntry(lecture_id, sWeek);
-        cursor.moveToFirst();
         if (cursor.getCount()==0){
             dbObjectBuilder.addWorkloadEntry(new WorkloadEntry(sWeek,lecture_id,0,0,0), SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
             cursor = dbObjectBuilder.getWorkloadEntry(lecture_id,sWeek);
         }
+        cursor.moveToFirst();
         return cursor;
     }
 
