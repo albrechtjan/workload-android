@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.R;
+import com.gmail.konstantin.schubert.workload.SquareTextView;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.Week;
 import com.gmail.konstantin.schubert.workload.activities.SelectLecture;
@@ -80,11 +81,11 @@ public class CalendarAdapter extends MyBaseAdapter {
 
 
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        final TextView weekButton;
+        final SquareTextView weekButton;
         if (convertView == null) {
-            weekButton = (TextView) inflater.inflate(R.layout.week_button, null);
+            weekButton = (SquareTextView) inflater.inflate(R.layout.week_button, null);
         } else {
-            weekButton = (TextView) convertView;
+            weekButton = (SquareTextView) convertView;
         }
 
         final Week week = mWeeks.get(position);

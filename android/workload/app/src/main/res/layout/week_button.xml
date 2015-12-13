@@ -4,5 +4,4 @@
     android:layout_width="@dimen/week_button_size"
     android:layout_height="@dimen/week_button_size"
     android:id="@+id/week_button"
-    android:textColor="@color/text_primary"
-    android:minHeight="@dimen/week_button_size"/>
+    android:textColor="@color/text_primary"/>
