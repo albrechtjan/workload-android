@@ -29,5 +29,8 @@ public class Lecture implements Serializable {
         return (this._ID == other._ID && this.name.equals(other.name) && this.semester.equals(other.semester));
     }
 
+    public boolean equals_exactly(Lecture other){
+        return this.equals(other) && (this.isActive==other.isActive);
+    }
 
 }

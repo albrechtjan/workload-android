@@ -61,6 +61,8 @@ public class DBObjectBuilder {
     }
 
     public void mark_as_transacting(int id, String table){
+        Log.d(TAG, "mark_as_transacting: " + id + " in table " + table);
+
         String uri = "content://" + SurveyContentProvider.AUTHORITY+ "/";
         uri += table + "/";
         uri += SurveyContentProvider.SYNC_STEER_COMMAND.MARK_TRANSACTING+"/";
@@ -215,6 +217,8 @@ public class DBObjectBuilder {
     }
 
     public void updateWorkloadEntry(WorkloadEntry entry, String syncSteerCommand){
+        Log.d(TAG, "updateWorkloadEntry: " + entry.toString() + syncSteerCommand);
+
         ContentValues values = new ContentValues();
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK, entry.getHoursForHomework());
         values.put(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE, entry.getHoursInLecture());
@@ -233,6 +237,7 @@ public class DBObjectBuilder {
     }
 
     public void updateLecture(Lecture lecture, String syncSteerCommand){
+        Log.d(TAG, "updateLecture: " + lecture.toString() + syncSteerCommand);
 
         ContentValues values = getValues(lecture);
         values.remove(SurveyContentProvider.DB_STRINGS._ID); // We add the ID in the url.

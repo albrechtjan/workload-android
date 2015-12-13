@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class RESTResponseProcessor {
 
@@ -141,7 +142,10 @@ public class RESTResponseProcessor {
             if(!isInList(remoteLecture, localLectures)){
                this.dbObjectBuilder.addLecture(remoteLecture,SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
             }else{
-                this.dbObjectBuilder.updateLecture(remoteLecture, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
+                Lecture localLecture = (Lecture) getFromList(remoteLecture,localLectures);
+                if (!localLecture.equals_exactly(remoteLecture)) {
+                    this.dbObjectBuilder.updateLecture(remoteLecture, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
+                }
 
             }
         }
@@ -158,7 +162,10 @@ public class RESTResponseProcessor {
             if(!isInList(remoteWorkloadEntry, localWorkloadEntries)){
                 this.dbObjectBuilder.addWorkloadEntry(remoteWorkloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
             }else{
-                dbObjectBuilder.updateWorkloadEntry(remoteWorkloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
+                WorkloadEntry localEntry = (WorkloadEntry) getFromList(remoteWorkloadEntry,localWorkloadEntries);
+                if (!localEntry.equals_exactly(remoteWorkloadEntry)) {
+                    dbObjectBuilder.updateWorkloadEntry(remoteWorkloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
+                }
             }
         }
     }
@@ -171,6 +178,16 @@ public class RESTResponseProcessor {
             }
         }
         return  isInList;
+    }
+
+    private Object getFromList(Object object, List list){
+        for (Object other : list){
+            if (object.equals(other)){
+               return other;
+            }
+        }
+        // Better throw exception
+        return null;
     }
 
 }

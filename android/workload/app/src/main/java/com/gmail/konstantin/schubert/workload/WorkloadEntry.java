@@ -8,10 +8,14 @@ import java.io.Serializable;
 public class WorkloadEntry implements Serializable{
 
 
-    // since all variables are final, make them public
-    public final Week week;
     public final int lecture_id;
 
+
+    // since all variables are final, make them public
+    public final Week week;
+    private float hoursInLecture;
+    private float hoursForHomework;
+    private float hoursStudying;
 
     /* I decided against passing an actual lecture object here since these might have multiple instances for a certain index
      * Maybe one day I will use a pattern that enforces only one instance per ID and then I change this. */
@@ -36,13 +40,13 @@ public class WorkloadEntry implements Serializable{
         cursor.close();
     }
 
+
+
     @Override
     public boolean equals(Object otherObject){
         WorkloadEntry other = (WorkloadEntry) otherObject;
         return (other.lecture_id == this.lecture_id) && (other.week.compareTo(this.week) == 0);
     }
-
-
 
     public float getHoursInLecture() {
         return hoursInLecture;
@@ -67,10 +71,13 @@ public class WorkloadEntry implements Serializable{
     public void setHoursStudying(float hoursStudying) {
         this.hoursStudying = hoursStudying;
     }
+    public boolean equals_exactly(WorkloadEntry otherEntry){
+        return this.equals(otherEntry)
+                && this.hoursForHomework==otherEntry.hoursForHomework
+                && this.hoursInLecture==otherEntry.hoursInLecture
+                && this.hoursStudying==otherEntry.hoursStudying;
+    }
 
 
-    private float hoursInLecture;
-    private float hoursForHomework;
-    private float hoursStudying;
 
 }
