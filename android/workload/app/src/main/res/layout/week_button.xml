@@ -4,4 +4,6 @@
     android:layout_width="@dimen/week_button_size"
     android:layout_height="@dimen/week_button_size"
     android:id="@+id/week_button"
-    android:textColor="@color/text_primary"/>
+    android:textColor="@color/text_primary"
+    android:gravity="center"
+    android:text="text not found" />
