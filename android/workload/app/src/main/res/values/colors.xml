@@ -6,5 +6,6 @@
     <color name="primary_brightish" type="color">#cacdd1</color>
     <color name="accent" type="color">#ff8686</color>
     <color name="text_primary" type="color">#000000</color>
+    <color name="window_background" type="color">#FAFAFA</color>
 
 </resources>

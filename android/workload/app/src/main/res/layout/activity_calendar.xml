@@ -7,7 +7,8 @@
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="70dp">
+        android:layout_height="70dp"
+        android:background="@color/primary_bright">
 
 
         <ImageView
@@ -54,6 +55,9 @@
             android:numColumns="auto_fit"
             android:stretchMode="columnWidth"
             android:gravity="center"
+            android:background="@color/primary_brightish"
+            android:horizontalSpacing="1dp"
+            android:verticalSpacing="1dp"
             />
 
 
