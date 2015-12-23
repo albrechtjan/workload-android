@@ -8,6 +8,7 @@ import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -187,9 +188,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             return headers;
         }
         else if (intent != null) {
-            //TODO: actually handle this case
-//            getContext().startActivity(intent);
-            return null;
+            //launch login activity directly, but only if this is the first time the user logs in on this app.
+            Log.d(TAG,"There is a Login intent.");
+            SharedPreferences settings = getContext().getSharedPreferences("workload",Context.MODE_PRIVATE);
+            if (settings.getBoolean("use_has_never_logged_in", true)){
+                Log.d(TAG, "try to launch activity directly");
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putBoolean("user_has_never_logged_in", false);
+                getContext().startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                //TODO: Make sure somehow that the credentials are returned once the acitvity is finished.
+                //TODO: Otherwise we fail here and have wait for the next sync to be issued.
+                return null;
+            }else{
+                return null;
+            }
         }else{
             return null;
         }
@@ -246,8 +258,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             sAccountManager.invalidateAuthToken("tu-dresden.de", "session_ID_token"); // is the second parameter correct?
         }
         catch (IOException e){
-            //TODO: Handle this better.
-            throw new IOError(e);
+            Log.e(TAG,"IOException in onPerformSync.",e);
         }
 
     }

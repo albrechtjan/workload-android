@@ -1,6 +1,8 @@
 package com.gmail.konstantin.schubert.workload.Adapters;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerFuture;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -32,7 +34,7 @@ public class CalendarAdapter extends MyBaseAdapter {
     private List<Week> mWeeks;
     private List<Lecture> mLectures;
     private final String sSemester;
-
+    private static final String TAG = CalendarAdapter.class.getSimpleName();
 
     public CalendarAdapter(Context context, String semester) {
         super(context);
@@ -40,20 +42,21 @@ public class CalendarAdapter extends MyBaseAdapter {
         sSemester = semester;
         updateMembers();
         Handler handler = new Handler(Looper.getMainLooper());
-        mContext.getContentResolver().registerContentObserver(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/"),true, new ContentObserver(handler) {
-            @Override
-            public void onChange(boolean selfChange) {
-                this.onChange(selfChange, null);
-            }
+        mContext.getContentResolver().registerContentObserver(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/"), true, new ContentObserver(handler) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        this.onChange(selfChange, null);
+                    }
 
-            @Override
-            public void onChange(boolean selfChange, Uri uri) {
-                updateMembers();
-                notifyDataSetChanged();
-            }
-        }
+                    @Override
+                    public void onChange(boolean selfChange, Uri uri) {
+                        updateMembers();
+                        notifyDataSetChanged();
+                    }
+                }
         );
-        ContentResolver.requestSync(SurveyContentProvider.CreateSyncAccount(mContext), SurveyContentProvider.AUTHORITY, new Bundle());
+        Log.d(TAG,"calling ContentResolver.requestSync");
+        ContentResolver.requestSync(AccountManager.get(mContext).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, new Bundle());
     }
 
     public void updateMembers(){

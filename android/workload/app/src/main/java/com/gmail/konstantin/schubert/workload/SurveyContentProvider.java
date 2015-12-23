@@ -16,7 +16,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import java.util.Set;
+
 
 public class SurveyContentProvider extends ContentProvider {
 
@@ -153,7 +153,7 @@ public class SurveyContentProvider extends ContentProvider {
     public boolean onCreate() {
         mOpenHelper = new MainDatabaseHelper(getContext());
         Log.d(TAG, "Created Database Helper");
-        mAccount = CreateSyncAccount(getContext());
+        mAccount = GetOrCreateSyncAccount(getContext());
         ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
         ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
         //TODO: Remove periodic sync and do this instead: http://developer.android.com/training/sync-adapters/running-sync-adapter.html#RunByMessage
@@ -377,24 +377,25 @@ public class SurveyContentProvider extends ContentProvider {
 
     }
 
-    public static Account CreateSyncAccount(Context context) {
+    public static Account GetOrCreateSyncAccount(Context context) {
         // Create the account type and default account
-        Account newAccount = new Account("Uni-Account", "tu-dresden.de");
+        Account account = new Account("Uni-Account", "tu-dresden.de");
         // Get an instance of the Android account manager
         AccountManager accountManager =
                 (AccountManager) context.getSystemService(
                         context.ACCOUNT_SERVICE);
 
-        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
-
+        if (accountManager.addAccountExplicitly(account, null, null)) {
+            Log.d(TAG, "Successfully created an account.");
         } else {
-            Log.d(TAG, "tried to create an account, but the account either exists or some error occured.");
-            /*
-             * The account exists or some other error occurred. Log this, report it,
-             * or handle it internally.
-             */
+            account = AccountManager.get(context).getAccountsByType("tu-dresden.de")[0];
+            if (account!=null){
+                Log.d(TAG, "Returning existing account");
+            }else{
+                throw new Error("Unable to find account");
+            }
         }
-        return newAccount;
+        return account;
     }
 
 

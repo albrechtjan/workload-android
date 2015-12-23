@@ -22,6 +22,7 @@ public class WebLoginActivity extends Activity {
 
     private WebView mWebView;
     private AccountAuthenticatorResponse mAccountAuthenticatorResponse;
+//    TODO: use http://developer.android.com/reference/android/accounts/AccountAuthenticatorActivity.html instead?
 
 
     @Override

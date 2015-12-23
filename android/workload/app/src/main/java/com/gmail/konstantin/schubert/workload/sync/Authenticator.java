@@ -73,6 +73,9 @@ public class Authenticator extends AbstractAccountAuthenticator{
         Bundle bundle) throws NetworkErrorException {
         Log.d(TAG,"called: getAuthToken");
 
+        //About storing passwords and getting the session token automatically:
+        // http://stackoverflow.com/a/21491948/1375015
+
         // about the authTokenType:
         // In principle we are dealing, in the current setup, with 3 auth tokens: NAME_PART_COOKIE_SHIBBOLETH, NAME_COOKIE_DJANGO, NAME_COOKIE_CSRF.
         // What I am doing currently is that I am defining a single auth token as the bundle that
@@ -99,8 +102,6 @@ public class Authenticator extends AbstractAccountAuthenticator{
 
     @Override
     public String getAuthTokenLabel(String s){
-        Log.d(TAG,"called: getAuthTokenLabel");
-
 
         // not yet implemented
         throw new UnsupportedOperationException();
