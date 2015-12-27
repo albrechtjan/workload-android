@@ -41,23 +41,10 @@ public class CalendarAdapter extends MyBaseAdapter {
         mContext = context;
         sSemester = semester;
         updateMembers();
-        Handler handler = new Handler(Looper.getMainLooper());
-        mContext.getContentResolver().registerContentObserver(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/"), true, new ContentObserver(handler) {
-                    @Override
-                    public void onChange(boolean selfChange) {
-                        this.onChange(selfChange, null);
-                    }
-
-                    @Override
-                    public void onChange(boolean selfChange, Uri uri) {
-                        updateMembers();
-                        notifyDataSetChanged();
-                    }
-                }
-        );
 
         Bundle settingsBundle = new Bundle();
-        if(dbObjectBuilder.getLectureList(false).isEmpty()){ //TODO: Make this muuuch more efficient...
+        if(dbObjectBuilder.getLectureList(false).isEmpty()){ //this should be false if we have synced ever before.
+            //TODO: Make this muuuch more efficient...
             Log.d(TAG, "calling ContentResolver.requestSync with urgency");
             settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         }else {
@@ -67,7 +54,7 @@ public class CalendarAdapter extends MyBaseAdapter {
     }
 
     public void updateMembers(){
-        Log.d("CalendarAdapter","updating members");
+        Log.d("CalendarAdapter","calling updateMembers()");
         this.mLectures = dbObjectBuilder.getLecturesOfSemester(sSemester,true);
         this.mWeeks = getWeeks(this.mLectures);
     }
