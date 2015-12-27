@@ -55,8 +55,15 @@ public class CalendarAdapter extends MyBaseAdapter {
                     }
                 }
         );
-        Log.d(TAG,"calling ContentResolver.requestSync");
-        ContentResolver.requestSync(AccountManager.get(mContext).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, new Bundle());
+
+        Bundle settingsBundle = new Bundle();
+        if(dbObjectBuilder.getLectureList(false).isEmpty()){ //TODO: Make this muuuch more efficient...
+            Log.d(TAG, "calling ContentResolver.requestSync with urgency");
+            settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        }else {
+            Log.d(TAG, "calling ContentResolver.requestSync");
+        }
+        ContentResolver.requestSync(AccountManager.get(mContext).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, settingsBundle);
     }
 
     public void updateMembers(){
