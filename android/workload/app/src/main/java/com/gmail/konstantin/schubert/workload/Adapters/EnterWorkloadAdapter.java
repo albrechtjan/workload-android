@@ -14,6 +14,7 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.R;
@@ -106,6 +107,7 @@ public class EnterWorkloadAdapter extends BaseAdapter {
 
     public  void saveEditsIfUserHasEdited(){
         if (userHasEdited) {
+            Toast.makeText(mContext, "saved", Toast.LENGTH_SHORT).show();
             WorkloadEntry workloadEntry = new WorkloadEntry(mCursor);
             workloadEntry.setHoursInLecture(  (float) getItem(EnterWorkload.ROW_HOURS_ATTENDING));
             workloadEntry.setHoursStudying(   (float) getItem(EnterWorkload.ROW_HOURS_STUDYING ));

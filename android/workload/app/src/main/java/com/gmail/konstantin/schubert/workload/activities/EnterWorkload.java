@@ -47,7 +47,6 @@ public class EnterWorkload extends MyBaseListActivity{
     @Override
     protected void onPause() {
         super.onPause();
-
         EnterWorkloadAdapter adapter = (EnterWorkloadAdapter) getListAdapter();
         adapter.saveEditsIfUserHasEdited();
 
