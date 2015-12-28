@@ -39,6 +39,9 @@ public class Calendar extends MyBaseActivity {
                 }
                 semesterText.setText(sSemester.to_string());
                 gridview.setAdapter(new CalendarAdapter(Calendar.this, sSemester.to_string()));
+                //TODO: Maybe this instead:
+                // adapter.changeSemester();
+                // adapter.notifyDatasetChanged
 
 
             }
