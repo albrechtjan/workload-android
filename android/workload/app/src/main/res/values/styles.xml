@@ -10,8 +10,8 @@
         <item name="android:colorAccent">@color/accent</item>
 
         <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:colorButtonNormal">@color/primary</item>
 
-        <!--<item name="textColorPrimary">@color/text_primary</item>-->
     </style>
 
 </resources>
