@@ -100,6 +100,32 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     }
 
+    private void get_privacy() throws IOException, AuthenticatorException {
+        // Delete anything local that is not in remote
+        // Add anything to local that is in remote but not in local (as inactive)
+        try {
+            ArrayList<NameValuePair> headers = buildAuthHeaders(null);
+            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl + "api/privacyAgree/", headers, null);
+        } catch (IOException e) {
+            throw new AuthenticatorException();
+        }catch (Exception e){
+            throw  new IOException();
+        }
+        SharedPreferences settings = getContext().getSharedPreferences("workload",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        if (mRestClient.response.equals("True")){
+            editor.putBoolean("privacy_agreed", true);
+        }else if (mRestClient.response.equals("False")){
+            editor.putBoolean("privacy_agreed", true);
+
+        }else{
+            throw new AuthenticatorException();
+        }
+
+
+
+    }
+
     private void post_workentry( WorkloadEntry workloadEntry) throws IOException, AuthenticatorException{
         try {
             String url = baseUrl;
@@ -225,6 +251,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             get_table_entries_lectures();
             get_table_entries_workentries();
+            get_privacy();
 
 
             Cursor cursor = dbObjectBuilder.getNotIdle(getContext().getString(R.string.lectures_table_name));
