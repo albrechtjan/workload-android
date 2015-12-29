@@ -117,7 +117,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             editor.putBoolean("privacy_agreed", true);
         }else if (mRestClient.response.equals("False")){
             editor.putBoolean("privacy_agreed", true);
-
         }else{
             throw new AuthenticatorException();
         }
