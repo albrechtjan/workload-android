@@ -7,8 +7,7 @@ import android.accounts.AuthenticatorException;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
+
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -23,7 +22,6 @@ import com.gmail.konstantin.schubert.workload.WorkloadEntry;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import java.io.IOError;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,11 +58,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
 
-    private void get_table_entries_lectures() throws IOException, AuthenticatorException{
+    private void get_table_entries_lectures(Account account) throws IOException, AuthenticatorException{
         // Delete anything local that is not in remote
         // Add anything to local that is in remote but not in local (as inactive)
         try {
-            ArrayList<NameValuePair> headers = buildAuthHeaders(null);
+            ArrayList<NameValuePair> headers = buildAuthHeaders(null, account);
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/lectures/all/", headers, null);
         } catch (IOException e){
             throw new AuthenticatorException();
@@ -78,11 +76,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         mRestResponseProcessor.update_lectures_from_remote(remoteLectures);
     }
 
-    private void get_table_entries_workentries() throws IOException, AuthenticatorException {
+    private void get_table_entries_workentries(Account account) throws IOException, AuthenticatorException {
         // Delete anything local that is not in remote
         // Add anything to local that is in remote but not in local (as inactive)
         try {
-            ArrayList<NameValuePair> headers = buildAuthHeaders(null);
+            ArrayList<NameValuePair> headers = buildAuthHeaders(null, account);
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl + "api/entries/active/", headers, null);
         } catch (IOException e) {
             throw new AuthenticatorException();
@@ -101,13 +99,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
 
-    private void post_workentry( WorkloadEntry workloadEntry) throws IOException, AuthenticatorException{
+    private void post_workentry( WorkloadEntry workloadEntry, Account account) throws IOException, AuthenticatorException{
         try {
             String url = baseUrl;
             url += "api/entries/active/year/"+ workloadEntry.week.year() +"/";
             url +=  workloadEntry.week.week() + "/";
             url += "lectures/" + workloadEntry.lecture_id + "/";
-            ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString());
+            ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString(), account);
             ArrayList<NameValuePair> urlArgs = new ArrayList<>();
             urlArgs.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
             urlArgs.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
@@ -134,11 +132,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
 
-    private void patch_lecture(Lecture lectureToPatch) throws  IOException, AuthenticatorException{
+    private void patch_lecture(Lecture lectureToPatch, Account account) throws  IOException, AuthenticatorException{
         try {
             String url = baseUrl;
             url += "api/lectures/all/"+ lectureToPatch._ID +"/";
-            ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString());
+            ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString(), account);
             ArrayList<NameValuePair> urlArgs = new ArrayList<>();
             urlArgs.add(new BasicNameValuePair("isActive",String.valueOf(lectureToPatch.isActive)));
             mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, urlArgs);
@@ -167,17 +165,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     /*
     refererUrl can be null.
      */
-    private ArrayList<NameValuePair> buildAuthHeaders(String refererUrl) throws android.accounts.OperationCanceledException, android.accounts.AuthenticatorException, java.io.IOException{
+    private ArrayList<NameValuePair> buildAuthHeaders(String refererUrl, Account account) throws android.accounts.OperationCanceledException, android.accounts.AuthenticatorException, java.io.IOException{
 
-        Account[] accounts = sAccountManager.getAccountsByType("tu-dresden.de");//TODO: make the string a resource
-        AccountManagerFuture<Bundle> future =  sAccountManager.getAuthToken(accounts[0], "session_ID_token", Bundle.EMPTY, true, null, null);
+        AccountManagerFuture<Bundle> future =  sAccountManager.getAuthToken(account, "session_ID_token", Bundle.EMPTY, true, null, null);
         // I have been over engineering this. For now it is absolutely fine to launch the notification every time.
         // (Maybe we can make it a bit nicer, but that's not priority.)
         // If one day I want to run the sync continuously in background, I need to think of some logic about when I want
         // to notify the user-and when not.
         Bundle bundle = future.getResult();
         String authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
-        Intent intent = bundle.getParcelable(AccountManager.KEY_INTENT);
         if (authToken != null) {
             ArrayList<NameValuePair> headers = new ArrayList<>();
             NameValuePair cookies = new BasicNameValuePair("Cookie",authToken);
@@ -187,23 +183,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 headers.add(referer);
             }
             return headers;
-        }
-        else if (intent != null) {
-            //launch login activity directly, but only if this is the first time the user logs in on this app.
-            Log.d(TAG,"There is a Login intent.");
-            SharedPreferences settings = getContext().getSharedPreferences("workload",Context.MODE_PRIVATE);
-            if (settings.getBoolean("use_has_never_logged_in", true)){
-                Log.d(TAG, "try to launch activity directly");
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putBoolean("user_has_never_logged_in", false);
-                editor.commit();
-                getContext().startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-                //TODO: Make sure somehow that the credentials are returned once the activity is finished.
-                //TODO: Otherwise we fail here and have wait for the next sync to be issued.
-                return null;
-            }else{
-                return null;
-            }
         }else{
             return null;
         }
@@ -225,8 +204,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         try {
 
-            get_table_entries_lectures();
-            get_table_entries_workentries();
+            get_table_entries_lectures(account);
+            get_table_entries_workentries(account);
 
 
             Cursor cursor = dbObjectBuilder.getNotIdle(getContext().getString(R.string.lectures_table_name));
@@ -235,7 +214,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 int id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
                 if (sync_operation == SurveyContentProvider.SYNC_OPERATION.POST) {
                     dbObjectBuilder.mark_as_transacting(id, getContext().getString(R.string.lectures_table_name));
-                    patch_lecture(dbObjectBuilder.buildLectureFromCursor(cursor)); // id is same as local-id since the ids are unique and identifying for lectures across local AND remote
+                    patch_lecture(dbObjectBuilder.buildLectureFromCursor(cursor),account); // id is same as local-id since the ids are unique and identifying for lectures across local AND remote
                 }
             }
             cursor.close();
@@ -248,7 +227,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 if (sync_operation == SurveyContentProvider.SYNC_OPERATION.POST) {
                     dbObjectBuilder.mark_as_transacting(local_id, getContext().getString(R.string.workentry_table_name));
-                    post_workentry(dbObjectBuilder.getWorkloadEntryByLocalId(local_id));
+                    post_workentry(dbObjectBuilder.getWorkloadEntryByLocalId(local_id),account);
                 }
             }
             cursor.close();

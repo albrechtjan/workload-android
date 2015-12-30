@@ -25,8 +25,6 @@ public class Calendar extends MyBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        assure_privacy_agreement();
-
         setContentView(R.layout.activity_privacy_agreement);
         setContentView(R.layout.activity_calendar);
         sSemester = new Semester(get_current_semester());

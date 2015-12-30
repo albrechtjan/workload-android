@@ -32,7 +32,6 @@ public class EnterWorkload extends MyBaseListActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        assure_privacy_agreement();
         setContentView(R.layout.enter_workload);
         Intent launchIntent = getIntent();
         Integer year = launchIntent.getIntExtra(MESSAGE_YEAR, -1);

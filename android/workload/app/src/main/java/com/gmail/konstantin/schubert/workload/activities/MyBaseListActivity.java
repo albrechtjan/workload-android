@@ -5,12 +5,20 @@ import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.gmail.konstantin.schubert.workload.R;
 
 public class MyBaseListActivity extends ListActivity{
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        assure_privacy_agreement();
+    }
 
 
     @Override
