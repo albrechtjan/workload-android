@@ -2,7 +2,14 @@ package com.gmail.konstantin.schubert.workload.activities;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.Toast;
 
 
 import com.gmail.konstantin.schubert.workload.R;
@@ -18,20 +25,30 @@ public class PrivacyAgreement extends MyBaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_privacy_agreement);
-
-
-    }
-
-    private void agree_privacy(){
-
-        // tell the website via api/privacyAgree that the privacy has been agreed on
-
-
         SharedPreferences settings = this.getSharedPreferences("workload", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putBoolean("privacy_agreed", true); //<- do this last to make an overwrite less likely.
-    }
+        setContentView(R.layout.activity_privacy_agreement);
+        if(settings.getBoolean("privacy_agreed",false)){
+            View footer = findViewById(R.id.privacy_agree_footer);
+            ((ViewGroup) footer.getParent()).removeView(footer);
+        } else {
 
+            Button agreeButton = (Button) findViewById(R.id.privacy_agree_button);
+            agreeButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    CheckBox checkBox = (CheckBox) findViewById(R.id.privacy_checkBox);
+                    if(checkBox.isChecked()) {
+                        SharedPreferences settings = PrivacyAgreement.this.getSharedPreferences("workload", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putBoolean("privacy_agreed", true);
+                        editor.commit();
+                        PrivacyAgreement.this.finish();
+                    }else{
+                        checkBox.setBackgroundColor(Color.RED); //TODO: This is ugly
+                    }
+            }
+            });
+        }
+    }
 }
 

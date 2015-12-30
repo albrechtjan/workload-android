@@ -2,7 +2,9 @@ package com.gmail.konstantin.schubert.workload.activities;
 
 
 import android.app.ListActivity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -43,6 +45,15 @@ public class MyBaseListActivity extends ListActivity{
         }else {
             startActivity(intent);
             return true;
+        }
+    }
+
+    //TODO: Remove duplicate code with MyBaseActivity
+    protected void assure_privacy_agreement() {
+        SharedPreferences settings = this.getSharedPreferences("workload", Context.MODE_PRIVATE);
+        if (settings.getBoolean("privacy_agreed", false)) {
+            Intent intent = new Intent(this, PrivacyAgreement.class);
+            this.startActivity(intent);
         }
     }
 }

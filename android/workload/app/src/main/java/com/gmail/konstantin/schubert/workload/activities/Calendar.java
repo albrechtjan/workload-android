@@ -7,12 +7,12 @@ import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.Adapters.CalendarAdapter;
 import com.gmail.konstantin.schubert.workload.Semester;
-import com.gmail.konstantin.schubert.workload.OnSwipeTouchListener;
+
 
 
 public class Calendar extends MyBaseActivity {
@@ -24,24 +24,12 @@ public class Calendar extends MyBaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        assure_privacy_agreement();
+
+        setContentView(R.layout.activity_privacy_agreement);
         setContentView(R.layout.activity_calendar);
         sSemester = new Semester(get_current_semester());
-//        this.findViewById(R.id.calendar_semester_selector).setOnTouchListener(new OnSwipeTouchListener(Calendar.this) {
-//            public void onSwipeTop() {
-//                Toast.makeText(Calendar.this, "top", Toast.LENGTH_SHORT).show();
-//            }
-//            public void onSwipeRight() {
-//                Toast.makeText(Calendar.this, "right", Toast.LENGTH_SHORT).show();
-//            }
-//            public void onSwipeLeft() {
-//                Toast.makeText(Calendar.this, "left", Toast.LENGTH_SHORT).show();
-//            }
-//            public void onSwipeBottom() {
-//                Toast.makeText(Calendar.this, "bottom", Toast.LENGTH_SHORT).show();
-//            }
-//
-//        } );
-
         final GridView gridview = (GridView) findViewById(R.id.gridview);
         gridview.setAdapter(new CalendarAdapter(this,sSemester.to_string()));
         final TextView semesterText = (TextView) findViewById(R.id.calendar_semester);

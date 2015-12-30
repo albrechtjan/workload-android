@@ -1,7 +1,9 @@
 package com.gmail.konstantin.schubert.workload.activities;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -43,6 +45,14 @@ abstract public class MyBaseActivity extends Activity {
         }else {
             startActivity(intent);
             return true;
+        }
+    }
+
+    protected void assure_privacy_agreement() {
+        SharedPreferences settings = this.getSharedPreferences("workload", Context.MODE_PRIVATE);
+        if (!settings.getBoolean("privacy_agreed", false)) {
+            Intent intent = new Intent(this, PrivacyAgreement.class);
+            this.startActivity(intent);
         }
     }
 }
