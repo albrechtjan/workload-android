@@ -17,6 +17,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
+import java.util.List;
+
 
 public class SurveyContentProvider extends ContentProvider {
 
@@ -379,23 +381,23 @@ public class SurveyContentProvider extends ContentProvider {
 
     public static Account GetOrCreateSyncAccount(Context context) {
         // Create the account type and default account
-        Account account = new Account("Uni-Account", "tu-dresden.de");
         // Get an instance of the Android account manager
-        AccountManager accountManager =
-                (AccountManager) context.getSystemService(
-                        context.ACCOUNT_SERVICE);
+        AccountManager accountManager = AccountManager.get(context);
 
-        if (accountManager.addAccountExplicitly(account, null, null)) {
-            Log.d(TAG, "Successfully created an account.");
-        } else {
-            account = AccountManager.get(context).getAccountsByType("tu-dresden.de")[0];
-            if (account!=null){
-                Log.d(TAG, "Returning existing account");
-            }else{
+        Account[] accounts = accountManager.getAccountsByType("tu-dresden.de");
+        if (accounts.length!=0){
+            Log.d(TAG, "Returning existing account");
+            return accounts[0];
+        }else{
+            Account account = new Account("Uni-Account", "tu-dresden.de");
+            boolean status = accountManager.addAccountExplicitly(account, null, null);
+            if(!status){
                 throw new Error("Unable to find account");
+            }else{
+                Log.d(TAG, "Created new account");
             }
+            return account;
         }
-        return account;
     }
 
 
