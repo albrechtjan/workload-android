@@ -23,7 +23,7 @@ public class EnterWorkload extends MyBaseListActivity{
     public final static int ROW_HOURS_ATTENDING = 0;
     public final static int ROW_HOURS_HOMEWORK = 1;
     public final static int ROW_HOURS_STUDYING = 2;
-    public final static List<String> ROW_TITLES = Arrays.asList("attending", "homework", "studying");
+    public final static List<String> ROW_TITLES = Arrays.asList("Attending", "Homework", "Studying");
 
 
     private Week mWeek;
