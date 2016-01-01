@@ -42,6 +42,11 @@ public class EnterWorkload extends MyBaseListActivity{
         setTitle("Enter your hours");
     }
 
+    @Override
+    protected void onResume(){
+        super.onResume();
+        assure_privacy_agreement();
+    }
 
 
     @Override

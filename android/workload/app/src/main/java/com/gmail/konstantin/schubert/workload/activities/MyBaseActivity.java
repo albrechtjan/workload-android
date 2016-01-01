@@ -11,7 +11,6 @@ import android.view.MenuItem;
 
 
 import com.gmail.konstantin.schubert.workload.R;
-import com.gmail.konstantin.schubert.workload.sync.WebLoginActivity;
 
 
 abstract public class MyBaseActivity extends Activity {
@@ -20,8 +19,7 @@ abstract public class MyBaseActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (maybe_make_first_login()) return;
-        if(assure_privacy_agreement()) return;
+
 
     }
 
@@ -41,16 +39,15 @@ abstract public class MyBaseActivity extends Activity {
             case R.id.action_manage_lectures:
                 intent = new Intent(this, ManageLectures.class);
                 break;
-            case R.id.action_statistics:
-                intent = new Intent(this, Statistics.class);
-                break;
+//            case R.id.action_statistics:
+//                intent = new Intent(this, Statistics.class);
+//                break;
             case R.id.action_privacy_agreement:
                 intent = new Intent(this, PrivacyAgreement.class);
                 break;
-            case R.id.action_settings:
-                intent = new Intent(this, Settings.class);
-                break;
-            //TODO: Implement logout. This doesn't need an extra activity, right?
+//            case R.id.action_settings:
+//                intent = new Intent(this, Settings.class);
+//                break;
         }
         if (intent==null){
             return false;
@@ -73,7 +70,7 @@ abstract public class MyBaseActivity extends Activity {
     protected boolean maybe_make_first_login(){
 
         SharedPreferences settings = this.getSharedPreferences("workload", Context.MODE_PRIVATE);
-        if (settings.getBoolean("use_has_never_logged_in", true)) {
+        if (settings.getBoolean("user_has_never_logged_in", true)) {
             SharedPreferences.Editor editor = settings.edit();
             editor.putBoolean("user_has_never_logged_in", false);
             editor.commit();

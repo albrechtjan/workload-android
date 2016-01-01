@@ -17,7 +17,7 @@ public class MyBaseListActivity extends ListActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        assure_privacy_agreement();
+
     }
 
 
@@ -37,15 +37,15 @@ public class MyBaseListActivity extends ListActivity{
             case R.id.action_manage_lectures:
                 intent = new Intent(this, ManageLectures.class);
                 break;
-            case R.id.action_statistics:
-                intent = new Intent(this, Statistics.class);
-                break;
+//            case R.id.action_statistics:
+//                intent = new Intent(this, Statistics.class);
+//                break;
             case R.id.action_privacy_agreement:
                 intent = new Intent(this, PrivacyAgreement.class);
                 break;
-            case R.id.action_settings:
-                intent = new Intent(this, Settings.class);
-                break;
+//            case R.id.action_settings:
+//                intent = new Intent(this, Settings.class);
+//                break;
             //TODO: Implement logout. This doesn't need an extra activity, right?
         }
         if (intent==null){
@@ -56,12 +56,16 @@ public class MyBaseListActivity extends ListActivity{
         }
     }
 
-    //TODO: Remove duplicate code with MyBaseActivity
-    protected void assure_privacy_agreement() {
+    //TODO: Remove duplicate Code
+    protected boolean assure_privacy_agreement() {
         SharedPreferences settings = this.getSharedPreferences("workload", Context.MODE_PRIVATE);
-        if (settings.getBoolean("privacy_agreed", false)) {
+        if (!settings.getBoolean("privacy_agreed", false)) {
             Intent intent = new Intent(this, PrivacyAgreement.class);
             this.startActivity(intent);
+            return true;
         }
+        return false;
     }
+
+
 }

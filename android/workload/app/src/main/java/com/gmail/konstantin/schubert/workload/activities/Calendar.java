@@ -56,6 +56,13 @@ public class Calendar extends MyBaseActivity {
 
     }
 
+    @Override
+    protected void onResume(){
+        super.onResume();
+        if (maybe_make_first_login()) return;
+        if(assure_privacy_agreement()) return;
+    }
+
     static private String get_current_semester(){
         java.util.Calendar now = java.util.Calendar.getInstance();
         java.util.Calendar beginSummerSemester = (java.util.Calendar) now.clone();

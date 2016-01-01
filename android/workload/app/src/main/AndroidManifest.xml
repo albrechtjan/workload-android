@@ -55,7 +55,7 @@
         </activity>
 
         <activity
-            android:name=".sync.WebLoginActivity"
+            android:name=".activities.WebLoginActivity"
             android:label="@string/title_activity_web_login">
         </activity>
 
@@ -107,7 +107,8 @@
         <activity
             android:name=".activities.PrivacyAgreement"
             android:parentActivityName=".activities.Calendar"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:label="Datenschutzerklärung">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.Calendar" />

@@ -1,4 +1,4 @@
-package com.gmail.konstantin.schubert.workload.sync;
+package com.gmail.konstantin.schubert.workload.activities;
 
 
 import android.accounts.AccountAuthenticatorResponse;
@@ -13,10 +13,9 @@ import android.webkit.WebViewClient;
 
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
+import com.gmail.konstantin.schubert.workload.sync.Authenticator;
 
 import android.webkit.CookieManager;
-import java.net.HttpCookie;
-
 
 
 public class WebLoginActivity extends Activity {
@@ -77,10 +76,6 @@ public class WebLoginActivity extends Activity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }

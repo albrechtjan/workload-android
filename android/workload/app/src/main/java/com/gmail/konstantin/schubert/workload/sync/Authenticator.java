@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.gmail.konstantin.schubert.workload.activities.WebLoginActivity;
+
 import java.net.HttpCookie;
 import java.util.HashMap;
 import java.util.Map;
