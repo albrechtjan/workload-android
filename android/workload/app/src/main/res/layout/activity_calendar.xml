@@ -46,22 +46,53 @@
     </RelativeLayout>
 
 
-        <GridView
-            android:id="@+id/gridview"
-            android:layout_centerInParent="true"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:columnWidth="@dimen/week_button_size"
-            android:numColumns="auto_fit"
-            android:stretchMode="columnWidth"
-            android:gravity="center"
+    <GridView
+        android:id="@+id/gridview"
+        android:layout_centerInParent="true"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:columnWidth="@dimen/week_button_size"
+        android:numColumns="auto_fit"
+        android:stretchMode="columnWidth"
+        android:gravity="center"
+        android:background="@color/primary_brightish"
+        android:horizontalSpacing="1dp"
+        android:verticalSpacing="1dp"
+        />
+
+
+    <!-- empty view -->
+    <LinearLayout
+        android:id="@+id/emptyView"
+        android:visibility="gone"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:layout_height="fill_parent">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No lectures selected for this semester"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:padding="20dp"
+            android:textColor="@color/primary_brightish"
+        />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Add lectures"
+            android:padding="20dp"
             android:background="@color/primary_brightish"
-            android:horizontalSpacing="1dp"
-            android:verticalSpacing="1dp"
+            android:textColor="@color/window_background"
+            android:onClick="onClickManageLectures"
             />
+    </LinearLayout>
 
 
 </LinearLayout>
+
 
 
 

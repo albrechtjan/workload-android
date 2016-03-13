@@ -150,21 +150,23 @@ public class DBObjectBuilder {
 
 
 
-    public List<String> getSemesterList(boolean onlyActive){
+    public List<Semester> getSemesterList(boolean onlyActive){
+        // Returns the newest semester last
+
         //TODO: Make this more efficient
-        List<String> semesters = new ArrayList<>();
+        List<Semester> semesters = new ArrayList<>();
         List<Lecture> lectures = getLectureList(onlyActive);
         //Wow, this would be two lines in python. Am I doing this wrong?
         for (Lecture lecture : lectures ){
             boolean found =false;
-            for (String semester : semesters){
-                if(semester.equals(lecture.semester)){
+            for (Semester semester : semesters){
+                if(semester.to_string().equals(lecture.semester)){
                     found = true;
                     break;
                 }
             }
             if (!found){
-                semesters.add(lecture.semester);
+                semesters.add(new Semester(lecture.semester));
             }
         }
         return semesters;

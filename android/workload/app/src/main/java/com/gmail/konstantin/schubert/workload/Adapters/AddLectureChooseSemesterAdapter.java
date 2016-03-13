@@ -10,6 +10,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.gmail.konstantin.schubert.workload.R;
+import com.gmail.konstantin.schubert.workload.Semester;
 import com.gmail.konstantin.schubert.workload.activities.AddLecture;
 
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.List;
 
 public class AddLectureChooseSemesterAdapter  extends MyBaseAdapter { //BaseAdapter already implements Listadapter
 
-    private List<String> mSemesters;
+    private List<Semester> mSemesters;
     private Context mContext;
 
     public AddLectureChooseSemesterAdapter(Context context) {
@@ -39,14 +40,14 @@ public class AddLectureChooseSemesterAdapter  extends MyBaseAdapter { //BaseAdap
         }
 
         TextView label = (TextView) lectureRow.findViewById(R.id.semester_name_text_view);
-        label.setText(mSemesters.get(position));
+        label.setText(mSemesters.get(position).to_string());
 
 
         lectureRow.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
                 Intent intent = new Intent(mContext, AddLecture.class);
-                intent.putExtra(AddLecture.SEMESTER, mSemesters.get(position));
+                intent.putExtra(AddLecture.SEMESTER, mSemesters.get(position).to_string());
                 Activity activity = (Activity) mContext; // this is like cheating
                 mContext.startActivity(intent);
                 activity.overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);

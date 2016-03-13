@@ -1,17 +1,16 @@
 package com.gmail.konstantin.schubert.workload;
 
 
-public class Semester {
+public class Semester implements Comparable<Semester>{
 
 //    to_string(), Semester(String), get_next(), get_previous()
 
 
     private enum SemesterType {
         WS,
-        SS;
+        SS
+    }
 
-
-    };
     private int year; //by definition the year in which the semester starts
     private final SemesterType sSemesterType;
 
@@ -51,6 +50,25 @@ public class Semester {
             return "SS"+String.valueOf(year);
         } else {
             return "WS"+String.valueOf(year) + "/" + String.valueOf((year+1)%100);
+        }
+    }
+
+    public int compareTo(Semester other){
+        if (this.year < other.year){
+            return -1;
+        }
+        else if (this.year > other.year){
+            return 1;
+        } else {
+            if (this.sSemesterType.equals(other.sSemesterType)) {
+                return 0;
+            } else {
+                if (this.sSemesterType.equals(SemesterType.SS)) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
         }
     }
 }
