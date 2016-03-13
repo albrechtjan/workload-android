@@ -139,16 +139,16 @@ public class SurveyContentProvider extends ContentProvider {
     private static final UriMatcher sURIHasIDMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
-        sURITableTypeMatcher.addURI(AUTHORITY, "/lectures/*/*/", LECTURES);
-        sURITableTypeMatcher.addURI(AUTHORITY, "/workentries/*/*/", ENTRIES);
-        sURIOptionMatcher.addURI(AUTHORITY, "/*/sync/*/", SYNC);
-        sURIOptionMatcher.addURI(AUTHORITY, "/*/null/*/", DO_NOTHING);
-        sURIOptionMatcher.addURI(AUTHORITY, "/*/stopsync/*/", STOPSYNC);  // set to idle
-        sURIOptionMatcher.addURI(AUTHORITY, "/*/retrysync/*/", RETRY);  // set to retry
-        sURIOptionMatcher.addURI(AUTHORITY, "/*/"+SYNC_STEER_COMMAND.MARK_TRANSACTING+"/*/", MARK_TRANSACTING);
-        sURIOptionMatcher.addURI(AUTHORITY, "/*/get-overwrite/*/", GET_OVERWRITE);
-        sURIHasIDMatcher.addURI(AUTHORITY, "/*/*/#/", HAS_ID);
-        sURIHasIDMatcher.addURI(AUTHORITY, "/*/*/any/", HAS_NO_ID);
+        sURITableTypeMatcher.addURI(AUTHORITY, "lectures/*/*/", LECTURES);
+        sURITableTypeMatcher.addURI(AUTHORITY, "workentries/*/*/", ENTRIES);
+        sURIOptionMatcher.addURI(AUTHORITY, "*/sync/*/", SYNC);
+        sURIOptionMatcher.addURI(AUTHORITY, "*/null/*/", DO_NOTHING);
+        sURIOptionMatcher.addURI(AUTHORITY, "*/stopsync/*/", STOPSYNC);  // set to idle
+        sURIOptionMatcher.addURI(AUTHORITY, "*/retrysync/*/", RETRY);  // set to retry
+        sURIOptionMatcher.addURI(AUTHORITY, "*/"+SYNC_STEER_COMMAND.MARK_TRANSACTING+"/*/", MARK_TRANSACTING);
+        sURIOptionMatcher.addURI(AUTHORITY, "*/get-overwrite/*/", GET_OVERWRITE);
+        sURIHasIDMatcher.addURI(AUTHORITY, "*/*/#/", HAS_ID);
+        sURIHasIDMatcher.addURI(AUTHORITY, "*/*/any/", HAS_NO_ID);
     }
 
     @Override
