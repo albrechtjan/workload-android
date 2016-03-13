@@ -23,13 +23,15 @@
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_gravity="bottom|right"
-        android:src="@drawable/ic_plus_sign"
         android:layout_margin="16dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:background="@drawable/round_button"
         android:clickable="true"
-        android:elevation="5dp" />
+        android:elevation="5dp"
+        android:src="@drawable/ic_add_24dp"
+        />
 
 
 
