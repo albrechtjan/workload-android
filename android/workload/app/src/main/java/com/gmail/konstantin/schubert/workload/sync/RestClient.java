@@ -101,6 +101,7 @@ public class RestClient {
 
     private ArrayList<NameValuePair> addCommonHeaderField(ArrayList<NameValuePair> _header) {
         _header.add(new BasicNameValuePair("Content-Type", "application/x-www-form-urlencoded"));
+        _header.add(new BasicNameValuePair("User-Agent", "Workload_App_Android_CSRF_EXCEMPT"));
         return _header;
     }
 
