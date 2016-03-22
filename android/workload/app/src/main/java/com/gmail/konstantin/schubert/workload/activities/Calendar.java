@@ -47,7 +47,11 @@ public class Calendar extends MyBaseActivity {
         setContentView(R.layout.activity_calendar);
         sSemester = new Semester(get_best_semester());
         final GridView gridview = (GridView) findViewById(R.id.gridview);
-        gridview.setEmptyView( findViewById(R.id.emptyView));
+        if(dbObjectBuilder.getLectureList(false).isEmpty()) { //this should be false if we have synced ever before.
+            gridview.setEmptyView(findViewById(R.id.initial_sync_view));
+        } else {
+            gridview.setEmptyView(findViewById(R.id.emptyView));
+        }
         gridview.setAdapter(new CalendarAdapter(this,sSemester.to_string()));
         final TextView semesterText = (TextView) findViewById(R.id.calendar_semester);
         semesterText.setText(sSemester.to_string());
