@@ -4,8 +4,13 @@ package com.gmail.konstantin.schubert.workload.activities;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.database.ContentObserver;
+import android.net.Uri;
 import android.os.Bundle;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -55,6 +60,9 @@ public class Calendar extends MyBaseActivity {
         gridview.setAdapter(new CalendarAdapter(this,sSemester.to_string()));
         final TextView semesterText = (TextView) findViewById(R.id.calendar_semester);
         semesterText.setText(sSemester.to_string());
+        chooseEmptyView(gridview);
+
+        // Change the adapter if next semester is selected
         View.OnClickListener semesterButtonListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -71,6 +79,23 @@ public class Calendar extends MyBaseActivity {
         ImageView nextSemesterButton = (ImageView) findViewById(R.id.next_semester_button);
         previousSemesterButton.setOnClickListener(semesterButtonListener);
         nextSemesterButton.setOnClickListener(semesterButtonListener);
+
+        // Update the empty state when lectures change.
+        // This makes sure the empty state is updated as soon as the available lectures
+        // have been downloaded.
+        Handler handler = new Handler(Looper.getMainLooper());
+        resolver.registerContentObserver(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/"), true, new ContentObserver(handler) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        this.onChange(selfChange, null);
+                    }
+
+                    @Override
+                    public void onChange(boolean selfChange, Uri uri) {
+                        chooseEmptyView(gridview);
+                    }
+                }
+        );
 
     }
 
@@ -114,10 +139,20 @@ public class Calendar extends MyBaseActivity {
         }
     }
 
+    private void chooseEmptyView(GridView gridView){
+        if(dbObjectBuilder.getLectureList(false).isEmpty()) { //this should be false if we have synced ever before.
+            gridView.setEmptyView(findViewById(R.id.initial_sync_view));
+        } else {
+            gridView.setEmptyView(findViewById(R.id.emptyView));
+        }
+    }
+
     public void onClickManageLectures(View view){
 
         this.startActivity(new Intent(this, AddLectureChooseSemester.class) );
     }
+
+
 
 }
 
