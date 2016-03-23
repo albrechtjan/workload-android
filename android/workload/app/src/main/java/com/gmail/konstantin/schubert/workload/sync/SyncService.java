@@ -25,6 +25,7 @@ public class SyncService extends Service {
          */
         synchronized (sSyncAdapterLock) {
             if (sSyncAdapter == null) {
+                Log.d("SyncService", "Creating new sync adapter.");
                 sSyncAdapter = new SyncAdapter(getApplicationContext(), true);
             }
         }

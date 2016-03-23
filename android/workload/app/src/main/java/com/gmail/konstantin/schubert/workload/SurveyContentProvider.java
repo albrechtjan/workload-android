@@ -3,6 +3,7 @@ package com.gmail.konstantin.schubert.workload;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.OnAccountsUpdateListener;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -17,10 +18,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
-import java.util.List;
 
 
-public class SurveyContentProvider extends ContentProvider {
+public class SurveyContentProvider extends ContentProvider implements OnAccountsUpdateListener {
 
     private static final String TAG = SurveyContentProvider.class.getSimpleName();
 
@@ -44,6 +44,8 @@ public class SurveyContentProvider extends ContentProvider {
 
 
     Account mAccount;
+
+
 
 
     // there is no point in trying to match the API in the database model
@@ -160,6 +162,9 @@ public class SurveyContentProvider extends ContentProvider {
         ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
         //TODO: Remove periodic sync and do this instead: http://developer.android.com/training/sync-adapters/running-sync-adapter.html#RunByMessage
         ContentResolver.addPeriodicSync(mAccount, AUTHORITY, Bundle.EMPTY, 10 * 60);
+
+        AccountManager.get(getContext()).addOnAccountsUpdatedListener(this, null, false);
+
 
         // Run on server data change
         return true;
@@ -400,5 +405,21 @@ public class SurveyContentProvider extends ContentProvider {
         }
     }
 
+    public static void syncWithUrgency(Context context){
+        Log.d(TAG, "requesting urgent sync");
+        Bundle settingsBundle = new Bundle();
+        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        ContentResolver.requestSync(AccountManager.get(context).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, settingsBundle);
+    }
+
+    @Override
+    public void onAccountsUpdated(Account[] accounts) {
+
+        // maybe this is not the best place to implement this interface
+        // maybe I should put it in the content provider? That seems to make sense.
+        Log.d(TAG, "onAccountsUpdated called");
+        this.syncWithUrgency(getContext());
+
+    }
 
 }

@@ -41,7 +41,8 @@ public class WebLoginActivity extends Activity {
 
                 //TODO:<<maybe check the cookies only on certain urls?>>
                 String cookieStrings = CookieManager.getInstance().getCookie(url);
-                if (cookieStrings == null) return;
+                if (cookieStrings == null)  return;
+
 
                 if (Authenticator.getCookiesFromCookieString(cookieStrings) != null){
                     if (mAccountAuthenticatorResponse==null) {

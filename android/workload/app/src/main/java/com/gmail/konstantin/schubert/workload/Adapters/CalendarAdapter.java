@@ -50,12 +50,10 @@ public class CalendarAdapter extends MyBaseAdapter {
     }
 
     public Object getItem(int position) {
-        //TODO: Figure out if I can really return 0 here.
         return null;
     }
 
     public long getItemId(int position) {
-        //TODO: figure out what this method is good for
         return 0;
     }
 

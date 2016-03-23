@@ -37,7 +37,7 @@ public class RestClient {
         DELETE
     }
 
-    public int responseCode = 0;
+    public int  responseCode = 0;
     public String message;
     public String response;
 

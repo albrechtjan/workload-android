@@ -1,7 +1,7 @@
 package com.gmail.konstantin.schubert.workload.activities;
 
 
-import android.accounts.AccountManager;
+
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.ContentObserver;
@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 
@@ -28,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 
-public class Calendar extends MyBaseActivity {
+public class Calendar extends MyBaseActivity  {
 
      Semester sSemester;
      DBObjectBuilder dbObjectBuilder;
@@ -39,28 +38,17 @@ public class Calendar extends MyBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
         ContentResolver resolver = this.getContentResolver();
         dbObjectBuilder = new DBObjectBuilder(resolver);
 
 
-        if(dbObjectBuilder.getLectureList(false).isEmpty()){ //this should be false if we have synced ever before.
-            Bundle settingsBundle = new Bundle();
-            settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-            ContentResolver.requestSync(AccountManager.get(this).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, settingsBundle);
-        }
-
         setContentView(R.layout.activity_calendar);
         sSemester = new Semester(get_best_semester());
         final GridView gridview = (GridView) findViewById(R.id.gridview);
-        if(dbObjectBuilder.getLectureList(false).isEmpty()) { //this should be false if we have synced ever before.
-            gridview.setEmptyView(findViewById(R.id.initial_sync_view));
-        } else {
-            gridview.setEmptyView(findViewById(R.id.emptyView));
-        }
-        gridview.setAdapter(new CalendarAdapter(this,sSemester.to_string()));
+        gridview.setAdapter(new CalendarAdapter(this, sSemester.to_string()));
         final TextView semesterText = (TextView) findViewById(R.id.calendar_semester);
         semesterText.setText(sSemester.to_string());
-        chooseEmptyView(gridview);
 
         // Change the adapter if next semester is selected
         View.OnClickListener semesterButtonListener = new View.OnClickListener() {
@@ -104,6 +92,8 @@ public class Calendar extends MyBaseActivity {
         super.onResume();
         if (maybe_make_first_login()) return;
         if(assure_privacy_agreement()) return;
+        final GridView gridview = (GridView) findViewById(R.id.gridview);
+        chooseEmptyView(gridview);
     }
 
     private String get_best_semester(){
@@ -142,6 +132,7 @@ public class Calendar extends MyBaseActivity {
     private void chooseEmptyView(GridView gridView){
         if(dbObjectBuilder.getLectureList(false).isEmpty()) { //this should be false if we have synced ever before.
             gridView.setEmptyView(findViewById(R.id.initial_sync_view));
+            SurveyContentProvider.syncWithUrgency(this);
         } else {
             gridView.setEmptyView(findViewById(R.id.emptyView));
         }
@@ -149,8 +140,10 @@ public class Calendar extends MyBaseActivity {
 
     public void onClickManageLectures(View view){
 
-        this.startActivity(new Intent(this, AddLectureChooseSemester.class) );
+        this.startActivity(new Intent(this, AddLectureChooseSemester.class));
     }
+
+
 
 
 

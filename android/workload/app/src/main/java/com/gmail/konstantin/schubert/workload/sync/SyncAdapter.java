@@ -30,7 +30,7 @@ import java.util.List;
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
 
-    public final static String TAG = "WorkloadSyncAdapter";
+    public final static String TAG = "SyncAdapter";
     public final static String baseUrl = "https://survey.zqa.tu-dresden.de/app/workload/";
 
 
@@ -64,16 +64,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             ArrayList<NameValuePair> headers = buildAuthHeaders(null, account);
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/lectures/all/", headers, null);
+
+            String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
+            Log.d(TAG, response.substring(0, 50) + "...");
+            List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
+            mRestResponseProcessor.update_lectures_from_remote(remoteLectures);
         } catch (IOException e){
-            throw new AuthenticatorException();
-        }
-        catch (Exception e) {
+            throw new AuthenticatorException(e);
+        } catch (Exception e) {
             throw new IOException();
         }
-        String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-
-        List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
-        mRestResponseProcessor.update_lectures_from_remote(remoteLectures);
     }
 
     private void get_table_entries_workentries(Account account) throws IOException, AuthenticatorException {
@@ -82,18 +82,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             ArrayList<NameValuePair> headers = buildAuthHeaders(null, account);
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl + "api/entries/active/", headers, null);
-        } catch (IOException e) {
-            throw new AuthenticatorException();
-        }catch (Exception e){
-            throw  new IOException();
-        }
-        try{
+
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
+            Log.d(TAG,response.substring(0,50)+"...");
             List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
             mRestResponseProcessor.update_workloadentries_from_remote(remoteEntries);
-        }
-        catch (IOException e){
+        } catch (IOException e){
             throw new AuthenticatorException(e);
+        }catch (Exception e){
+            throw  new IOException();
         }
 
     }
@@ -168,11 +165,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private ArrayList<NameValuePair> buildAuthHeaders(String refererUrl, Account account) throws android.accounts.OperationCanceledException, android.accounts.AuthenticatorException, java.io.IOException{
 
         AccountManagerFuture<Bundle> future =  sAccountManager.getAuthToken(account, "session_ID_token", Bundle.EMPTY, true, null, null);
-        // I have been over engineering this. For now it is absolutely fine to launch the notification every time.
-        // (Maybe we can make it a bit nicer, but that's not priority.)
-        // If one day I want to run the sync continuously in background, I need to think of some logic about when I want
-        // to notify the user-and when not.
+        // change true to false in the call parameters to have no notification
+        // in any case the future.getResult() function returns immediately
         Bundle bundle = future.getResult();
+
         String authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
         if (authToken != null) {
             ArrayList<NameValuePair> headers = new ArrayList<>();
@@ -236,6 +232,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         }
         catch (AuthenticatorException e){
+            Log.d(TAG, "Invalidating AuthToken");
             sAccountManager.invalidateAuthToken("tu-dresden.de", "session_ID_token"); // is the second parameter correct?
         }
         catch (IOException e){
