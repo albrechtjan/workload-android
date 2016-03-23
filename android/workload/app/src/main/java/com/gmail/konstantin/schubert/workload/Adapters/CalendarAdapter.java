@@ -24,11 +24,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class CalendarAdapter extends MyBaseAdapter {
+    private static final String TAG = CalendarAdapter.class.getSimpleName();
+    private final String sSemester;
     private Context mContext;
     private List<Week> mWeeks;
     private List<Lecture> mLectures;
-    private final String sSemester;
-    private static final String TAG = CalendarAdapter.class.getSimpleName();
 
     public CalendarAdapter(Context context, String semester) {
         super(context);
@@ -39,9 +39,9 @@ public class CalendarAdapter extends MyBaseAdapter {
         ContentResolver.requestSync(AccountManager.get(mContext).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, new Bundle());
     }
 
-    public void updateMembers(){
-        Log.d("CalendarAdapter","calling updateMembers()");
-        this.mLectures = dbObjectBuilder.getLecturesOfSemester(sSemester,true);
+    public void updateMembers() {
+        Log.d("CalendarAdapter", "calling updateMembers()");
+        this.mLectures = dbObjectBuilder.getLecturesOfSemester(sSemester, true);
         this.mWeeks = getWeeks(this.mLectures);
     }
 
@@ -74,7 +74,7 @@ public class CalendarAdapter extends MyBaseAdapter {
         String first_day = week.firstDay().toString("dd.MMM");
         String last_day = week.lastDay().toString("dd.MMM");
 
-        weekButton.setText(first_day+"\n-\n"+last_day);
+        weekButton.setText(first_day + "\n-\n" + last_day);
         weekButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
@@ -88,15 +88,15 @@ public class CalendarAdapter extends MyBaseAdapter {
         return weekButton;
     }
 
-    private List<Week> getWeeks(List<Lecture> lectures){
-        if(lectures.isEmpty()){
+    private List<Week> getWeeks(List<Lecture> lectures) {
+        if (lectures.isEmpty()) {
             // if there are not lectures, then the list of weeks is empty as well.
             return new LinkedList<>();
         }
         Week week = firstWeek(lectures).copy();
         List<Week> weeks = new LinkedList<Week>();
         final Week last = lastWeek(lectures);
-        while(week.compareTo(last)<=0){
+        while (week.compareTo(last) <= 0) {
             weeks.add(week);
             week = week.getNextWeek();
         }
@@ -105,18 +105,17 @@ public class CalendarAdapter extends MyBaseAdapter {
     }
 
 
-
-    private Week firstWeek(List<Lecture> lectures){
+    private Week firstWeek(List<Lecture> lectures) {
         List<Week> startWeeks = new ArrayList<>();
-        for(Lecture lecture : lectures){
+        for (Lecture lecture : lectures) {
             startWeeks.add(lecture.startWeek);
         }
         return Collections.min(startWeeks);
     }
 
-    private Week lastWeek(List<Lecture> lectures){
+    private Week lastWeek(List<Lecture> lectures) {
         List<Week> endWeeks = new ArrayList<>();
-        for(Lecture lecture : lectures){
+        for (Lecture lecture : lectures) {
             endWeeks.add(lecture.endWeek);
         }
         return Collections.max(endWeeks);

@@ -1,7 +1,6 @@
 package com.gmail.konstantin.schubert.workload.activities;
 
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,7 +8,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-
 
 import com.gmail.konstantin.schubert.workload.R;
 
@@ -19,7 +17,6 @@ abstract public class MyBaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
 
 
     }
@@ -36,7 +33,7 @@ abstract public class MyBaseActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         Intent intent = null;
-        switch(item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.action_manage_lectures:
                 intent = new Intent(this, ManageLectures.class);
                 break;
@@ -50,9 +47,9 @@ abstract public class MyBaseActivity extends AppCompatActivity {
 //                intent = new Intent(this, Settings.class);
 //                break;
         }
-        if (intent==null){
+        if (intent == null) {
             return false;
-        }else {
+        } else {
             startActivity(intent);
             return true;
         }
@@ -68,7 +65,7 @@ abstract public class MyBaseActivity extends AppCompatActivity {
         return false;
     }
 
-    protected boolean maybe_make_first_login(){
+    protected boolean maybe_make_first_login() {
 
         SharedPreferences settings = this.getSharedPreferences("workload", Context.MODE_PRIVATE);
         if (settings.getBoolean("user_has_never_logged_in", true)) {

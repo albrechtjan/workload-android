@@ -15,14 +15,11 @@ import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import java.util.List;
 
 
+public class AddLectureAdapter extends MyBaseAdapter { //BaseAdapter already implements Listadapter
 
-
-
-public class AddLectureAdapter  extends MyBaseAdapter { //BaseAdapter already implements Listadapter
-
+    private final String sSemester;
     private List<Lecture> mLectures;
     private Context mContext;
-    private final String sSemester;
 
     public AddLectureAdapter(Context context, String semester) {
         super(context);
@@ -75,8 +72,6 @@ public class AddLectureAdapter  extends MyBaseAdapter { //BaseAdapter already im
     public void updateMembers() {
         mLectures = this.dbObjectBuilder.getLecturesOfSemester(sSemester, false);
     }
-
-
 
 
 }

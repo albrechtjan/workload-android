@@ -29,20 +29,26 @@ import java.util.ArrayList;
 public class RestClient {
 
     public final static String TAG = "RestClient";
-
-    public enum RequestMethod {
-        GET,
-        POST,
-        PUT,
-        DELETE
-    }
-
-    public int  responseCode = 0;
+    public int responseCode = 0;
     public String message;
     public String response;
 
+    private static String convertStreamToString(InputStream is) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        try {
+            while ((line = reader.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+            is.close();
+        } catch (IOException e) {
+        }
+        return sb.toString();
+    }
+
     public void Execute(RequestMethod method, String url, ArrayList<NameValuePair> headers, ArrayList<NameValuePair> params) throws Exception {
-        Log.d(TAG, "Executing Rest Method "+ method.toString()+" on " + url);
+        Log.d(TAG, "Executing Rest Method " + method.toString() + " on " + url);
         switch (method) {
             case GET: {
                 // add parameters
@@ -105,7 +111,7 @@ public class RestClient {
         return _header;
     }
 
-    private void executeRequest(HttpUriRequest request, String url) throws IOException, ClientProtocolException{
+    private void executeRequest(HttpUriRequest request, String url) throws IOException, ClientProtocolException {
         HttpClient client = new DefaultHttpClient();
         HttpResponse httpResponse;
 
@@ -122,17 +128,10 @@ public class RestClient {
 
     }
 
-    private static String convertStreamToString(InputStream is) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-        try {
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
-            }
-            is.close();
-        } catch (IOException e) {
-        }
-        return sb.toString();
+    public enum RequestMethod {
+        GET,
+        POST,
+        PUT,
+        DELETE
     }
 }

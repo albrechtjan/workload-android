@@ -16,10 +16,7 @@ import com.gmail.konstantin.schubert.workload.activities.AddLecture;
 import java.util.List;
 
 
-
-
-
-public class AddLectureChooseSemesterAdapter  extends MyBaseAdapter { //BaseAdapter already implements Listadapter
+public class AddLectureChooseSemesterAdapter extends MyBaseAdapter { //BaseAdapter already implements Listadapter
 
     private List<Semester> mSemesters;
     private Context mContext;
@@ -78,8 +75,6 @@ public class AddLectureChooseSemesterAdapter  extends MyBaseAdapter { //BaseAdap
     public void updateMembers() {
         mSemesters = this.dbObjectBuilder.getSemesterList(false);
     }
-
-
 
 
 }

@@ -13,12 +13,12 @@ import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
 
-abstract public class MyBaseAdapter extends BaseAdapter{
+abstract public class MyBaseAdapter extends BaseAdapter {
     private static final String TAG = MyBaseAdapter.class.getSimpleName();
 
     protected DBObjectBuilder dbObjectBuilder;
 
-    public MyBaseAdapter(Context context){
+    public MyBaseAdapter(Context context) {
 
         //TODO: Figure out which role the handler plays.
         ContentResolver resolver = context.getContentResolver();
@@ -45,9 +45,7 @@ abstract public class MyBaseAdapter extends BaseAdapter{
     //TODO: Then also call updateMemebers every time the activity is resumed? How to do that?
 
 
-
     public abstract void updateMembers();
-
 
 
 }

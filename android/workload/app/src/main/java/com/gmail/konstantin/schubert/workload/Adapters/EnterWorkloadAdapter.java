@@ -29,16 +29,16 @@ import java.util.List;
 
 public class EnterWorkloadAdapter extends BaseAdapter {
 
+    private final static String TAG = "EnterWorkloadAdapter";
     private Context mContext;
     private Cursor mCursor;
     private boolean userHasEdited;
     private List<EditText> editTexts = new ArrayList<>();
-    private final static String TAG = "EnterWorkloadAdapter";
 
     public EnterWorkloadAdapter(Context context, Week week, int lectureId) {
         super();
         mContext = context;
-        mCursor = getCursor(lectureId,week);
+        mCursor = getCursor(lectureId, week);
         userHasEdited = false;
     }
 
@@ -105,26 +105,25 @@ public class EnterWorkloadAdapter extends BaseAdapter {
         return position;
     }
 
-    public  void saveEditsIfUserHasEdited(){
+    public void saveEditsIfUserHasEdited() {
         if (userHasEdited) {
             Toast.makeText(mContext, "saved", Toast.LENGTH_SHORT).show();
             WorkloadEntry workloadEntry = new WorkloadEntry(mCursor);
-            workloadEntry.setHoursInLecture(  (float) getItem(EnterWorkload.ROW_HOURS_ATTENDING));
-            workloadEntry.setHoursStudying(   (float) getItem(EnterWorkload.ROW_HOURS_STUDYING ));
-            workloadEntry.setHoursForHomework((float) getItem(EnterWorkload.ROW_HOURS_HOMEWORK ));
+            workloadEntry.setHoursInLecture((float) getItem(EnterWorkload.ROW_HOURS_ATTENDING));
+            workloadEntry.setHoursStudying((float) getItem(EnterWorkload.ROW_HOURS_STUDYING));
+            workloadEntry.setHoursForHomework((float) getItem(EnterWorkload.ROW_HOURS_HOMEWORK));
             DBObjectBuilder objectBuilder = new DBObjectBuilder(mContext.getContentResolver());
             objectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
         }
     }
 
 
-
-    private Cursor getCursor(int lecture_id, Week sWeek){
+    private Cursor getCursor(int lecture_id, Week sWeek) {
         DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(mContext.getContentResolver());
         Cursor cursor = dbObjectBuilder.getWorkloadEntry(lecture_id, sWeek);
-        if (cursor.getCount()==0){
-            dbObjectBuilder.addWorkloadEntry(new WorkloadEntry(sWeek,lecture_id,0,0,0), SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
-            cursor = dbObjectBuilder.getWorkloadEntry(lecture_id,sWeek);
+        if (cursor.getCount() == 0) {
+            dbObjectBuilder.addWorkloadEntry(new WorkloadEntry(sWeek, lecture_id, 0, 0, 0), SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
+            cursor = dbObjectBuilder.getWorkloadEntry(lecture_id, sWeek);
         }
         cursor.moveToFirst();
         return cursor;

@@ -1,25 +1,21 @@
 package com.gmail.konstantin.schubert.workload.activities;
 
 
-
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Bundle;
-
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-
+import com.gmail.konstantin.schubert.workload.Adapters.CalendarAdapter;
 import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.R;
-import com.gmail.konstantin.schubert.workload.Adapters.CalendarAdapter;
 import com.gmail.konstantin.schubert.workload.Semester;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
@@ -27,12 +23,29 @@ import java.util.Collections;
 import java.util.List;
 
 
-public class Calendar extends MyBaseActivity  {
+public class Calendar extends MyBaseActivity {
 
-     Semester sSemester;
-     DBObjectBuilder dbObjectBuilder;
+    Semester sSemester;
+    DBObjectBuilder dbObjectBuilder;
 
+    static private String get_current_semester() {
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        java.util.Calendar beginSummerSemester = (java.util.Calendar) now.clone();
+        beginSummerSemester.set(java.util.Calendar.MONTH, 4);
+        beginSummerSemester.set(java.util.Calendar.DAY_OF_MONTH, 1);
+        java.util.Calendar beginWinterSemester = (java.util.Calendar) now.clone();
+        beginWinterSemester.set(java.util.Calendar.MONTH, 10);
+        beginWinterSemester.set(java.util.Calendar.DAY_OF_MONTH, 1);
 
+        int thisYear = now.get(java.util.Calendar.YEAR);
+        if (now.before(beginSummerSemester)) {
+            return "WS" + String.valueOf(thisYear - 1) + "/" + String.valueOf(thisYear % 100);
+        } else if (now.before(beginWinterSemester)) {
+            return "SS" + String.valueOf(thisYear);
+        } else {
+            return "WS" + String.valueOf(thisYear) + "/" + String.valueOf(thisYear + 1 % 100);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,9 +67,9 @@ public class Calendar extends MyBaseActivity  {
         View.OnClickListener semesterButtonListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(v.getId()==R.id.next_semester_button) {
+                if (v.getId() == R.id.next_semester_button) {
                     Calendar.this.sSemester = Calendar.this.sSemester.get_next();
-                }else if(v.getId()==R.id.previous_semester_button){
+                } else if (v.getId() == R.id.previous_semester_button) {
                     Calendar.this.sSemester = Calendar.this.sSemester.get_previous();
                 }
                 semesterText.setText(sSemester.to_string());
@@ -88,49 +101,29 @@ public class Calendar extends MyBaseActivity  {
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         if (maybe_make_first_login()) return;
-        if(assure_privacy_agreement()) return;
+        if (assure_privacy_agreement()) return;
         final GridView gridview = (GridView) findViewById(R.id.gridview);
         chooseEmptyView(gridview);
     }
 
-    private String get_best_semester(){
+    private String get_best_semester() {
         // If we are not sure which semester to display (because there is no saved instance)
         // the best semester is considered the newest semester that has a lecture
         // Otherwise it is the newest semester
-        List<Semester> semesters= this.dbObjectBuilder.getSemesterList(true);
+        List<Semester> semesters = this.dbObjectBuilder.getSemesterList(true);
         Collections.sort(semesters);
-        if (semesters.isEmpty()){
+        if (semesters.isEmpty()) {
             return get_current_semester();
         }
-        return semesters.get(semesters.size()-1).to_string();
+        return semesters.get(semesters.size() - 1).to_string();
 
     }
 
-    static private String get_current_semester(){
-        java.util.Calendar now = java.util.Calendar.getInstance();
-        java.util.Calendar beginSummerSemester = (java.util.Calendar) now.clone();
-        beginSummerSemester.set(java.util.Calendar.MONTH, 4);
-        beginSummerSemester.set(java.util.Calendar.DAY_OF_MONTH, 1);
-        java.util.Calendar beginWinterSemester = (java.util.Calendar) now.clone();
-        beginWinterSemester.set(java.util.Calendar.MONTH, 10);
-        beginWinterSemester.set(java.util.Calendar.DAY_OF_MONTH, 1);
-
-        int thisYear = now.get(java.util.Calendar.YEAR);
-        if (now.before(beginSummerSemester)){
-            return "WS"+String.valueOf(thisYear-1)+"/"+String.valueOf(thisYear%100);
-        }
-        else if (now.before(beginWinterSemester)){
-            return "SS"+String.valueOf(thisYear);
-        }else{
-            return "WS"+String.valueOf(thisYear)+"/"+String.valueOf(thisYear+1%100);
-        }
-    }
-
-    private void chooseEmptyView(GridView gridView){
-        if(dbObjectBuilder.getLectureList(false).isEmpty()) { //this should be false if we have synced ever before.
+    private void chooseEmptyView(GridView gridView) {
+        if (dbObjectBuilder.getLectureList(false).isEmpty()) { //this should be false if we have synced ever before.
             gridView.setEmptyView(findViewById(R.id.initial_sync_view));
             SurveyContentProvider.syncWithUrgency(this);
         } else {
@@ -138,13 +131,10 @@ public class Calendar extends MyBaseActivity  {
         }
     }
 
-    public void onClickManageLectures(View view){
+    public void onClickManageLectures(View view) {
 
         this.startActivity(new Intent(this, AddLectureChooseSemester.class));
     }
-
-
-
 
 
 }

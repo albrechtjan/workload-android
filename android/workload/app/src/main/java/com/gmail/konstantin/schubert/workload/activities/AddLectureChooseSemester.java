@@ -5,7 +5,7 @@ import android.os.Bundle;
 import com.gmail.konstantin.schubert.workload.Adapters.AddLectureChooseSemesterAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 
-public class AddLectureChooseSemester  extends MyBaseListActivity {
+public class AddLectureChooseSemester extends MyBaseListActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

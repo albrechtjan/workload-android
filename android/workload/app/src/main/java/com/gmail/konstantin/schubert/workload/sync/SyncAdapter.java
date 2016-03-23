@@ -32,12 +32,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public final static String TAG = "SyncAdapter";
     public final static String baseUrl = "https://survey.zqa.tu-dresden.de/app/workload/";
-
-
-    RESTResponseProcessor mRestResponseProcessor;
     static AccountManager sAccountManager;
+    RESTResponseProcessor mRestResponseProcessor;
     RestClient mRestClient = new RestClient();
-
 
 
     public SyncAdapter(Context context, boolean autoInitialize) {
@@ -58,18 +55,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
 
-    private void get_table_entries_lectures(Account account) throws IOException, AuthenticatorException{
+    private void get_table_entries_lectures(Account account) throws IOException, AuthenticatorException {
         // Delete anything local that is not in remote
         // Add anything to local that is in remote but not in local (as inactive)
         try {
             ArrayList<NameValuePair> headers = buildAuthHeaders(null, account);
-            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl+"api/lectures/all/", headers, null);
+            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl + "api/lectures/all/", headers, null);
 
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
             Log.d(TAG, response.substring(0, 50) + "...");
             List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
             mRestResponseProcessor.update_lectures_from_remote(remoteLectures);
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new AuthenticatorException(e);
         } catch (Exception e) {
             throw new IOException();
@@ -84,27 +81,27 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl + "api/entries/active/", headers, null);
 
             String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-            Log.d(TAG,response.substring(0,50)+"...");
+            Log.d(TAG, response.substring(0, 50) + "...");
             List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
             mRestResponseProcessor.update_workloadentries_from_remote(remoteEntries);
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new AuthenticatorException(e);
-        }catch (Exception e){
-            throw  new IOException();
+        } catch (Exception e) {
+            throw new IOException();
         }
 
     }
 
 
-    private void post_workentry( WorkloadEntry workloadEntry, Account account) throws IOException, AuthenticatorException{
+    private void post_workentry(WorkloadEntry workloadEntry, Account account) throws IOException, AuthenticatorException {
         try {
             String url = baseUrl;
-            url += "api/entries/active/year/"+ workloadEntry.week.year() +"/";
-            url +=  workloadEntry.week.week() + "/";
+            url += "api/entries/active/year/" + workloadEntry.week.year() + "/";
+            url += workloadEntry.week.week() + "/";
             url += "lectures/" + workloadEntry.lecture_id + "/";
             ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString(), account);
             ArrayList<NameValuePair> urlArgs = new ArrayList<>();
-            urlArgs.add(new BasicNameValuePair("hoursInLecture",String.valueOf(workloadEntry.getHoursInLecture())));
+            urlArgs.add(new BasicNameValuePair("hoursInLecture", String.valueOf(workloadEntry.getHoursInLecture())));
             urlArgs.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
             urlArgs.add(new BasicNameValuePair("hoursStudying", String.valueOf(workloadEntry.getHoursStudying())));
             mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, urlArgs);
@@ -115,7 +112,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
         DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
         // when calling updateWorkloadEntry, we are also doing an update of the time entries, but they should be correct, so it should be fine.
-        if (response==null){
+        if (response == null) {
             // retry later
             //TODO: dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.RETRYSYNC);
             //TODO: First implement the stopsync in the content provider
@@ -129,13 +126,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
 
-    private void patch_lecture(Lecture lectureToPatch, Account account) throws  IOException, AuthenticatorException{
+    private void patch_lecture(Lecture lectureToPatch, Account account) throws IOException, AuthenticatorException {
         try {
             String url = baseUrl;
-            url += "api/lectures/all/"+ lectureToPatch._ID +"/";
+            url += "api/lectures/all/" + lectureToPatch._ID + "/";
             ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString(), account);
             ArrayList<NameValuePair> urlArgs = new ArrayList<>();
-            urlArgs.add(new BasicNameValuePair("isActive",String.valueOf(lectureToPatch.isActive)));
+            urlArgs.add(new BasicNameValuePair("isActive", String.valueOf(lectureToPatch.isActive)));
             mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, urlArgs);
         } catch (Exception e) {
             throw new IOException();
@@ -144,16 +141,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
         DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
         // when calling updateWorkloadEntry, we are also doing an update of the time entries, but they should be correct, so it should be fine.
-        if (response==null){
+        if (response == null) {
             // retry later
             //TODO: dbObjectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.RETRYSYNC);
             //TODO: First implement the stopsync in the content provider
             throw new IOException();
-        } else if(response.contains("DOCTYPE html")){
+        } else if (response.contains("DOCTYPE html")) {
             //TODO: When debug mode is off, we must handle 404s!
             // we got an error message most likely
             //TODO: Handle this!
-        }else {
+        } else {
             // we succeeded and now we stop the sync
             dbObjectBuilder.updateLecture(lectureToPatch, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
         }
@@ -162,9 +159,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     /*
     refererUrl can be null.
      */
-    private ArrayList<NameValuePair> buildAuthHeaders(String refererUrl, Account account) throws android.accounts.OperationCanceledException, android.accounts.AuthenticatorException, java.io.IOException{
+    private ArrayList<NameValuePair> buildAuthHeaders(String refererUrl, Account account) throws android.accounts.OperationCanceledException, android.accounts.AuthenticatorException, java.io.IOException {
 
-        AccountManagerFuture<Bundle> future =  sAccountManager.getAuthToken(account, "session_ID_token", Bundle.EMPTY, true, null, null);
+        AccountManagerFuture<Bundle> future = sAccountManager.getAuthToken(account, "session_ID_token", Bundle.EMPTY, true, null, null);
         // change true to false in the call parameters to have no notification
         // in any case the future.getResult() function returns immediately
         Bundle bundle = future.getResult();
@@ -172,14 +169,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         String authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
         if (authToken != null) {
             ArrayList<NameValuePair> headers = new ArrayList<>();
-            NameValuePair cookies = new BasicNameValuePair("Cookie",authToken);
+            NameValuePair cookies = new BasicNameValuePair("Cookie", authToken);
             headers.add(cookies);
-            if (refererUrl!=null) {
+            if (refererUrl != null) {
                 NameValuePair referer = new BasicNameValuePair("Referer", refererUrl);
                 headers.add(referer);
             }
             return headers;
-        }else{
+        } else {
             return null;
         }
 
@@ -195,7 +192,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
 
 //        android.os.Debug.waitForDebugger();
-        Log.d(TAG,"Starting sync!");
+        Log.d(TAG, "Starting sync!");
 
 
         try {
@@ -205,38 +202,36 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
 
             Cursor cursor = dbObjectBuilder.getNotIdle(getContext().getString(R.string.lectures_table_name));
-            while (cursor.moveToNext()){
+            while (cursor.moveToNext()) {
                 int sync_operation = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS.OPERATION));
                 int id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
                 if (sync_operation == SurveyContentProvider.SYNC_OPERATION.POST) {
                     dbObjectBuilder.mark_as_transacting(id, getContext().getString(R.string.lectures_table_name));
-                    patch_lecture(dbObjectBuilder.buildLectureFromCursor(cursor),account); // id is same as local-id since the ids are unique and identifying for lectures across local AND remote
+                    patch_lecture(dbObjectBuilder.buildLectureFromCursor(cursor), account); // id is same as local-id since the ids are unique and identifying for lectures across local AND remote
                 }
             }
             cursor.close();
 
 
             cursor = dbObjectBuilder.getNotIdle(getContext().getString(R.string.workentry_table_name));
-            while (cursor.moveToNext()){
+            while (cursor.moveToNext()) {
                 int sync_operation = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS.OPERATION));
                 int local_id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID));
 
                 if (sync_operation == SurveyContentProvider.SYNC_OPERATION.POST) {
                     dbObjectBuilder.mark_as_transacting(local_id, getContext().getString(R.string.workentry_table_name));
-                    post_workentry(dbObjectBuilder.getWorkloadEntryByLocalId(local_id),account);
+                    post_workentry(dbObjectBuilder.getWorkloadEntryByLocalId(local_id), account);
                 }
             }
             cursor.close();
 
-            Log.d(TAG,"Sucessfully finalized sync");
+            Log.d(TAG, "Sucessfully finalized sync");
 
-        }
-        catch (AuthenticatorException e){
+        } catch (AuthenticatorException e) {
             Log.d(TAG, "Invalidating AuthToken");
             sAccountManager.invalidateAuthToken("tu-dresden.de", "session_ID_token"); // is the second parameter correct?
-        }
-        catch (IOException e){
-            Log.e(TAG,"IOException in onPerformSync.",e);
+        } catch (IOException e) {
+            Log.e(TAG, "IOException in onPerformSync.", e);
         }
 
     }

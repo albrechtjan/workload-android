@@ -10,7 +10,6 @@ import com.gmail.konstantin.schubert.workload.Adapters.ManageLecturesAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 
 
-
 public class ManageLectures extends MyBaseListActivity {
 
     private Context mContext;
@@ -35,7 +34,7 @@ public class ManageLectures extends MyBaseListActivity {
 
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         ManageLecturesAdapter manageLecturesAdapter = (ManageLecturesAdapter) getListAdapter();
         //TODO: Make this more efficient

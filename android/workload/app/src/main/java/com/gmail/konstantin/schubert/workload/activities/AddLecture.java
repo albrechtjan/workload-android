@@ -7,7 +7,7 @@ import android.view.MenuItem;
 import com.gmail.konstantin.schubert.workload.Adapters.AddLectureAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 
-public class AddLecture  extends MyBaseListActivity {
+public class AddLecture extends MyBaseListActivity {
 
     public final static String SEMESTER = "com.gmail.konstantin.schubert.workload.SEMESTER";
 
@@ -31,7 +31,7 @@ public class AddLecture  extends MyBaseListActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        switch(id) {
+        switch (id) {
 
             case android.R.id.home:
                 finish();

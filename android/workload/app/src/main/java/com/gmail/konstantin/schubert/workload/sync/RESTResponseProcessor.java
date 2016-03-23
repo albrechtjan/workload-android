@@ -24,13 +24,13 @@ public class RESTResponseProcessor {
     //this class kinda does the object building from json AND the merging logic with the local database. Not sure how
     // smart that combination of duties is.
 
-    public RESTResponseProcessor(ContentResolver contentResolver){
+    public RESTResponseProcessor(ContentResolver contentResolver) {
 
         dbObjectBuilder = new DBObjectBuilder(contentResolver);
         this.mContentResolver = contentResolver;
     }
 
-    static public List<Lecture> lectureListFromJson(String jsonList) throws IOException{
+    static public List<Lecture> lectureListFromJson(String jsonList) throws IOException {
         JsonReader reader = new JsonReader(new StringReader(jsonList));
         List<Lecture> lectures = new ArrayList();
         try {
@@ -40,15 +40,14 @@ public class RESTResponseProcessor {
             }
             reader.endArray();
             reader.close();
-        }
-        catch (MalformedJsonException e){
-            throw  new MalformedJsonException(jsonList);
+        } catch (MalformedJsonException e) {
+            throw new MalformedJsonException(jsonList);
         }
         return lectures;
     }
 
 
-    static public List<WorkloadEntry> entryListFromJson(String jsonList) throws IOException{
+    static public List<WorkloadEntry> entryListFromJson(String jsonList) throws IOException {
         JsonReader reader = new JsonReader(new StringReader(jsonList));
         List<WorkloadEntry> entries = new ArrayList();
         reader.beginArray();
@@ -114,7 +113,7 @@ public class RESTResponseProcessor {
             } else if (key.equals("hoursStudying")) {
                 hoursStudying = (float) reader.nextDouble();
             } else if (key.equals("week")) {
-               week = Week.getWeekFromISOString(reader.nextString());
+                week = Week.getWeekFromISOString(reader.nextString());
             } else {
                 reader.skipValue();
             }
@@ -137,11 +136,11 @@ public class RESTResponseProcessor {
             }
         }
         // add remote lectures that are not in local lectures
-        for (Lecture remoteLecture : remoteLectures){
-            if(!isInList(remoteLecture, localLectures)){
-               this.dbObjectBuilder.addLecture(remoteLecture,SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
-            }else{
-                Lecture localLecture = (Lecture) getFromList(remoteLecture,localLectures);
+        for (Lecture remoteLecture : remoteLectures) {
+            if (!isInList(remoteLecture, localLectures)) {
+                this.dbObjectBuilder.addLecture(remoteLecture, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
+            } else {
+                Lecture localLecture = (Lecture) getFromList(remoteLecture, localLectures);
                 if (!localLecture.equals_exactly(remoteLecture)) {
                     this.dbObjectBuilder.updateLecture(remoteLecture, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
                 }
@@ -151,38 +150,37 @@ public class RESTResponseProcessor {
     }
 
 
-
-
-    public  void update_workloadentries_from_remote(List<WorkloadEntry> remoteWorkloadEntries){
+    public void update_workloadentries_from_remote(List<WorkloadEntry> remoteWorkloadEntries) {
 
         List<WorkloadEntry> localWorkloadEntries = this.dbObjectBuilder.getWorkloadEntries(null);
 
-        for(WorkloadEntry remoteWorkloadEntry : remoteWorkloadEntries){
-            if(!isInList(remoteWorkloadEntry, localWorkloadEntries)){
+        for (WorkloadEntry remoteWorkloadEntry : remoteWorkloadEntries) {
+            if (!isInList(remoteWorkloadEntry, localWorkloadEntries)) {
                 this.dbObjectBuilder.addWorkloadEntry(remoteWorkloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
-            }else{
-                WorkloadEntry localEntry = (WorkloadEntry) getFromList(remoteWorkloadEntry,localWorkloadEntries);
+            } else {
+                WorkloadEntry localEntry = (WorkloadEntry) getFromList(remoteWorkloadEntry, localWorkloadEntries);
                 if (!localEntry.equals_exactly(remoteWorkloadEntry)) {
                     dbObjectBuilder.updateWorkloadEntry(remoteWorkloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
                 }
             }
         }
     }
-    private boolean isInList(Object object, List list){
+
+    private boolean isInList(Object object, List list) {
         boolean isInList = false;
-        for (Object other : list){
-            if (object.equals(other)){
+        for (Object other : list) {
+            if (object.equals(other)) {
                 isInList = true;
                 break;
             }
         }
-        return  isInList;
+        return isInList;
     }
 
-    private Object getFromList(Object object, List list){
-        for (Object other : list){
-            if (object.equals(other)){
-               return other;
+    private Object getFromList(Object object, List list) {
+        for (Object other : list) {
+            if (object.equals(other)) {
+                return other;
             }
         }
         // Better throw exception

@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 
-
 import com.gmail.konstantin.schubert.workload.R;
 
 
@@ -25,7 +24,7 @@ public class PrivacyAgreement extends MyBaseActivity {
         super.onCreate(savedInstanceState);
         SharedPreferences settings = this.getSharedPreferences("workload", Context.MODE_PRIVATE);
         setContentView(R.layout.activity_privacy_agreement);
-        if(settings.getBoolean("privacy_agreed",false)){
+        if (settings.getBoolean("privacy_agreed", false)) {
             View footer = findViewById(R.id.privacy_agree_footer);
             ((ViewGroup) footer.getParent()).removeView(footer);
         } else {
@@ -35,16 +34,16 @@ public class PrivacyAgreement extends MyBaseActivity {
                 @Override
                 public void onClick(View v) {
                     CheckBox checkBox = (CheckBox) findViewById(R.id.privacy_checkBox);
-                    if(checkBox.isChecked()) {
+                    if (checkBox.isChecked()) {
                         SharedPreferences settings = PrivacyAgreement.this.getSharedPreferences("workload", Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = settings.edit();
                         editor.putBoolean("privacy_agreed", true);
                         editor.commit();
                         PrivacyAgreement.this.finish();
-                    }else{
+                    } else {
                         checkBox.setBackgroundColor(Color.RED); //TODO: This is ugly
                     }
-            }
+                }
             });
         }
     }

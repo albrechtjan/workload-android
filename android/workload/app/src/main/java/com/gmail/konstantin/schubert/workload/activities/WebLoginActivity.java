@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -14,8 +15,6 @@ import android.webkit.WebViewClient;
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.sync.Authenticator;
-
-import android.webkit.CookieManager;
 
 
 public class WebLoginActivity extends Activity {
@@ -41,14 +40,14 @@ public class WebLoginActivity extends Activity {
 
                 //TODO:<<maybe check the cookies only on certain urls?>>
                 String cookieStrings = CookieManager.getInstance().getCookie(url);
-                if (cookieStrings == null)  return;
+                if (cookieStrings == null) return;
 
 
-                if (Authenticator.getCookiesFromCookieString(cookieStrings) != null){
-                    if (mAccountAuthenticatorResponse==null) {
+                if (Authenticator.getCookiesFromCookieString(cookieStrings) != null) {
+                    if (mAccountAuthenticatorResponse == null) {
                         AccountManager accountManager = AccountManager.get(WebLoginActivity.this);
                         accountManager.setAuthToken(SurveyContentProvider.GetOrCreateSyncAccount(WebLoginActivity.this), "session_ID_token", cookieStrings);
-                    }else{
+                    } else {
                         Bundle response = new Bundle();
                         response.putString(AccountManager.KEY_ACCOUNT_NAME, getResources().getString(R.string.account_name));
                         response.putString(AccountManager.KEY_ACCOUNT_TYPE, getResources().getString(R.string.account_type));

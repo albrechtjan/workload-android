@@ -3,19 +3,15 @@ package com.gmail.konstantin.schubert.workload.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.GridView;
-import android.widget.ListView;
 
 import com.gmail.konstantin.schubert.workload.Adapters.EnterWorkloadAdapter;
 import com.gmail.konstantin.schubert.workload.R;
-import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.Week;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class EnterWorkload extends MyBaseListActivity{
+public class EnterWorkload extends MyBaseListActivity {
     public final static String MESSAGE_YEAR = "com.gmail.konstantin.schubert.workload.YEAR";
     public final static String MESSAGE_WEEK = "com.gmail.konstantin.schubert.workload.WEEK";
     public final static String MESSAGE_LECTURE = "com.gmail.konstantin.schubert.workload.LECTURE";
@@ -43,7 +39,7 @@ public class EnterWorkload extends MyBaseListActivity{
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         assure_privacy_agreement();
     }

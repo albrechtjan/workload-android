@@ -4,15 +4,15 @@ package com.gmail.konstantin.schubert.workload.activities;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.Adapters.SelectLectureAdapter;
+import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.Week;
 
 
 public class SelectLecture extends MyBaseListActivity {
-    private static final String TAG = SelectLecture.class.getSimpleName();
     public final static String MESSAGE_YEAR = "com.gmail.konstantin.schubert.workload.YEAR";
     public final static String MESSAGE_WEEK = "com.gmail.konstantin.schubert.workload.WEEK";
+    private static final String TAG = SelectLecture.class.getSimpleName();
     private Week mWeek;
 
 
@@ -31,7 +31,7 @@ public class SelectLecture extends MyBaseListActivity {
 
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         SelectLectureAdapter selectLectureAdapter = (SelectLectureAdapter) getListAdapter();
         //TODO: Make this more efficient?
