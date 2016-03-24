@@ -30,7 +30,12 @@ public class Lecture implements Serializable {
     }
 
     public boolean equals_exactly(Lecture other){
-        return this.equals(other) && (this.isActive==other.isActive);
+        return (
+                this.equals(other)
+                && (this.isActive==other.isActive)
+                && (this.startWeek.equals(other.startWeek))
+                && (this.endWeek.equals(other.endWeek))
+        );
     }
 
 }

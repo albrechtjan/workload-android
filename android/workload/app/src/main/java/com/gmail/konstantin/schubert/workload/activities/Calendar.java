@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.gmail.konstantin.schubert.workload.Adapters.CalendarAdapter;

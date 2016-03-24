@@ -6,6 +6,7 @@ import org.joda.time.DateTimeFieldType;
 import org.joda.time.LocalDate;
 import org.joda.time.Partial;
 
+import java.util.Objects;
 
 
 /**
@@ -73,6 +74,11 @@ public class Week implements Comparable<Week> {
     @Override
     public int compareTo(Week other) {
        return this.yearWeek.compareTo(other.yearWeek);
+    }
+
+    @Override
+    public boolean equals(Object other){
+        return this.compareTo((Week) other) ==0;
     }
 
 

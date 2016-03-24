@@ -43,15 +43,6 @@ public class DBObjectBuilder {
     }
 
 
-    public Lecture getLectureById(Integer lectureId){
-
-        Cursor cursor= mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/null/" + String.valueOf(lectureId)), null, null, null, null);
-        cursor.moveToFirst();
-        Lecture lecture = buildLectureFromCursor(cursor);
-        cursor.close();
-        return lecture;
-    }
-
     public Cursor getNotIdle(String table){
         String uri = "content://" + SurveyContentProvider.AUTHORITY+ "/";
         uri += table + "/";

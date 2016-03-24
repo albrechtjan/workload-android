@@ -135,13 +135,17 @@ public class RESTResponseProcessor {
                 mContentResolver.delete(uri, null, null);
             }
         }
-        // add remote lectures that are not in local lectures
+
         for (Lecture remoteLecture : remoteLectures) {
             if (!isInList(remoteLecture, localLectures)) {
+                // add remote lectures that are not in local lectures
                 this.dbObjectBuilder.addLecture(remoteLecture, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
             } else {
+                // also update local lectures:
+                // collect the local lecture that equals the remote lecture
                 Lecture localLecture = (Lecture) getFromList(remoteLecture, localLectures);
                 if (!localLecture.equals_exactly(remoteLecture)) {
+                    // if they are not exactly the same, update the local lecture
                     this.dbObjectBuilder.updateLecture(remoteLecture, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
                 }
 
