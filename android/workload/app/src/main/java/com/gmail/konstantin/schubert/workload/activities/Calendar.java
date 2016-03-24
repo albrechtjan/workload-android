@@ -28,25 +28,6 @@ public class Calendar extends MyBaseActivity {
     Semester sSemester;
     DBObjectBuilder dbObjectBuilder;
 
-    static private String get_current_semester() {
-        java.util.Calendar now = java.util.Calendar.getInstance();
-        java.util.Calendar beginSummerSemester = (java.util.Calendar) now.clone();
-        beginSummerSemester.set(java.util.Calendar.MONTH, 4);
-        beginSummerSemester.set(java.util.Calendar.DAY_OF_MONTH, 1);
-        java.util.Calendar beginWinterSemester = (java.util.Calendar) now.clone();
-        beginWinterSemester.set(java.util.Calendar.MONTH, 10);
-        beginWinterSemester.set(java.util.Calendar.DAY_OF_MONTH, 1);
-
-        int thisYear = now.get(java.util.Calendar.YEAR);
-        if (now.before(beginSummerSemester)) {
-            return "WS" + String.valueOf(thisYear - 1) + "/" + String.valueOf(thisYear % 100);
-        } else if (now.before(beginWinterSemester)) {
-            return "SS" + String.valueOf(thisYear);
-        } else {
-            return "WS" + String.valueOf(thisYear) + "/" + String.valueOf(thisYear + 1 % 100);
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,17 +50,16 @@ public class Calendar extends MyBaseActivity {
             public void onClick(View v) {
                 if (v.getId() == R.id.next_semester_button) {
                     Calendar.this.sSemester = Calendar.this.sSemester.get_next();
-                } else if (v.getId() == R.id.previous_semester_button) {
+                } else { // if (v.getId() == R.id.previous_semester_button)
                     Calendar.this.sSemester = Calendar.this.sSemester.get_previous();
                 }
                 semesterText.setText(sSemester.to_string());
                 gridview.setAdapter(new CalendarAdapter(Calendar.this, sSemester.to_string()));
             }
         };
-        ImageView previousSemesterButton = (ImageView) findViewById(R.id.previous_semester_button);
-        ImageView nextSemesterButton = (ImageView) findViewById(R.id.next_semester_button);
-        previousSemesterButton.setOnClickListener(semesterButtonListener);
-        nextSemesterButton.setOnClickListener(semesterButtonListener);
+
+        findViewById(R.id.previous_semester_button).setOnClickListener(semesterButtonListener);
+        findViewById(R.id.next_semester_button).setOnClickListener(semesterButtonListener);
 
         // Update the empty state when lectures change.
         // This makes sure the empty state is updated as soon as the available lectures
@@ -116,7 +96,7 @@ public class Calendar extends MyBaseActivity {
         List<Semester> semesters = this.dbObjectBuilder.getSemesterList(true);
         Collections.sort(semesters);
         if (semesters.isEmpty()) {
-            return get_current_semester();
+            return Semester.get_current_semester_string();
         }
         return semesters.get(semesters.size() - 1).to_string();
 

@@ -15,7 +15,7 @@ import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import java.util.List;
 
 
-public class AddLectureAdapter extends MyBaseAdapter { //BaseAdapter already implements Listadapter
+public class AddLectureAdapter extends MyBaseAdapter {
 
     private final String sSemester;
     private List<Lecture> mLectures;

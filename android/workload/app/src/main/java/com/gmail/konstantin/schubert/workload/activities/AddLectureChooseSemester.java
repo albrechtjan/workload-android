@@ -13,6 +13,6 @@ public class AddLectureChooseSemester extends MyBaseListActivity {
         setContentView(R.layout.activtiy_add_lecture_semester);
 
         setListAdapter(new AddLectureChooseSemesterAdapter(this));
-        setTitle("Select Semester");
+        setTitle("Select semester");
     }
 }

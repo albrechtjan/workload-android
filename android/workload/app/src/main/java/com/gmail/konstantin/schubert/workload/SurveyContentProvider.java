@@ -414,9 +414,7 @@ public class SurveyContentProvider extends ContentProvider implements OnAccounts
 
     @Override
     public void onAccountsUpdated(Account[] accounts) {
-
-        // maybe this is not the best place to implement this interface
-        // maybe I should put it in the content provider? That seems to make sense.
+        // this doesn't seem to get called when it should get called...
         Log.d(TAG, "onAccountsUpdated called");
         this.syncWithUrgency(getContext());
 

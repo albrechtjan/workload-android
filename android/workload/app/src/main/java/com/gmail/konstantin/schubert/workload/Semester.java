@@ -71,4 +71,23 @@ public class Semester implements Comparable<Semester>{
             }
         }
     }
+
+    public static String get_current_semester_string() {
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        java.util.Calendar beginSummerSemester = (java.util.Calendar) now.clone();
+        beginSummerSemester.set(java.util.Calendar.MONTH, 4);
+        beginSummerSemester.set(java.util.Calendar.DAY_OF_MONTH, 1);
+        java.util.Calendar beginWinterSemester = (java.util.Calendar) now.clone();
+        beginWinterSemester.set(java.util.Calendar.MONTH, 10);
+        beginWinterSemester.set(java.util.Calendar.DAY_OF_MONTH, 1);
+
+        int thisYear = now.get(java.util.Calendar.YEAR);
+        if (now.before(beginSummerSemester)) {
+            return "WS" + String.valueOf(thisYear - 1) + "/" + String.valueOf(thisYear % 100);
+        } else if (now.before(beginWinterSemester)) {
+            return "SS" + String.valueOf(thisYear);
+        } else {
+            return "WS" + String.valueOf(thisYear) + "/" + String.valueOf(thisYear + 1 % 100);
+        }
+    }
 }
