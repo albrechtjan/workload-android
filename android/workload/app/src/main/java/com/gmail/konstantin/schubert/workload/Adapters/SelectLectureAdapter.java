@@ -2,6 +2,7 @@ package com.gmail.konstantin.schubert.workload.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +41,10 @@ public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter implemen
             lectureRow = (RelativeLayout) inflater.inflate(R.layout.lecture_row_modern, parent, false);
         }
 
+        if(mLecturesThisWeek.get(position).hasDataInWeek(mContext,mWeek)){
+            lectureRow.setBackgroundColor(ContextCompat.getColor(mContext, R.color.visited));
+        }
+
         TextView label = (TextView) lectureRow.getChildAt(0);
         label.setText(mLecturesThisWeek.get(position).name);
 
@@ -58,6 +63,8 @@ public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter implemen
 
         return lectureRow;
     }
+
+
 
     public int getCount() {
         return mLecturesThisWeek.size();

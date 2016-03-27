@@ -17,14 +17,15 @@ abstract public class MyBaseAdapter extends BaseAdapter {
     private static final String TAG = MyBaseAdapter.class.getSimpleName();
 
     protected DBObjectBuilder dbObjectBuilder;
+    protected ContentResolver mContentResolver;
 
     public MyBaseAdapter(Context context) {
 
         //TODO: Figure out which role the handler plays.
-        ContentResolver resolver = context.getContentResolver();
-        dbObjectBuilder = new DBObjectBuilder(resolver);
+        mContentResolver = context.getContentResolver();
+        dbObjectBuilder = new DBObjectBuilder(mContentResolver);
         Handler handler = new Handler(Looper.getMainLooper());
-        resolver.registerContentObserver(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/"), true, new ContentObserver(handler) {
+        mContentResolver.registerContentObserver(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/"), true, new ContentObserver(handler) {
                     @Override
                     public void onChange(boolean selfChange) {
                         this.onChange(selfChange, null);

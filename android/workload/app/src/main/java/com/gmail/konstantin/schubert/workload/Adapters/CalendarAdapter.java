@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -85,6 +86,12 @@ public class CalendarAdapter extends MyBaseAdapter {
             }
         });
 
+        List<Lecture> lecturesThisWeek = this.dbObjectBuilder.getLecturesInWeek(week, true);
+        if (allHaveDataInWeek(lecturesThisWeek,week)){
+            weekButton.setBackgroundColor(ContextCompat.getColor(mContext,R.color.visited));
+        }
+
+
         return weekButton;
     }
 
@@ -120,6 +127,15 @@ public class CalendarAdapter extends MyBaseAdapter {
         }
         return Collections.max(endWeeks);
 
+    }
+
+    private boolean allHaveDataInWeek(List<Lecture> lectures, Week week){
+        for (Lecture lecture : lectures){
+            if (!lecture.hasDataInWeek(mContext,week)){
+                return false;
+            }
+        }
+        return true;
     }
 
 
