@@ -13,6 +13,7 @@ import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.Semester;
 import com.gmail.konstantin.schubert.workload.activities.AddLecture;
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -74,6 +75,7 @@ public class AddLectureChooseSemesterAdapter extends MyBaseAdapter { //BaseAdapt
 
     public void updateMembers() {
         mSemesters = this.dbObjectBuilder.getSemesterList(false);
+        Collections.sort(mSemesters);
     }
 
 

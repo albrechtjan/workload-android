@@ -7,23 +7,21 @@ import android.net.Uri;
 import android.test.AndroidTestCase;
 import android.util.Log;
 
+import com.gmail.konstantin.schubert.workload.Adapters.CalendarAdapter;
 import com.gmail.konstantin.schubert.workload.Adapters.MyBaseAdapter;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
-import com.gmail.konstantin.schubert.workload.Adapters.CalendarAdapter;
 
 
-public class AdapterTests extends AndroidTestCase{
+public class AdapterTests extends AndroidTestCase {
 
+    private static final String TAG = AdapterTests.class.getSimpleName();
     MyBaseAdapter mBaseAdapter;
     ContentResolver mContentResolver;
-    private static final String TAG = AdapterTests.class.getSimpleName();
-
-
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.mBaseAdapter = new CalendarAdapter(mContext,"SS2015");
+        this.mBaseAdapter = new CalendarAdapter(mContext, "SS2015");
 
         mContentResolver = mContext.getContentResolver(); // I am not inheriting from ProviderTestCase and thus cannot get a mock content resolver
         //TODO: put more entries
@@ -37,14 +35,14 @@ public class AdapterTests extends AndroidTestCase{
         Log.d(TAG, "setUp done:");
 
 
-         cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, null, null, null);
+        cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/"), null, null, null, null);
         cursorDump = DatabaseUtils.dumpCursorToString(cursor);
         Log.d(TAG, "Full table dump:" + DatabaseUtils.dumpCursorToString(cursor));
         Log.d(TAG, "setUp done:");
     }
 
-    public void testWeekButtonAdapter__test_GetCount(){
+    public void testWeekButtonAdapter__test_GetCount() {
         int numberOfWeeks = mBaseAdapter.getCount();
-        assertTrue(numberOfWeeks>0);
+        assertTrue(numberOfWeeks > 0);
     }
 }

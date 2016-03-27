@@ -87,8 +87,8 @@ public class CalendarAdapter extends MyBaseAdapter {
         });
 
         List<Lecture> lecturesThisWeek = this.dbObjectBuilder.getLecturesInWeek(week, true);
-        if (allHaveDataInWeek(lecturesThisWeek,week)){
-            weekButton.setBackgroundColor(ContextCompat.getColor(mContext,R.color.visited));
+        if (allHaveDataInWeek(lecturesThisWeek, week)) {
+            weekButton.setBackgroundColor(ContextCompat.getColor(mContext, R.color.visited));
         }
 
 
@@ -129,9 +129,9 @@ public class CalendarAdapter extends MyBaseAdapter {
 
     }
 
-    private boolean allHaveDataInWeek(List<Lecture> lectures, Week week){
-        for (Lecture lecture : lectures){
-            if (!lecture.hasDataInWeek(mContext,week)){
+    private boolean allHaveDataInWeek(List<Lecture> lectures, Week week) {
+        for (Lecture lecture : lectures) {
+            if (!lecture.hasDataInWeek(mContext, week)) {
                 return false;
             }
         }

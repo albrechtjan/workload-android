@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-
 import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.Week;
@@ -41,7 +40,7 @@ public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter implemen
             lectureRow = (RelativeLayout) inflater.inflate(R.layout.lecture_row_modern, parent, false);
         }
 
-        if(mLecturesThisWeek.get(position).hasDataInWeek(mContext,mWeek)){
+        if (mLecturesThisWeek.get(position).hasDataInWeek(mContext, mWeek)) {
             lectureRow.setBackgroundColor(ContextCompat.getColor(mContext, R.color.visited));
         }
 
@@ -63,7 +62,6 @@ public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter implemen
 
         return lectureRow;
     }
-
 
 
     public int getCount() {

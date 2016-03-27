@@ -1,12 +1,9 @@
 package com.gmail.konstantin.schubert.workload;
 
 
-import org.joda.time.Chronology;
 import org.joda.time.DateTimeFieldType;
 import org.joda.time.LocalDate;
 import org.joda.time.Partial;
-
-import java.util.Objects;
 
 
 /**
@@ -17,10 +14,10 @@ public class Week implements Comparable<Week> {
     Partial yearWeek;
 
     public Week(int year, int weeknumber) {
-        yearWeek =  new Partial(
-                new DateTimeFieldType[] {DateTimeFieldType.weekyear(),
+        yearWeek = new Partial(
+                new DateTimeFieldType[]{DateTimeFieldType.weekyear(),
                         DateTimeFieldType.weekOfWeekyear()},
-                new int[] {year, weeknumber});
+                new int[]{year, weeknumber});
     }
 
 
@@ -64,7 +61,7 @@ public class Week implements Comparable<Week> {
         return this.yearWeek.get(DateTimeFieldType.weekOfWeekyear());
     }
 
-    public Week copy(){
+    public Week copy() {
         int year = yearWeek.get(DateTimeFieldType.weekyear());
         int weekOfYear = yearWeek.get(DateTimeFieldType.weekOfWeekyear());
         return new Week(year, weekOfYear);
@@ -73,12 +70,12 @@ public class Week implements Comparable<Week> {
 
     @Override
     public int compareTo(Week other) {
-       return this.yearWeek.compareTo(other.yearWeek);
+        return this.yearWeek.compareTo(other.yearWeek);
     }
 
     @Override
-    public boolean equals(Object other){
-        return this.compareTo((Week) other) ==0;
+    public boolean equals(Object other) {
+        return this.compareTo((Week) other) == 0;
     }
 
 

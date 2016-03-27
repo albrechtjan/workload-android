@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="70dp">
+    android:layout_height="70dp"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp">
 
 
 
@@ -11,8 +13,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Lecture Name"
         android:id="@+id/add_lecture_name_text_view_trashcan"
-        android:layout_centerHorizontal="true"
-        android:gravity="center_vertical|center_horizontal"
+        android:gravity="center_vertical"
         android:layout_toLeftOf="@+id/delete_lecture_button"
      />
 

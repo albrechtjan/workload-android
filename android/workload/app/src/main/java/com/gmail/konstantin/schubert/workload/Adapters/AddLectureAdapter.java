@@ -12,6 +12,7 @@ import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -71,6 +72,7 @@ public class AddLectureAdapter extends MyBaseAdapter {
 
     public void updateMembers() {
         mLectures = this.dbObjectBuilder.getLecturesOfSemester(sSemester, false);
+        Collections.sort(mLectures);
     }
 
 

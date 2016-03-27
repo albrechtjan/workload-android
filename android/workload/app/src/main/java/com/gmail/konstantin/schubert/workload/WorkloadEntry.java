@@ -5,7 +5,7 @@ import android.database.Cursor;
 
 import java.io.Serializable;
 
-public class WorkloadEntry implements Serializable{
+public class WorkloadEntry implements Serializable {
 
 
     public final int lecture_id;
@@ -27,13 +27,13 @@ public class WorkloadEntry implements Serializable{
         this.hoursStudying = hoursStudying;
     }
 
-    public WorkloadEntry(Cursor cursor){
+    public WorkloadEntry(Cursor cursor) {
         cursor.moveToFirst();
         this.week = new Week(
-                cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR)),
-                cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK))
+                cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR)),
+                cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK))
         );
-        this.lecture_id = cursor.getInt( cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID));
+        this.lecture_id = cursor.getInt(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID));
         this.hoursInLecture = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_IN_LECTURE));
         this.hoursForHomework = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_FOR_HOMEWORK));
         this.hoursStudying = cursor.getFloat(cursor.getColumnIndex(SurveyContentProvider.DB_STRINGS_WORKENTRY.HOURS_STUDYING));
@@ -41,9 +41,8 @@ public class WorkloadEntry implements Serializable{
     }
 
 
-
     @Override
-    public boolean equals(Object otherObject){
+    public boolean equals(Object otherObject) {
         WorkloadEntry other = (WorkloadEntry) otherObject;
         return (other.lecture_id == this.lecture_id) && (other.week.compareTo(this.week) == 0);
     }
@@ -71,13 +70,13 @@ public class WorkloadEntry implements Serializable{
     public void setHoursStudying(float hoursStudying) {
         this.hoursStudying = hoursStudying;
     }
-    public boolean equals_exactly(WorkloadEntry otherEntry){
-        return this.equals(otherEntry)
-                && this.hoursForHomework==otherEntry.hoursForHomework
-                && this.hoursInLecture==otherEntry.hoursInLecture
-                && this.hoursStudying==otherEntry.hoursStudying;
-    }
 
+    public boolean equals_exactly(WorkloadEntry otherEntry) {
+        return this.equals(otherEntry)
+                && this.hoursForHomework == otherEntry.hoursForHomework
+                && this.hoursInLecture == otherEntry.hoursInLecture
+                && this.hoursStudying == otherEntry.hoursStudying;
+    }
 
 
 }

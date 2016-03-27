@@ -1,27 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="70dp">
-
+    android:layout_height="70dp"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp">
 
 
     <TextView
+        android:id="@+id/add_lecture_name_text_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Lecture Name"
         android:layout_toLeftOf="@+id/add_lecture_select_switch"
-        android:id="@+id/add_lecture_name_text_view"
-        android:layout_centerHorizontal="true"
-        android:gravity="center_vertical|center_horizontal" />
+        android:gravity="center_vertical"
+        android:text="Lecture Name"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <Switch
+        android:id="@id/add_lecture_select_switch"
         android:layout_width="wrap_content"
         android:layout_height="70dp"
-        android:padding="20dp"
-        android:id="@id/add_lecture_select_switch"
         android:layout_alignParentRight="true"
-        />
+        android:padding="20dp" />
 
 
 </RelativeLayout>

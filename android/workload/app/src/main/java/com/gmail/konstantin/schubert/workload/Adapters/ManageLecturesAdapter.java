@@ -2,21 +2,18 @@ package com.gmail.konstantin.schubert.workload.Adapters;
 
 
 import android.content.Context;
-
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 
 import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
+import java.util.Collections;
 import java.util.List;
 
 public class ManageLecturesAdapter extends MyBaseAdapter { //BaseAdapter already implements Listadapter
@@ -75,6 +72,7 @@ public class ManageLecturesAdapter extends MyBaseAdapter { //BaseAdapter already
 
     public void updateMembers() {
         mActiveLectures = this.dbObjectBuilder.getLectureList(true);
+        Collections.sort(mActiveLectures);
     }
 
 

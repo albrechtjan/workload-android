@@ -7,7 +7,6 @@ import android.accounts.AuthenticatorException;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.Context;
-
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.os.Bundle;
