@@ -5,6 +5,7 @@ import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -35,15 +36,21 @@ public class CalendarAdapter extends MyBaseAdapter {
         super(context);
         mContext = context;
         sSemester = semester;
-        updateMembers();
+        updateMembers(null);
 
         ContentResolver.requestSync(AccountManager.get(mContext).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, new Bundle());
     }
 
-    public void updateMembers() {
+    public void updateMembers(Uri uri) {
         Log.d("CalendarAdapter", "calling updateMembers()");
-        this.mLectures = dbObjectBuilder.getLecturesOfSemester(sSemester, true);
-        this.mWeeks = getWeeks(this.mLectures);
+        if (uri == null || !uri.toString().contains("lectures")) { // The || and && operators are short-circuiting.
+            // Only update the members if we don't know what was updated or if lectures are affected
+            this.mLectures = dbObjectBuilder.getLecturesOfSemester(sSemester, true);
+            this.mWeeks = getWeeks(this.mLectures);
+        }
+        // in any case, the calender view needs to be updated because additional workload entries
+        // mean that some tiles need to be marked as visited
+        notifyDataSetChanged();
     }
 
     public int getCount() {
@@ -87,7 +94,7 @@ public class CalendarAdapter extends MyBaseAdapter {
         });
 
         List<Lecture> lecturesThisWeek = this.dbObjectBuilder.getLecturesInWeek(week, true);
-        if (allHaveDataInWeek(lecturesThisWeek, week)) {
+        if (allLecturesHaveDataInWeek(lecturesThisWeek, week)) {
             weekButton.setBackgroundColor(ContextCompat.getColor(mContext, R.color.visited));
         }
 
@@ -95,7 +102,7 @@ public class CalendarAdapter extends MyBaseAdapter {
         return weekButton;
     }
 
-    private List<Week> getWeeks(List<Lecture> lectures) {
+    private static List<Week> getWeeks(List<Lecture> lectures) {
         if (lectures.isEmpty()) {
             // if there are not lectures, then the list of weeks is empty as well.
             return new LinkedList<>();
@@ -112,7 +119,7 @@ public class CalendarAdapter extends MyBaseAdapter {
     }
 
 
-    private Week firstWeek(List<Lecture> lectures) {
+    private static Week firstWeek(List<Lecture> lectures) {
         List<Week> startWeeks = new ArrayList<>();
         for (Lecture lecture : lectures) {
             startWeeks.add(lecture.startWeek);
@@ -120,7 +127,7 @@ public class CalendarAdapter extends MyBaseAdapter {
         return Collections.min(startWeeks);
     }
 
-    private Week lastWeek(List<Lecture> lectures) {
+    private static Week lastWeek(List<Lecture> lectures) {
         List<Week> endWeeks = new ArrayList<>();
         for (Lecture lecture : lectures) {
             endWeeks.add(lecture.endWeek);
@@ -129,7 +136,7 @@ public class CalendarAdapter extends MyBaseAdapter {
 
     }
 
-    private boolean allHaveDataInWeek(List<Lecture> lectures, Week week) {
+    private boolean allLecturesHaveDataInWeek(List<Lecture> lectures, Week week) {
         for (Lecture lecture : lectures) {
             if (!lecture.hasDataInWeek(mContext, week)) {
                 return false;

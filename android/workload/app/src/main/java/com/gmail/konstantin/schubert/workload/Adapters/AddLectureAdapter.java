@@ -1,6 +1,7 @@
 package com.gmail.konstantin.schubert.workload.Adapters;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +27,7 @@ public class AddLectureAdapter extends MyBaseAdapter {
         super(context);
         mContext = context;
         sSemester = semester;
-        updateMembers();
+        updateMembers(null);
     }
 
     public View getView(final int position, View convertView, ViewGroup parent) {
@@ -70,7 +71,7 @@ public class AddLectureAdapter extends MyBaseAdapter {
     }
 
 
-    public void updateMembers() {
+    public void updateMembers(Uri uri) {
         mLectures = this.dbObjectBuilder.getLecturesOfSemester(sSemester, false);
         Collections.sort(mLectures);
     }

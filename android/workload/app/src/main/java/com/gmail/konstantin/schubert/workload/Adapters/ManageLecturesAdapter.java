@@ -2,6 +2,7 @@ package com.gmail.konstantin.schubert.workload.Adapters;
 
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +25,7 @@ public class ManageLecturesAdapter extends MyBaseAdapter { //BaseAdapter already
     public ManageLecturesAdapter(Context context) {
         super(context);
         mContext = context;
-        updateMembers();
+        updateMembers(null);
     }
 
     public View getView(final int position, View convertView, ViewGroup parent) {
@@ -46,7 +47,7 @@ public class ManageLecturesAdapter extends MyBaseAdapter { //BaseAdapter already
                 lecture.isActive = false;
                 dbObjectBuilder.updateLecture(lecture, SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
                 //TODO: Make this more efficient
-                updateMembers();
+                updateMembers(null);
                 notifyDataSetChanged();
             }
         });
@@ -70,9 +71,10 @@ public class ManageLecturesAdapter extends MyBaseAdapter { //BaseAdapter already
     }
 
 
-    public void updateMembers() {
+    public void updateMembers(Uri uri) {
         mActiveLectures = this.dbObjectBuilder.getLectureList(true);
         Collections.sort(mActiveLectures);
+        notifyDataSetChanged();
     }
 
 

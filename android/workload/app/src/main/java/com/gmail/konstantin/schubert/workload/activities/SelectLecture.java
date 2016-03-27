@@ -35,7 +35,7 @@ public class SelectLecture extends MyBaseListActivity {
         super.onResume();
         SelectLectureAdapter selectLectureAdapter = (SelectLectureAdapter) getListAdapter();
         //TODO: Make this more efficient?
-        selectLectureAdapter.updateMembers();
+        selectLectureAdapter.updateMembers(null);
     }
 
 

@@ -34,8 +34,7 @@ abstract public class MyBaseAdapter extends BaseAdapter {
                     @Override
                     public void onChange(boolean selfChange, Uri uri) {
                         Log.d(TAG, "content observer fired");
-                        updateMembers();
-                        notifyDataSetChanged();
+                        updateMembers(uri);
                     }
                 }
         );
@@ -46,7 +45,8 @@ abstract public class MyBaseAdapter extends BaseAdapter {
     //TODO: Then also call updateMemebers every time the activity is resumed? How to do that?
 
 
-    public abstract void updateMembers();
+    public abstract void updateMembers(Uri uri);
+    // uri is the uri that describes the affected part of the database.
 
 
 }

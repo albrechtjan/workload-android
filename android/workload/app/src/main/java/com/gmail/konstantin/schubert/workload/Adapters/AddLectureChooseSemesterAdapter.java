@@ -3,6 +3,7 @@ package com.gmail.konstantin.schubert.workload.Adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +26,7 @@ public class AddLectureChooseSemesterAdapter extends MyBaseAdapter { //BaseAdapt
     public AddLectureChooseSemesterAdapter(Context context) {
         super(context);
         mContext = context;
-        updateMembers();
+        updateMembers(null);
     }
 
     public View getView(final int position, View convertView, ViewGroup parent) {
@@ -73,7 +74,7 @@ public class AddLectureChooseSemesterAdapter extends MyBaseAdapter { //BaseAdapt
     }
 
 
-    public void updateMembers() {
+    public void updateMembers(Uri uri) {
         mSemesters = this.dbObjectBuilder.getSemesterList(false);
         Collections.sort(mSemesters);
     }

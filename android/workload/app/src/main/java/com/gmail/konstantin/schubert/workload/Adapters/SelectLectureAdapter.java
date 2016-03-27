@@ -2,6 +2,7 @@ package com.gmail.konstantin.schubert.workload.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,7 +29,7 @@ public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter implemen
         super(context);
         mContext = context;
         mWeek = week;
-        updateMembers();
+        updateMembers(null);
     }
 
     public View getView(final int position, View convertView, ViewGroup parent) {
@@ -79,9 +80,10 @@ public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter implemen
     }
 
 
-    public void updateMembers() {
+    public void updateMembers(Uri uri) {
         //TODO: Limit this from all Lectures to the lectures in this mWeek
         mLecturesThisWeek = this.dbObjectBuilder.getLecturesInWeek(mWeek, true);
+        notifyDataSetChanged();
     }
 
     ;

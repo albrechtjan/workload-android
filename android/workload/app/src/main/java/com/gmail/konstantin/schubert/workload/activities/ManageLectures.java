@@ -38,7 +38,7 @@ public class ManageLectures extends MyBaseListActivity {
         super.onResume();
         ManageLecturesAdapter manageLecturesAdapter = (ManageLecturesAdapter) getListAdapter();
         //TODO: Make this more efficient
-        manageLecturesAdapter.updateMembers();
+        manageLecturesAdapter.updateMembers(null);
         manageLecturesAdapter.notifyDataSetChanged();
     }
 
