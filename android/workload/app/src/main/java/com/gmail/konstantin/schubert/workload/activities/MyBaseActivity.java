@@ -37,15 +37,12 @@ abstract public class MyBaseActivity extends AppCompatActivity {
             case R.id.action_manage_lectures:
                 intent = new Intent(this, ManageLectures.class);
                 break;
-//            case R.id.action_statistics:
-//                intent = new Intent(this, Statistics.class);
-//                break;
             case R.id.action_privacy_agreement:
                 intent = new Intent(this, PrivacyAgreement.class);
                 break;
-//            case R.id.action_settings:
-//                intent = new Intent(this, Settings.class);
-//                break;
+            case R.id.action_statistics:
+                intent = new Intent(this, Statistics.class);
+                break;
         }
         if (intent == null) {
             return false;

@@ -2,14 +2,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.gmail.konstantin.schubert.workload.activities.SelectLecture">
-    <item android:id="@+id/action_manage_lectures" android:title="@string/action_manage_lectures"
-        android:orderInCategory="100" app:showAsAction="never" />
-    <!--<item android:id="@+id/action_statistics" android:title="@string/action_statistics"-->
-        <!--android:orderInCategory="100" app:showAsAction="never" />-->
-    <item android:id="@+id/action_privacy_agreement" android:title="@string/action_privacy_agreement"
-        android:orderInCategory="100" app:showAsAction="never" />
-    <!--<item android:id="@+id/action_settings" android:title="@string/action_settings"-->
-        <!--android:orderInCategory="100" app:showAsAction="never" />-->
-    <!--<item android:id="@+id/action_logout" android:title="@string/action_logout"-->
-        <!--android:orderInCategory="100" app:showAsAction="never" />-->
+    <item
+        android:id="@+id/action_manage_lectures"
+        android:title="@string/action_manage_lectures"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_library_books_white_24px"
+        />
+    <item android:id="@+id/action_statistics"
+        android:title="@string/action_statistics"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_show_chart_white_24px1"
+        />
+    <item
+        android:id="@+id/action_privacy_agreement"
+        android:title="@string/action_privacy_agreement"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
 </menu>
