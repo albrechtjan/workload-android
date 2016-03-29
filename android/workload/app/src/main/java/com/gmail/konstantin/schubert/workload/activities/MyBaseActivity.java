@@ -43,6 +43,9 @@ abstract public class MyBaseActivity extends AppCompatActivity {
             case R.id.action_statistics:
                 intent = new Intent(this, Statistics.class);
                 break;
+            case R.id.about:
+                intent = new Intent(this, About.class);
+                break;
         }
         if (intent == null) {
             return false;

@@ -69,6 +69,15 @@
         </activity>
 
         <activity
+            android:name=".activities.About"
+            android:parentActivityName=".activities.Calendar"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.Calendar" />
+        </activity>
+
+        <activity
             android:name=".activities.Statistics"
             android:parentActivityName=".activities.Calendar"
             android:launchMode="singleTop">
@@ -76,6 +85,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.Calendar" />
         </activity>
+
+
 
         <activity
             android:name=".activities.ManageLectures"
