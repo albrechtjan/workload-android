@@ -46,7 +46,7 @@ public class Statistics extends MyBaseActivity {
 //
 //        PieChart pieChartTimePerActivity = (PieChart) findViewById(R.id.pie_chart_time_per_activity);
 //        buildPieChartTimePerActivity(pieChartTimePerActivity);
-
+//
 
 
     }
@@ -148,7 +148,7 @@ public class Statistics extends MyBaseActivity {
 //
 //        pieChart.setExtraOffsets(5, 10, 5, 5);
 //        pieChart.setDragDecelerationFrictionCoef(0.95f);
-//        pieChart.setCenterText("Distribution of time onto lectures.");
+//        pieChart.setCenterText("Distribution of time onto activities.");
 //        pieChart.setDrawHoleEnabled(true);
 //        pieChart.setHoleColor(Color.WHITE);
 //        pieChart.setTransparentCircleColor(Color.WHITE);
@@ -168,14 +168,21 @@ public class Statistics extends MyBaseActivity {
 //        // xIndex (even if from different DataSets), since no values can be
 //        // drawn above each other.
 //
-//        int count = 0;
+//        double totalHoursHomework  = 0;
+//        double totalHoursStudying  = 0;
+//        double totalHoursAttending = 0;
+//
 //        for (Lecture lecture : mActiveLectures){
-//            xVals.add(lecture.name);
-//            double totalHours = hoursSpentMap.get(lecture).get(HOURS_HOMEWORK) +
-//                    hoursSpentMap.get(lecture).get(HOURS_STUDYING) +
-//                    hoursSpentMap.get(lecture).get(HOURS_ATTENDING);
-//            yVals1.add(new Entry((float) totalHours, count));
+//            totalHoursHomework  = hoursSpentMap.get(lecture).get(HOURS_HOMEWORK);
+//            totalHoursStudying  = hoursSpentMap.get(lecture).get(HOURS_STUDYING);
+//            totalHoursAttending = hoursSpentMap.get(lecture).get(HOURS_ATTENDING);
 //        }
+//        xVals.add("Homework");
+//        xVals.add("Studying");
+//        xVals.add("Attending");
+//        yVals1.add(new Entry((float) totalHoursHomework, 0));
+//        yVals1.add(new Entry((float) totalHoursStudying, 1));
+//        yVals1.add(new Entry((float) totalHoursAttending, 2));
 //
 //        PieDataSet dataSet = new PieDataSet(yVals1, "");
 //        dataSet.setSliceSpace(3f);
