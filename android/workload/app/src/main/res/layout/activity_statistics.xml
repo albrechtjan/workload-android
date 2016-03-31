@@ -12,6 +12,12 @@
             android:id="@+id/pie_chart"
             android:layout_width="match_parent"
             android:layout_height="400dp" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:background="@color/primary_brightish"/>
 
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/pie_chart_time_per_activity"

@@ -1,6 +1,8 @@
 package com.gmail.konstantin.schubert.workload.activities;
 
 
+import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -14,6 +16,7 @@ import com.github.mikephil.charting.utils.ColorTemplate;
 import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.R;
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.WorkloadEntry;
 
 import java.util.ArrayList;
@@ -36,13 +39,17 @@ public class Statistics extends MyBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_statistics);
-        dbObjectBuilder = new DBObjectBuilder(getContentResolver());
+        ContentResolver.requestSync(AccountManager.get(this).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, new Bundle());
 
+        dbObjectBuilder = new DBObjectBuilder(getContentResolver());
         hoursSpentMap = new HashMap<>();
 
         mColors = new ArrayList<>();
-
         for (int c : ColorTemplate.JOYFUL_COLORS)
+            mColors.add(c);
+        for (int c : ColorTemplate.COLORFUL_COLORS)
+            mColors.add(c);
+        for (int c : ColorTemplate.LIBERTY_COLORS)
             mColors.add(c);
 
         collectData();
@@ -52,8 +59,6 @@ public class Statistics extends MyBaseActivity {
 
         PieChart pieChartTimePerActivity = (PieChart) findViewById(R.id.pie_chart_time_per_activity);
         buildPieChartTimePerActivity(pieChartTimePerActivity);
-
-
 
     }
 
@@ -87,7 +92,6 @@ public class Statistics extends MyBaseActivity {
 
     private void buildPieChartTimePerLecture(PieChart pieChart) {
 
-        pieChart.setExtraOffsets(5, 10, 5, 5);
         pieChart.setCenterText("Distribution of time onto lectures.");
         pieChart.setDrawHoleEnabled(true);
         pieChart.setHoleColor(Color.WHITE);
@@ -135,15 +139,14 @@ public class Statistics extends MyBaseActivity {
 
         pieChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
         Legend l = pieChart.getLegend();
-        l.setPosition(Legend.LegendPosition.RIGHT_OF_CHART);
+        l.setWordWrapEnabled(true);
+        l.setPosition(Legend.LegendPosition.BELOW_CHART_LEFT);
         l.setXEntrySpace(7f);
         l.setYEntrySpace(0f);
     }
 
 
     private void buildPieChartTimePerActivity(PieChart pieChart) {
-
-        pieChart.setExtraOffsets(5, 10, 5, 5);
         pieChart.setCenterText("Distribution of time onto activities.");
         pieChart.setDrawHoleEnabled(true);
         pieChart.setHoleColor(Color.WHITE);
@@ -199,7 +202,8 @@ public class Statistics extends MyBaseActivity {
 
         pieChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
         Legend l = pieChart.getLegend();
-        l.setPosition(Legend.LegendPosition.RIGHT_OF_CHART);
+        l.setWordWrapEnabled(true);
+        l.setPosition(Legend.LegendPosition.BELOW_CHART_LEFT);
         l.setXEntrySpace(7f);
         l.setYEntrySpace(0f);
     }
