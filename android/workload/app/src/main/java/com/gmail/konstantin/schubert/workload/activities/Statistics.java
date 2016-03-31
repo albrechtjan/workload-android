@@ -85,20 +85,20 @@ public class Statistics extends MyBaseActivity {
     }
 
 
-    private void buildPieChartTimePerLecture(PieChart pieChartTimePerLecture) {
+    private void buildPieChartTimePerLecture(PieChart pieChart) {
 
-        pieChartTimePerLecture.setExtraOffsets(5, 10, 5, 5);
-        pieChartTimePerLecture.setDragDecelerationFrictionCoef(0.95f);
-        pieChartTimePerLecture.setCenterText("Distribution of time onto lectures.");
-        pieChartTimePerLecture.setDrawHoleEnabled(true);
-        pieChartTimePerLecture.setHoleColor(Color.WHITE);
-        pieChartTimePerLecture.setTransparentCircleColor(Color.WHITE);
-        pieChartTimePerLecture.setTransparentCircleAlpha(110);
-        pieChartTimePerLecture.setHoleRadius(58f);
-        pieChartTimePerLecture.setTransparentCircleRadius(61f);
-        pieChartTimePerLecture.setDrawCenterText(true);
-        pieChartTimePerLecture.setRotationAngle(0);
-        pieChartTimePerLecture.setHighlightPerTapEnabled(true);
+        pieChart.setExtraOffsets(5, 10, 5, 5);
+        pieChart.setCenterText("Distribution of time onto lectures.");
+        pieChart.setDrawHoleEnabled(true);
+        pieChart.setHoleColor(Color.WHITE);
+        pieChart.setTransparentCircleColor(Color.WHITE);
+        pieChart.setTransparentCircleAlpha(110);
+        pieChart.setHoleRadius(58f);
+        pieChart.setTransparentCircleRadius(61f);
+        pieChart.setDrawCenterText(true);
+        pieChart.setTouchEnabled(false);
+        pieChart.setDrawSliceText(false);
+        pieChart.setDescription("");
 
 
         ArrayList<Entry> yVals1 = new ArrayList<>();
@@ -127,25 +127,23 @@ public class Statistics extends MyBaseActivity {
         PieData data = new PieData(xVals, dataSet);
         data.setValueTextSize(11f);
         data.setValueTextColor(Color.BLACK);
-        pieChartTimePerLecture.setData(data);
+        pieChart.setData(data);
 
-        pieChartTimePerLecture.highlightValues(null);
+        pieChart.highlightValues(null);
 
-        pieChartTimePerLecture.invalidate();
+        pieChart.invalidate();
 
-        pieChartTimePerLecture.animateY(1400, Easing.EasingOption.EaseInOutQuad);
-        Legend l = pieChartTimePerLecture.getLegend();
+        pieChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
+        Legend l = pieChart.getLegend();
         l.setPosition(Legend.LegendPosition.RIGHT_OF_CHART);
         l.setXEntrySpace(7f);
         l.setYEntrySpace(0f);
-        l.setYOffset(0f);
     }
 
 
     private void buildPieChartTimePerActivity(PieChart pieChart) {
 
         pieChart.setExtraOffsets(5, 10, 5, 5);
-        pieChart.setDragDecelerationFrictionCoef(0.95f);
         pieChart.setCenterText("Distribution of time onto activities.");
         pieChart.setDrawHoleEnabled(true);
         pieChart.setHoleColor(Color.WHITE);
@@ -154,8 +152,9 @@ public class Statistics extends MyBaseActivity {
         pieChart.setHoleRadius(58f);
         pieChart.setTransparentCircleRadius(61f);
         pieChart.setDrawCenterText(true);
-        pieChart.setRotationAngle(0);
-        pieChart.setHighlightPerTapEnabled(true);
+        pieChart.setTouchEnabled(false);
+        pieChart.setDrawSliceText(false);
+        pieChart.setDescription("");
 
 
         ArrayList<Entry> yVals1 = new ArrayList<>();
@@ -203,7 +202,6 @@ public class Statistics extends MyBaseActivity {
         l.setPosition(Legend.LegendPosition.RIGHT_OF_CHART);
         l.setXEntrySpace(7f);
         l.setYEntrySpace(0f);
-        l.setYOffset(0f);
     }
 
 
