@@ -26,6 +26,7 @@ public class Statistics extends MyBaseActivity {
     DBObjectBuilder dbObjectBuilder;
     List<Lecture> mActiveLectures;
     Map<Lecture, Map<Integer,Double>> hoursSpentMap;
+    ArrayList<Integer> mColors;
 
     public final static int HOURS_ATTENDING = 0;
     public final static int HOURS_HOMEWORK = 1;
@@ -39,14 +40,19 @@ public class Statistics extends MyBaseActivity {
 
         hoursSpentMap = new HashMap<>();
 
+        mColors = new ArrayList<>();
+
+        for (int c : ColorTemplate.JOYFUL_COLORS)
+            mColors.add(c);
+
         collectData();
 
         PieChart pieChartTimePerLecture = (PieChart) findViewById(R.id.pie_chart);
         buildPieChartTimePerLecture(pieChartTimePerLecture);
-//
-//        PieChart pieChartTimePerActivity = (PieChart) findViewById(R.id.pie_chart_time_per_activity);
-//        buildPieChartTimePerActivity(pieChartTimePerActivity);
-//
+
+        PieChart pieChartTimePerActivity = (PieChart) findViewById(R.id.pie_chart_time_per_activity);
+        buildPieChartTimePerActivity(pieChartTimePerActivity);
+
 
 
     }
@@ -92,7 +98,6 @@ public class Statistics extends MyBaseActivity {
         pieChartTimePerLecture.setTransparentCircleRadius(61f);
         pieChartTimePerLecture.setDrawCenterText(true);
         pieChartTimePerLecture.setRotationAngle(0);
-        pieChartTimePerLecture.setRotationEnabled(true);
         pieChartTimePerLecture.setHighlightPerTapEnabled(true);
 
 
@@ -116,14 +121,7 @@ public class Statistics extends MyBaseActivity {
         dataSet.setSliceSpace(3f);
         dataSet.setSelectionShift(5f);
 
-        ArrayList<Integer> colors = new ArrayList<Integer>();
-
-        for (int c : ColorTemplate.JOYFUL_COLORS)
-            colors.add(c);
-
-        colors.add(ColorTemplate.getHoloBlue());
-
-        dataSet.setColors(colors);
+        dataSet.setColors(mColors);
 
 
         PieData data = new PieData(xVals, dataSet);
@@ -143,77 +141,70 @@ public class Statistics extends MyBaseActivity {
         l.setYOffset(0f);
     }
 
-//
-//    private void buildPieChartTimePerActivity(PieChart pieChart) {
-//
-//        pieChart.setExtraOffsets(5, 10, 5, 5);
-//        pieChart.setDragDecelerationFrictionCoef(0.95f);
-//        pieChart.setCenterText("Distribution of time onto activities.");
-//        pieChart.setDrawHoleEnabled(true);
-//        pieChart.setHoleColor(Color.WHITE);
-//        pieChart.setTransparentCircleColor(Color.WHITE);
-//        pieChart.setTransparentCircleAlpha(110);
-//        pieChart.setHoleRadius(58f);
-//        pieChart.setTransparentCircleRadius(61f);
-//        pieChart.setDrawCenterText(true);
-//        pieChart.setRotationAngle(0);
-//        pieChart.setRotationEnabled(true);
-//        pieChart.setHighlightPerTapEnabled(true);
-//
-//
-//        ArrayList<Entry> yVals1 = new ArrayList<>();
-//        ArrayList<String> xVals = new ArrayList<>();
-//
-//        // IMPORTANT: In a PieChart, no values (Entry) should have the same
-//        // xIndex (even if from different DataSets), since no values can be
-//        // drawn above each other.
-//
-//        double totalHoursHomework  = 0;
-//        double totalHoursStudying  = 0;
-//        double totalHoursAttending = 0;
-//
-//        for (Lecture lecture : mActiveLectures){
-//            totalHoursHomework  = hoursSpentMap.get(lecture).get(HOURS_HOMEWORK);
-//            totalHoursStudying  = hoursSpentMap.get(lecture).get(HOURS_STUDYING);
-//            totalHoursAttending = hoursSpentMap.get(lecture).get(HOURS_ATTENDING);
-//        }
-//        xVals.add("Homework");
-//        xVals.add("Studying");
-//        xVals.add("Attending");
-//        yVals1.add(new Entry((float) totalHoursHomework, 0));
-//        yVals1.add(new Entry((float) totalHoursStudying, 1));
-//        yVals1.add(new Entry((float) totalHoursAttending, 2));
-//
-//        PieDataSet dataSet = new PieDataSet(yVals1, "");
-//        dataSet.setSliceSpace(3f);
-//        dataSet.setSelectionShift(5f);
-//
-//        ArrayList<Integer> colors = new ArrayList<Integer>();
-//
-//        for (int c : ColorTemplate.JOYFUL_COLORS)
-//            colors.add(c);
-//
-//        colors.add(ColorTemplate.getHoloBlue());
-//
-//        dataSet.setColors(colors);
-//
-//
-//        PieData data = new PieData(xVals, dataSet);
-//        data.setValueTextSize(11f);
-//        data.setValueTextColor(Color.BLACK);
-//        pieChart.setData(data);
-//
-//        pieChart.highlightValues(null);
-//
-//        pieChart.invalidate();
-//
-//        pieChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
-//        Legend l = pieChart.getLegend();
-//        l.setPosition(Legend.LegendPosition.RIGHT_OF_CHART);
-//        l.setXEntrySpace(7f);
-//        l.setYEntrySpace(0f);
-//        l.setYOffset(0f);
-//    }
+
+    private void buildPieChartTimePerActivity(PieChart pieChart) {
+
+        pieChart.setExtraOffsets(5, 10, 5, 5);
+        pieChart.setDragDecelerationFrictionCoef(0.95f);
+        pieChart.setCenterText("Distribution of time onto activities.");
+        pieChart.setDrawHoleEnabled(true);
+        pieChart.setHoleColor(Color.WHITE);
+        pieChart.setTransparentCircleColor(Color.WHITE);
+        pieChart.setTransparentCircleAlpha(110);
+        pieChart.setHoleRadius(58f);
+        pieChart.setTransparentCircleRadius(61f);
+        pieChart.setDrawCenterText(true);
+        pieChart.setRotationAngle(0);
+        pieChart.setHighlightPerTapEnabled(true);
+
+
+        ArrayList<Entry> yVals1 = new ArrayList<>();
+        ArrayList<String> xVals = new ArrayList<>();
+
+        // IMPORTANT: In a PieChart, no values (Entry) should have the same
+        // xIndex (even if from different DataSets), since no values can be
+        // drawn above each other.
+
+        double totalHoursHomework  = 0;
+        double totalHoursStudying  = 0;
+        double totalHoursAttending = 0;
+
+        for (Lecture lecture : mActiveLectures){
+            totalHoursHomework  += hoursSpentMap.get(lecture).get(HOURS_HOMEWORK);
+            totalHoursStudying  += hoursSpentMap.get(lecture).get(HOURS_STUDYING);
+            totalHoursAttending += hoursSpentMap.get(lecture).get(HOURS_ATTENDING);
+        }
+        xVals.add("Homework");
+        xVals.add("Studying");
+        xVals.add("Attending");
+        yVals1.add(new Entry((float) totalHoursHomework, 0));
+        yVals1.add(new Entry((float) totalHoursStudying, 1));
+        yVals1.add(new Entry((float) totalHoursAttending, 2));
+
+        PieDataSet dataSet = new PieDataSet(yVals1, "");
+        dataSet.setSliceSpace(3f);
+        dataSet.setSelectionShift(5f);
+
+
+        dataSet.setColors(mColors);
+
+
+        PieData data = new PieData(xVals, dataSet);
+        data.setValueTextSize(11f);
+        data.setValueTextColor(Color.BLACK);
+        pieChart.setData(data);
+
+        pieChart.highlightValues(null);
+
+        pieChart.invalidate();
+
+        pieChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
+        Legend l = pieChart.getLegend();
+        l.setPosition(Legend.LegendPosition.RIGHT_OF_CHART);
+        l.setXEntrySpace(7f);
+        l.setYEntrySpace(0f);
+        l.setYOffset(0f);
+    }
 
 
 }
