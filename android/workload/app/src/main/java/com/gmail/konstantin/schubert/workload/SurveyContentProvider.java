@@ -126,8 +126,12 @@ public class SurveyContentProvider extends ContentProvider implements OnAccounts
         mAccount = GetOrCreateSyncAccount(getContext());
         ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
         ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
-        //TODO: Remove periodic sync and do this instead: http://developer.android.com/training/sync-adapters/running-sync-adapter.html#RunByMessage
-        ContentResolver.addPeriodicSync(mAccount, AUTHORITY, Bundle.EMPTY, 10 * 60);
+        //TODO: I am not sure what setsyncautomatically does. The documentation says:
+        //TODO Set whether or not the provider is synced when it receives a network tickle.
+        //TODO I guess this has to do with the cloud messaging API and enables us to basically
+        //TODO notify the app when server data changes. It would allow to NOT aggressively call
+        //TODO ContentResolver.requestSync() in every activities onResume method.
+
 
         AccountManager.get(getContext()).addOnAccountsUpdatedListener(this, null, false);
 

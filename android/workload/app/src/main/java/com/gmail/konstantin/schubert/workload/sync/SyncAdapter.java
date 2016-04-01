@@ -34,6 +34,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     static AccountManager sAccountManager;
     RESTResponseProcessor mRestResponseProcessor;
     RestClient mRestClient = new RestClient();
+    DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
 
 
     public SyncAdapter(Context context, boolean autoInitialize) {
@@ -109,7 +110,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-        DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
         // when calling updateWorkloadEntry, we are also doing an update of the time entries, but they should be correct, so it should be fine.
         if (response == null) {
             // retry later
@@ -138,7 +138,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
-        DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
         // when calling updateWorkloadEntry, we are also doing an update of the time entries, but they should be correct, so it should be fine.
         if (response == null) {
             // retry later
@@ -185,13 +184,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
 
+        Log.d(TAG, "Starting sync!");
         //TODO: Switch to ContentProviderClient (also in DBObjectbuilder) and use the one passed in the arguments.
         //TODO: However, I must make sure the release the provider on time ? No I think the sync framework does this for me.
-        DBObjectBuilder dbObjectBuilder = new DBObjectBuilder(getContext().getContentResolver());
+
 
 
 //        android.os.Debug.waitForDebugger();
-        Log.d(TAG, "Starting sync!");
+
 
 
         try {

@@ -1,6 +1,8 @@
 package com.gmail.konstantin.schubert.workload.activities;
 
 
+import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.gmail.konstantin.schubert.workload.R;
+import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
 
 abstract public class MyBaseActivity extends AppCompatActivity {
@@ -21,6 +24,14 @@ abstract public class MyBaseActivity extends AppCompatActivity {
 
     }
 
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        // We aggressively request a sync to poll the server every time an activity is opened.
+        //TODO: It will be nice to replace this by a push system such as google's cloud messaging API
+        ContentResolver.requestSync(AccountManager.get(this).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, new Bundle());
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
