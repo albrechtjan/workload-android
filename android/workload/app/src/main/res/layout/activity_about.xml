@@ -6,9 +6,19 @@
     android:padding="8dp">
 
     <TextView
+        android:id="@+id/text_about"
+        android:layout_margin="8dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/about"
+        android:autoLink="web"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/text_email"
+        android:layout_margin="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autoLink="email"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
 
