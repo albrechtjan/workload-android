@@ -36,6 +36,13 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter" />
         </service>
+
+        <service
+            android:name=".sync.SyncSettingChangerService"
+            android:exported="false"/>
+        ...
+
+
         <provider
             android:name=".SurveyContentProvider"
             android:authorities="de.tu-dresden.zqa.survey"

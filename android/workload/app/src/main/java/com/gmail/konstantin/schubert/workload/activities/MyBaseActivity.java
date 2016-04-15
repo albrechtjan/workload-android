@@ -2,17 +2,22 @@ package com.gmail.konstantin.schubert.workload.activities;
 
 
 import android.accounts.AccountManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.NotificationCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
+import com.gmail.konstantin.schubert.workload.sync.SyncSettingChangerService;
 
 
 abstract public class MyBaseActivity extends AppCompatActivity {
@@ -31,10 +36,26 @@ abstract public class MyBaseActivity extends AppCompatActivity {
         // We aggressively request a sync to poll the server every time an activity is opened.
         //TODO: It will be nice to replace this by a push system such as google's cloud messaging API
         ContentResolver.requestSync(AccountManager.get(this).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, new Bundle());
-        if (!is_master_sync_setting_true()){
-            todo: some how alert the user. Maybe a notification?
-                    https://developer.android.com/training/notify-user/build-notification.html
+
+        if (!SurveyContentProvider.isMasterSyncSettingTrue()){
+            buildSyncSettingChangerIntent("Turn on Auto-Sync", "This app needs auto-sync. Click to turn on.", "turn_on_master_sync");
         }
+        if (!SurveyContentProvider.isAccountSyncSettingTrue(this)){
+            buildSyncSettingChangerIntent("Turn on App-Sync", "Click to turn on for this app.", "turn_on_app_sync");
+        }
+    }
+
+    private void buildSyncSettingChangerIntent(String contentTitle, String contentText, String specifier){
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_stat_sync_problem)
+                        .setContentTitle(contentTitle)
+                        .setContentText(contentText);
+        Intent intent = new Intent(this, SyncSettingChangerService.class);
+        intent.setData(Uri.parse(specifier));
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mBuilder.setContentIntent(resultPendingIntent);
+        ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).notify(002, mBuilder.build());
     }
 
     @Override
@@ -80,16 +101,7 @@ abstract public class MyBaseActivity extends AppCompatActivity {
         return false;
     }
 
-    protected boolean is_master_sync_setting_true(){
-        // In SurveyContentProvider.onCreate(), the ContentResolver.setSyncAutomatically(True)
-        // method is called. This activates the fact that syncs for the specific account are allowed
-        // and can be triggered by ContentResolver.requestSync(). This can be manually changed by the user
-        // under Settings->Accounts->TU Dresden. We do not check for this currently.
-        // However, this setting is overrriden by a global ("Master") sync setting, which can be found in the
-        // action bar menu under Settings->Accounts.
-        // We do not change this setting from our app, but we must alert the user if this is not set.
-        return ContentResolver.getMasterSyncAutomatically();
-    }
+
 
     protected boolean maybe_make_first_login() {
 

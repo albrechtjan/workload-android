@@ -105,6 +105,9 @@ public class Calendar extends MyBaseActivity {
         if (dbObjectBuilder.getLectureList(false).isEmpty()) { //this should be false if we have synced ever before.
             gridView.setEmptyView(findViewById(R.id.initial_sync_view));
             SurveyContentProvider.syncWithUrgency(this);
+            if (! (SurveyContentProvider.isMasterSyncSettingTrue() && SurveyContentProvider.isAccountSyncSettingTrue(this)) ){
+                //somehow, sync got deactivated. We will not be able to sync. we must inform the user about this.
+            }
         } else {
             gridView.setEmptyView(findViewById(R.id.emptyView));
         }

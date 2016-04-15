@@ -407,4 +407,28 @@ public class SurveyContentProvider extends ContentProvider implements OnAccounts
 
     }
 
+    public static boolean isMasterSyncSettingTrue(){
+        // this function checks if the master sync setting is set
+
+        // In SurveyContentProvider.onCreate(), the ContentResolver.setSyncAutomatically(True)
+        // method is called. This activates the setting that syncs for the specific account are allowed
+        // and can be triggered by ContentResolver.requestSync(). This can be manually changed by the user
+        // under Settings->Accounts->TU Dresden. We do not check for this currently.
+        // However, this setting is overrriden by a global ("Master") sync setting, which can be found in the
+        // action bar menu under Settings->Accounts.
+        return ContentResolver.getMasterSyncAutomatically();
+    }
+
+    public static boolean isAccountSyncSettingTrue(Context context){
+        // checks if the account-specific sync setting under Settings->Account->TU Dresden is set.
+
+        // In SurveyContentProvider.onCreate(), the ContentResolver.setSyncAutomatically(True)
+        // method is called. This activates the setting that syncs for the specific account are allowed
+        // and can be triggered by ContentResolver.requestSync(). This can be manually changed by the user
+        // under Settings->Accounts->TU Dresden. We do not check for this currently.
+        // However, this setting is overrriden by a global ("Master") sync setting, which can be found in the
+        // action bar menu under Settings->Accounts.
+        return ContentResolver.getSyncAutomatically(AccountManager.get(context).getAccountsByType("tu-dresden.de")[0], AUTHORITY);
+    }
+
 }
