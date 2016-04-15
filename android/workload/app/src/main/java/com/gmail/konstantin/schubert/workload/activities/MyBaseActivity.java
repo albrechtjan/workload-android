@@ -31,6 +31,10 @@ abstract public class MyBaseActivity extends AppCompatActivity {
         // We aggressively request a sync to poll the server every time an activity is opened.
         //TODO: It will be nice to replace this by a push system such as google's cloud messaging API
         ContentResolver.requestSync(AccountManager.get(this).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, new Bundle());
+        if (!is_master_sync_setting_true()){
+            todo: some how alert the user. Maybe a notification?
+                    https://developer.android.com/training/notify-user/build-notification.html
+        }
     }
 
     @Override
@@ -74,6 +78,17 @@ abstract public class MyBaseActivity extends AppCompatActivity {
             return true;
         }
         return false;
+    }
+
+    protected boolean is_master_sync_setting_true(){
+        // In SurveyContentProvider.onCreate(), the ContentResolver.setSyncAutomatically(True)
+        // method is called. This activates the fact that syncs for the specific account are allowed
+        // and can be triggered by ContentResolver.requestSync(). This can be manually changed by the user
+        // under Settings->Accounts->TU Dresden. We do not check for this currently.
+        // However, this setting is overrriden by a global ("Master") sync setting, which can be found in the
+        // action bar menu under Settings->Accounts.
+        // We do not change this setting from our app, but we must alert the user if this is not set.
+        return ContentResolver.getMasterSyncAutomatically();
     }
 
     protected boolean maybe_make_first_login() {

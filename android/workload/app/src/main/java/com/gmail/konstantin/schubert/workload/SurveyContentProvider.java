@@ -126,15 +126,14 @@ public class SurveyContentProvider extends ContentProvider implements OnAccounts
         mAccount = GetOrCreateSyncAccount(getContext());
         ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
         ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
-        //TODO: I am not sure what setsyncautomatically does. The documentation says:
-        //TODO Set whether or not the provider is synced when it receives a network tickle.
-        //TODO I guess this has to do with the cloud messaging API and enables us to basically
-        //TODO notify the app when server data changes. It would allow to NOT aggressively call
-        //TODO ContentResolver.requestSync() in every activities onResume method.
-
+        // I am not sure what setsyncautomatically does. The documentation seems to be quite incomplete.
+        // It seems to me that this function activates or de-activates the switch under
+        // Settings->Accounts-> TU Dresden which allows or disallows syncs.
+        // These syncs can then either be triggered by ContentResovler.requestSync()
+        // (as I am currently doing it) or via the Google Cloud Messaging API which might be a better solution
+        // -> TODO
 
         AccountManager.get(getContext()).addOnAccountsUpdatedListener(this, null, false);
-
 
         // Run on server data change
         return true;
