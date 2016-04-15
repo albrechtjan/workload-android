@@ -2,8 +2,10 @@ package com.gmail.konstantin.schubert.workload.sync;
 
 import android.accounts.AccountManager;
 import android.app.IntentService;
+import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.support.v4.app.NotificationManagerCompat;
 
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
@@ -13,23 +15,27 @@ import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 public class SyncSettingChangerService extends IntentService {
 
     /**
-     * Creates an IntentService.  Invoked by your subclass's constructor.
+     * Zero-argument constructor
      *
-     * @param name Used to name the worker thread, important only for debugging.
      */
-    public SyncSettingChangerService(String name) {
-        super(name);
+    public SyncSettingChangerService() {
+        super("SyncSettingChangerService");
     }
 
     @Override
     protected void onHandleIntent(Intent workIntent) {
+
+
         // Gets data from the incoming Intent
         String dataString = workIntent.getDataString();
-        if (dataString == "turn_on_master_sync") {
+        if (dataString.equals("turn_on_master_sync")) {
             ContentResolver.setMasterSyncAutomatically(true);
+            NotificationManagerCompat.from(this).cancel(001);
         }
-        if(dataString == "turn_on_app_sync"){
+        if(dataString.equals("turn_on_app_sync")){
             ContentResolver.getSyncAutomatically(AccountManager.get(this).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY);
+            NotificationManagerCompat.from(this).cancel(002);
         }
+
     }
 }

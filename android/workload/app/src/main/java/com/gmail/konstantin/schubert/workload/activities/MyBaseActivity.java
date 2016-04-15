@@ -2,14 +2,19 @@ package com.gmail.konstantin.schubert.workload.activities;
 
 
 import android.accounts.AccountManager;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.NotificationCompat;
 import android.view.Menu;
@@ -38,24 +43,30 @@ abstract public class MyBaseActivity extends AppCompatActivity {
         ContentResolver.requestSync(AccountManager.get(this).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, new Bundle());
 
         if (!SurveyContentProvider.isMasterSyncSettingTrue()){
-            buildSyncSettingChangerIntent("Turn on Auto-Sync", "This app needs auto-sync. Click to turn on.", "turn_on_master_sync");
+            buildSyncSettingChangerIntent("Turn on Auto-Sync", "Time Monitor needs auto-sync.", "Turn on now", "turn_on_master_sync",001);
         }
         if (!SurveyContentProvider.isAccountSyncSettingTrue(this)){
-            buildSyncSettingChangerIntent("Turn on App-Sync", "Click to turn on for this app.", "turn_on_app_sync");
+            buildSyncSettingChangerIntent("Turn on App-Sync", "Sync must be activated for Time Monitor.", "Turn on now", "turn_on_app_sync",002);
         }
     }
 
-    private void buildSyncSettingChangerIntent(String contentTitle, String contentText, String specifier){
+    private void buildSyncSettingChangerIntent(String contentTitle, String contentText, String actionText, String specifier, int id){
+        Intent intent = new Intent(this, SyncSettingChangerService.class);
+        intent.setData(Uri.parse(specifier));
+        PendingIntent actionPendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        //Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_stat_sync_problem)
+          //              .setLargeIcon(largeIcon)
                         .setContentTitle(contentTitle)
-                        .setContentText(contentText);
-        Intent intent = new Intent(this, SyncSettingChangerService.class);
-        intent.setData(Uri.parse(specifier));
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(resultPendingIntent);
-        ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).notify(002, mBuilder.build());
+                        .setAutoCancel(true)
+                        // shouldn't this be a standard setting that the notification
+                        // disappears after it is used? Am I doing something wong?
+                        .setContentText(contentText)
+                        .addAction(new NotificationCompat.Action(R.drawable.ic_settings_24dp, actionText, actionPendingIntent));
+
+        NotificationManagerCompat.from(this).notify(id,mBuilder.build());
     }
 
     @Override
