@@ -33,7 +33,7 @@ public class SyncSettingChangerService extends IntentService {
             NotificationManagerCompat.from(this).cancel(001);
         }
         if(dataString.equals("turn_on_app_sync")){
-            ContentResolver.getSyncAutomatically(AccountManager.get(this).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY);
+            ContentResolver.setSyncAutomatically(AccountManager.get(this).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, true);
             NotificationManagerCompat.from(this).cancel(002);
         }
 
