@@ -10,8 +10,8 @@ android {
         applicationId "com.gmail.konstantin.schubert.workload"
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 14
-        versionName "1.2.5"
+        versionCode 15
+        versionName "1.2.6"
     }
     buildTypes {
         release {
