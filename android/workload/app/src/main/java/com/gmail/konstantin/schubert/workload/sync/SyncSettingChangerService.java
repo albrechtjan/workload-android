@@ -2,7 +2,6 @@ package com.gmail.konstantin.schubert.workload.sync;
 
 import android.accounts.AccountManager;
 import android.app.IntentService;
-import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.support.v4.app.NotificationManagerCompat;

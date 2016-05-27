@@ -4,9 +4,11 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.Context;
+import android.content.OperationApplicationException;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -190,10 +192,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
 
 
-//        android.os.Debug.waitForDebugger();
-
-
-
         try {
 
             get_table_entries_lectures(account);
@@ -227,8 +225,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             Log.d(TAG, "Sucessfully finalized sync");
 
         } catch (AuthenticatorException e) {
-            Log.d(TAG, "Invalidating AuthToken");
-            sAccountManager.invalidateAuthToken("tu-dresden.de", "session_ID_token"); // is the second parameter correct?
+            try {
+                Log.d(TAG, "Invalidating AuthToken");
+                AccountManagerFuture<Bundle> future = sAccountManager.getAuthToken(account, "session_ID_token", Bundle.EMPTY, true, null, null);
+                String token = future.getResult().getString(AccountManager.KEY_AUTHTOKEN);
+                Log.d(TAG,"Authtoken is" + token);
+                sAccountManager.invalidateAuthToken("tu-dresden.de", token);
+            }
+            catch (Exception ex ){
+                Log.d(TAG, "Unable to invalidate Auth Token because we are not able to get it. Maybe it is already invalidated?");
+            }
         } catch (IOException e) {
             Log.e(TAG, "IOException in onPerformSync.", e);
         }
