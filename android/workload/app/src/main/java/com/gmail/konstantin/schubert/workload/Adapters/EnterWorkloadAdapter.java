@@ -105,11 +105,18 @@ public class EnterWorkloadAdapter extends BaseAdapter {
 
     public void saveEditsIfUserHasEdited() {
         if (userHasEdited) {
-            Toast.makeText(mContext, "saved", Toast.LENGTH_SHORT).show();
             WorkloadEntry workloadEntry = new WorkloadEntry(mCursor);
-            workloadEntry.setHoursInLecture((float) getItem(EnterWorkload.ROW_HOURS_ATTENDING));
-            workloadEntry.setHoursStudying((float) getItem(EnterWorkload.ROW_HOURS_STUDYING));
-            workloadEntry.setHoursForHomework((float) getItem(EnterWorkload.ROW_HOURS_HOMEWORK));
+            try {
+                workloadEntry.setHoursInLecture((float) getItem(EnterWorkload.ROW_HOURS_ATTENDING));
+            } catch (NumberFormatException e){};
+            try {
+                workloadEntry.setHoursStudying((float) getItem(EnterWorkload.ROW_HOURS_STUDYING));
+            } catch (NumberFormatException e){};
+            try {
+                workloadEntry.setHoursForHomework((float) getItem(EnterWorkload.ROW_HOURS_HOMEWORK));
+            } catch (NumberFormatException e){};
+            // I damn sure love my python ... can write it in any language
+            Toast.makeText(mContext, "saved", Toast.LENGTH_SHORT).show();
             DBObjectBuilder objectBuilder = new DBObjectBuilder(mContext.getContentResolver());
             objectBuilder.updateWorkloadEntry(workloadEntry, SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
         }
