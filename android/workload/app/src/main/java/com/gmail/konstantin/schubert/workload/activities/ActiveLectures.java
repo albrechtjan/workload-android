@@ -9,8 +9,11 @@ import android.widget.ImageButton;
 import com.gmail.konstantin.schubert.workload.Adapters.ManageLecturesAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 
-
-public class ManageLectures extends MyBaseListActivity {
+/* Activity where the user can see which lectures he has selected for data entry.
+ * He can deactivate lectures by clicking on a trash can button or he can click on
+ * a red Floating Action Button in the lower right corner to add a new lecture.
+ */
+public class ActiveLectures extends MyBaseListActivity {
 
     private Context mContext;
 

@@ -77,7 +77,7 @@ abstract public class MyBaseActivity extends AppCompatActivity {
         Intent intent = null;
         switch (item.getItemId()) {
             case R.id.action_manage_lectures:
-                intent = new Intent(this, ManageLectures.class);
+                intent = new Intent(this, ActiveLectures.class);
                 break;
             case R.id.action_privacy_agreement:
                 intent = new Intent(this, PrivacyAgreement.class);

@@ -3,10 +3,15 @@ package com.gmail.konstantin.schubert.workload.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
-
 import com.gmail.konstantin.schubert.workload.Adapters.AddLectureAdapter;
 import com.gmail.konstantin.schubert.workload.R;
 
+
+/*
+* Activity where user can select the lectures for which he wants to
+* monitor his time budget.This activity shows all lectures that exist for
+* a certain semester, for example for the winter semester 2039.
+* */
 public class AddLecture extends MyBaseListActivity {
 
     public final static String SEMESTER = "com.gmail.konstantin.schubert.workload.SEMESTER";

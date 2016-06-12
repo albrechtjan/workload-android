@@ -87,7 +87,7 @@
 
 
         <activity
-            android:name=".activities.ManageLectures"
+            android:name=".activities.ActiveLectures"
             android:parentActivityName=".activities.Calendar"
             android:launchMode="singleTop">
             <meta-data
@@ -97,11 +97,11 @@
 
         <activity
             android:name=".activities.AddLectureChooseSemester"
-            android:parentActivityName=".activities.ManageLectures"
+            android:parentActivityName=".activities.ActiveLectures"
             android:launchMode="singleTop">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.ManageLectures" />
+                android:value=".activities.ActiveLectures" />
         </activity>
 
         <activity
