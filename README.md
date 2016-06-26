@@ -15,14 +15,14 @@ The workload web API is part of the [`workload`](https://github.com/KonstantinSc
 
 ## Technology
 
-The app is written as standard, native Android app. The programming language is Java.
+The app is written as a standard, native Android app. The programming language is Java.
 
 ## Project Structure and Software Architecture
 
 The project structure follows the standard structure of an [Android Studio](https://developer.android.com/studio/index.html) project. 
 
 The folder `android/workload` contains the directory `app`, 
-with the actual Android app and the folder `MPChartLib` with a copy of the 
+with the actual Android app, and the folder `MPChartLib` with a copy of the 
 open-source charting library [MPAndroidChart](https://github.com/PhilJay/MPAndroidChart/tree/master/MPChartLib).
 
 The Java classes for the app are defined in `/android/workload/app/src/main/java/com/gmail/konstantin/schubert/workload/`.
