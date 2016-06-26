@@ -19,6 +19,8 @@ import java.util.Map;
 /**
  * Manages the session cookie for authentication with the web API.
  *
+ * The implementation takes many inspirations from this tutorial:
+ * https://developer.android.com/training/sync-adapters/creating-authenticator.html
  */
 public class Authenticator extends AbstractAccountAuthenticator {
 

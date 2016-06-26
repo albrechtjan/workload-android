@@ -17,19 +17,36 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Decodes the server response which is in JSON format and builds java objects from it. (A bit like
+ * the DBObejctBuilder for the SurveyContentProvider.)
+ * Then, where necessary, it takes care of updating the database of the SurveyContentProvider with
+ * the information from the server response.
+ *
+ * \todo: The class does the object building from json AND the merging logic with the local database.
+ * \todo: This violates the single responsibility principle for no good reason and should be changed.
+ * \todo; https://en.wikipedia.org/wiki/Single_responsibility_principle
+ * \todo: We should have a seperate class called RESTObjectBuilder.java
+ */
 public class RESTResponseProcessor {
 
     private DBObjectBuilder dbObjectBuilder;
     private ContentResolver mContentResolver;
-    //this class kinda does the object building from json AND the merging logic with the local database. Not sure how
-    // smart that combination of duties is.
 
+    /**
+     * Constructor. Initializes fields.
+     * @param contentResolver A content resolver for the SurveyContentProvider
+     */
     public RESTResponseProcessor(ContentResolver contentResolver) {
 
         dbObjectBuilder = new DBObjectBuilder(contentResolver);
         this.mContentResolver = contentResolver;
     }
 
+    /**
+     * Takes list of lectures in JSON format and turns it into java list of
+     * java Lecture.java objects.
+     */
     static public List<Lecture> lectureListFromJson(String jsonList) throws IOException {
         JsonReader reader = new JsonReader(new StringReader(jsonList));
         List<Lecture> lectures = new ArrayList();
@@ -47,6 +64,10 @@ public class RESTResponseProcessor {
     }
 
 
+    /**
+     * Takes list of workload entries  in JSON format and turns it into java list of
+     * java WorloadEntry.java objects.
+     */
     static public List<WorkloadEntry> entryListFromJson(String jsonList) throws IOException {
         JsonReader reader = new JsonReader(new StringReader(jsonList));
         List<WorkloadEntry> entries = new ArrayList();
@@ -60,9 +81,10 @@ public class RESTResponseProcessor {
         return entries;
     }
 
-
-    static public Lecture buildLecture(JsonReader reader) throws IOException {
-
+    /**
+     * Takes a json reader with a lecture in JSON format and turns it into java Lecture.java object.
+     */
+    static private Lecture buildLecture(JsonReader reader) throws IOException {
         int id = -1;
         String name = null;
         String semester = null;
@@ -93,7 +115,11 @@ public class RESTResponseProcessor {
         return new Lecture(id, name, semester, startWeek, endWeek, isActive);
     }
 
-    static public WorkloadEntry buildEntry(JsonReader reader) throws IOException {
+    /**
+     * Takes a json reader with a workload entry in JSON format and
+     * turns it into java WorkloadEntry.java object.
+     */
+    static private WorkloadEntry buildEntry(JsonReader reader) throws IOException {
 
         int lecture_id = -1;
         float hoursInLecture = -1;
@@ -124,10 +150,20 @@ public class RESTResponseProcessor {
     }
 
 
+    /**
+     * Updates the available lectures from the remote end to the local end.
+     * 
+     * The remote end always supersedes local for inserts and deletes.
+     * All rows are updated with the values from the remote end, unless the row in
+     * the content provider table is marked as pending. In this case the remote end will
+     * later be updated instead. We do not check for time stamps or anything. Data might get
+     * lost if updates are made via the web interface and the app simultaneously, or even with
+     * some time shift if the phone is offline.
+     *
+     * @param remoteLectures list of lecture objects as they are stored on the remote
+     */
     public void update_lectures_from_remote(List<Lecture> remoteLectures) {
-        // updates the available lectures from the remote end to the local end.
-        // Remote always supersedes local, even if syncing
-        List<Lecture> localLectures = this.dbObjectBuilder.getLectureList(false);  // all lectures (active and inactive) that are listed locally
+        List<Lecture> localLectures = this.dbObjectBuilder.getLectureList(false);
         // delete local lectures that are not in the remote list
         for (Lecture localLecture : localLectures) {
             if (!isInList(localLecture, remoteLectures)) {
@@ -146,6 +182,7 @@ public class RESTResponseProcessor {
                 Lecture localLecture = (Lecture) getFromList(remoteLecture, localLectures);
                 if (!localLecture.equals_exactly(remoteLecture)) {
                     // if they are not exactly the same, update the local lecture
+                    // this will NOT update the local lecture if it is marked as pending.
                     this.dbObjectBuilder.updateLecture(remoteLecture, SurveyContentProvider.SYNC_STEER_COMMAND.GET_OVERWRITE);
                 }
 
