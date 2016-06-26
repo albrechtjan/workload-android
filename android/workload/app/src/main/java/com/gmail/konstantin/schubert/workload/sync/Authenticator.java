@@ -16,73 +16,50 @@ import java.net.HttpCookie;
 import java.util.HashMap;
 import java.util.Map;
 
-
+/**
+ * Manages the session cookie for authentication with the web API.
+ *
+ */
 public class Authenticator extends AbstractAccountAuthenticator {
 
+    private static final String TAG = Authenticator.class.getSimpleName();
     //the following (parts of) key names also work as bundle keys for the httpcookie
     public static final String NAME_COOKIE_DJANGO = "csrftoken";
-    public static final String NAME_COOKIE_CSRF = "sessionid";
-    private static final String TAG = Authenticator.class.getSimpleName();
     Context mContext;
 
+    /**
+     * Constructor. Calls the super constructor and initializes members
+     *
+     */
     public Authenticator(Context context) {
         super(context);
         mContext = context;
 
     }
 
+    /**
+     * Looks for the Django session cookie in the cookieString.
+     *
+     * Returns it in a map if it finds it.
+     * Returns null if at least one cookie is missing
+     *
+     */
     public static Map<String, HttpCookie> getCookiesFromCookieString(String cookieString) {
-        // Looks for the necessary cookies in the cookieString. Returns them in a map if it finds them.
-        // Returns null if at least one cookie is missing
+
         Map<String, HttpCookie> cookies = new HashMap<>();
-        for (String key : new String[]{Authenticator.NAME_COOKIE_CSRF, Authenticator.NAME_COOKIE_DJANGO}) {
-            Boolean found = false;
-            for (String cookieSubString : cookieString.split(";")) {
-                if (cookieSubString.contains(key)) {
-                    cookies.put(key, HttpCookie.parse(cookieSubString).get(0));
-                    found = true;
-                }
-            }
-            if (!found) {
-                // There was a key we need but we did not find it in the cookies.
-                return null;
+
+        for (String cookieSubString : cookieString.split(";")) {
+            if (cookieSubString.contains(Authenticator.NAME_COOKIE_DJANGO)) {
+                cookies.put(Authenticator.NAME_COOKIE_DJANGO, HttpCookie.parse(cookieSubString).get(0));
+                return cookies;
             }
         }
-        return cookies;
-
-    }
-
-    @Override
-    public Bundle editProperties(
-            AccountAuthenticatorResponse r, String s) {
-        Log.d(TAG, "called: editProperties");
-        //editing properties not yet supported
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Bundle addAccount(
-            AccountAuthenticatorResponse r,
-            String s,
-            String s2,
-            String[] strings,
-            Bundle bundle)
-        // Until I am comfortable handling the users credentials in the app,
-        // I will keep ignoring their attempts to add an account
-            throws NetworkErrorException {
-        Log.d(TAG, "called: addAccount");
         return null;
+
     }
 
-    // Ignore attempts to confirm credentials
-    @Override
-    public Bundle confirmCredentials(
-            AccountAuthenticatorResponse r,
-            Account account,
-            Bundle bundle) throws NetworkErrorException {
-        Log.d(TAG, "called:confirmCredentials");
-        return null;
-    }
+
+
 
     @Override
     public Bundle getAuthToken(
@@ -119,23 +96,63 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return intentBundle;
     }
 
+    /**
+     * Inherited method, not supported.
+     */
     @Override
-    public String getAuthTokenLabel(String s) {
-
-        // not yet implemented
+    public Bundle editProperties(AccountAuthenticatorResponse r, String s) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Inherited method, stubbed out.
+     */
+    @Override
+    public Bundle addAccount(
+            AccountAuthenticatorResponse r,
+            String s,
+            String s2,
+            String[] strings,
+            Bundle bundle)
+            throws NetworkErrorException {
+        return null;
+    }
+
+    /**
+     * Inherited method, stubbed out.
+     *
+     * Ignore attempts to confirm credentials
+     */
+    @Override
+    public Bundle confirmCredentials(
+            AccountAuthenticatorResponse r,
+            Account account,
+            Bundle bundle) throws NetworkErrorException {
+        return null;
+    }
+
+    /**
+     * Inherited method, not yet supported
+     */
+    @Override
+    public String getAuthTokenLabel(String s) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Inherited method, not supported
+     */
     @Override
     public Bundle updateCredentials(
             AccountAuthenticatorResponse r,
             Account account,
             String s, Bundle bundle) throws NetworkErrorException {
-        Log.d(TAG, "called: updateCredentials");
         throw new UnsupportedOperationException();
     }
 
-    // Checking features for the account is not supported
+    /**
+     * Inherited method, not supported
+     */
     @Override
     public Bundle hasFeatures(
             AccountAuthenticatorResponse r,
