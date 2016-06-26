@@ -17,7 +17,7 @@ The workload web API is part of the [`workload`](https://github.com/KonstantinSc
 
 The app is written as standard, native Android app. The programming language is Java.
 
-## Architecture
+## Project Structure and Software Architecture
 
 The project structure follows the standard structure of an [Android Studio](https://developer.android.com/studio/index.html) project. 
 
@@ -34,8 +34,8 @@ The sync adapter in turn makes use of an Android authenticator to manage its aut
 All classes related to the sync process are contained in the [`sync` folder](https://github.com/KonstantinSchubert/workload-android/tree/master/android/workload/app/src/main/java/com/gmail/konstantin/schubert/workload/sync).
 The architecture and implementation of these classes is explained in [this android tutorial](https://developer.android.com/training/sync-adapters/index.html) which I used when writing the app.
 
-The synchronization logic](documentation/sync-logic.md) defines what entries will be synched under which conditions and how conflicts are resolved.
-It is documented [here](documentation/sync-logic.md).
+The synchronization logic defines what entries will be synched under which conditions and how conflicts are resolved.
+It is documented [here](documentation/SyncLogic.md).
 
 
 ## Installation
