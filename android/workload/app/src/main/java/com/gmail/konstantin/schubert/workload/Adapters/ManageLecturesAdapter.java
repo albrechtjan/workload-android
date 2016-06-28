@@ -1,8 +1,11 @@
 package com.gmail.konstantin.schubert.workload.Adapters;
 
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,24 +13,21 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.gmail.konstantin.schubert.workload.Lecture;
 import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
-import java.util.Collections;
-import java.util.List;
 
-/* Adapter for the ActiveLectures.java activity.
+/**
+ *  Adapter for the ActiveLectures.java activity.
  *
+ * This acts as a list adapter. It inherits from BaseAdapter which already implements the ListAdapter
+ * interface.
  * Keeps a list of the active lectures of the user.
- * \todo: Instead of keeping a list of active lectures as java objects built with DBObjectBuilder,
- * \todo: use, the database directly. The MyBaseAdaper will call updateMembers() when the database
- * \todo: changes, so it will still need to call notifyDataSetChanged(), but that is it.
- * \todo: Simply
+ * Directly uses a cursor instead of building intermediate java objects.
  */
-public class ManageLecturesAdapter extends MyBaseAdapter { //BaseAdapter already implements Listadapter
+public class ManageLecturesAdapter extends MyBaseAdapter {
 
-    private List<Lecture> mActiveLectures;
+    private Cursor mActiveLectures;
     private Context mContext;
 
     public ManageLecturesAdapter(Context context) {
@@ -36,6 +36,11 @@ public class ManageLecturesAdapter extends MyBaseAdapter { //BaseAdapter already
         updateMembers(null);
     }
 
+    /**
+     *  Returns the view for one list item
+     *  @param position index of the list item
+     */
+    @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         RelativeLayout lectureRow;
         if (convertView != null) {
@@ -45,16 +50,25 @@ public class ManageLecturesAdapter extends MyBaseAdapter { //BaseAdapter already
             lectureRow = (RelativeLayout) inflater.inflate(R.layout.lecture_row_modern_trashcan, parent, false);
         }
 
-        final Lecture lecture = mActiveLectures.get(position);
+        mActiveLectures.moveToPosition(position);
+        int nameIndex = mActiveLectures.getColumnIndex(SurveyContentProvider.DB_STRINGS_LECTURE.NAME);
+        final int idIndex = mActiveLectures.getColumnIndex(SurveyContentProvider.DB_STRINGS._ID);
+
         TextView label = (TextView) lectureRow.getChildAt(0);
-        label.setText(lecture.name);
+        label.setText(mActiveLectures.getString(nameIndex));
 
         ImageButton deleteButton = (ImageButton) lectureRow.getChildAt(1);
         deleteButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                //TODO: Make this more efficient
-                lecture.isActive = false;
-                dbObjectBuilder.updateLecture(lecture, SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
+                int lectureID = mActiveLectures.getInt(idIndex);
+                ContentValues values = new ContentValues();
+                values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE, 0);
+                String uri = "content://" + SurveyContentProvider.AUTHORITY + "/lectures/SYNC/";
+                uri += String.valueOf(lectureID) + "/";
+                int result = mContentResolver.update(Uri.parse(uri), values, null, null);
+                if (result < 0) {
+                    Log.d("ManageLecturesAdapter", "Could not update " + uri + ". Maybe SYNC_STATUS of row is not IDLE");
+                }
                 updateMembers(null);
             }
         });
@@ -63,24 +77,33 @@ public class ManageLecturesAdapter extends MyBaseAdapter { //BaseAdapter already
         return lectureRow;
     }
 
+    /**
+     *  Returns the number of active lectures.
+     *
+     *  By definition this is also the number of list items.
+     */
+    @Override
     public int getCount() {
-        return mActiveLectures.size();
+        return mActiveLectures.getCount();
     }
-
+    @Override
     public Object getItem(int position) {
         //stub
         return null;
     }
-
+    @Override
     public long getItemId(int position) {
         //stub
         return 0;
     }
 
 
+    /* Is called when database changes.
+     * Replaces the old cursor with a new one, then notifies the activity.
+     */
+    @Override
     public void updateMembers(Uri uri) {
-        mActiveLectures = this.dbObjectBuilder.getLectureList(true);
-        Collections.sort(mActiveLectures);
+        mActiveLectures = this.dbObjectBuilder.getLectureCursor(true);
         notifyDataSetChanged();
     }
 

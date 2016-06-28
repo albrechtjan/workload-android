@@ -7,7 +7,7 @@ import org.joda.time.Partial;
 
 
 /**
- * Simple Week representation aimed to mirror the most important functions of android's week.isoweek
+ * Simple Week representation aimed to mirror the most important functions of python's week.isoweek
  */
 public class Week implements Comparable<Week> {
 
@@ -30,13 +30,18 @@ public class Week implements Comparable<Week> {
 
     }
 
+    /**
+     * Returns a new object representing the following week
+     */
     public Week getNextWeek() {
-
         Partial nextWeekPartial = yearWeek.property(DateTimeFieldType.weekOfWeekyear()).addToCopy(1);
         Week newWeek = new Week(nextWeekPartial.get(DateTimeFieldType.weekyear()), nextWeekPartial.get(DateTimeFieldType.weekOfWeekyear()));
         return newWeek;
     }
 
+    /**
+     * Returns the first day of the given week as a LocalDate
+     */
     public LocalDate firstDay() {
         LocalDate date = new LocalDate();
         date = date.withYear(yearWeek.get(DateTimeFieldType.weekyear()));
@@ -45,6 +50,9 @@ public class Week implements Comparable<Week> {
         return date;
     }
 
+    /**
+     * Returns the last day of the given week as a LocalDate
+     */
     public LocalDate lastDay() {
         LocalDate date = new LocalDate();
         date = date.withYear(yearWeek.get(DateTimeFieldType.weekyear()));

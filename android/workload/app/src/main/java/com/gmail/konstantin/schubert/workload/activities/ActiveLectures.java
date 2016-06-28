@@ -40,9 +40,7 @@ public class ActiveLectures extends MyBaseListActivity {
     public void onResume() {
         super.onResume();
         ManageLecturesAdapter manageLecturesAdapter = (ManageLecturesAdapter) getListAdapter();
-        //TODO: Make this more efficient
         manageLecturesAdapter.updateMembers(null);
-        manageLecturesAdapter.notifyDataSetChanged();
     }
 
 }

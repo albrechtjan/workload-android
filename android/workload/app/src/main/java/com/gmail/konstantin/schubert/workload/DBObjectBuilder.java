@@ -27,7 +27,13 @@ public class DBObjectBuilder {
             where = SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE + "=1";
         }
 
-        Cursor cursor = mContentResolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/null/any/"), null, where, null, null);
+        Cursor cursor = mContentResolver.query(
+                Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/lectures/null/any/"),
+                null,
+                where,
+                null,
+                "ORDER BY "+SurveyContentProvider.DB_STRINGS_LECTURE.NAME
+        );
         return cursor;
 
     }
