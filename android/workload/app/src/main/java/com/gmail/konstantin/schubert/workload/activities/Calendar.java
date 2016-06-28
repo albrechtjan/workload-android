@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.TextView;
 

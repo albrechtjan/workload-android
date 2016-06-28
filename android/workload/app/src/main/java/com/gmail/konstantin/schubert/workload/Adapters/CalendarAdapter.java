@@ -43,11 +43,10 @@ public class CalendarAdapter extends MyBaseAdapter {
 
     public void updateMembers(Uri uri) {
         Log.d("CalendarAdapter", "calling updateMembers()");
-        if (uri == null || !uri.toString().contains("lectures")) { // The || and && operators are short-circuiting.
-            // Only update the members if we don't know what was updated or if lectures are affected
-            this.mLectures = dbObjectBuilder.getLecturesOfSemester(sSemester, true);
-            this.mWeeks = getWeeks(this.mLectures);
-        }
+        // We need to update when any of the tables changes
+
+        this.mLectures = dbObjectBuilder.getLecturesOfSemester(sSemester, true);
+        this.mWeeks = getWeeks(this.mLectures);
         // in any case, the calender view needs to be updated because additional workload entries
         // mean that some tiles need to be marked as visited
         notifyDataSetChanged();

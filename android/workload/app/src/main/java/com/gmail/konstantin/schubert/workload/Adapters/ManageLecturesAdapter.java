@@ -17,6 +17,14 @@ import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import java.util.Collections;
 import java.util.List;
 
+/* Adapter for the ActiveLectures.java activity.
+ *
+ * Keeps a list of the active lectures of the user.
+ * \todo: Instead of keeping a list of active lectures as java objects built with DBObjectBuilder,
+ * \todo: use, the database directly. The MyBaseAdaper will call updateMembers() when the database
+ * \todo: changes, so it will still need to call notifyDataSetChanged(), but that is it.
+ * \todo: Simply
+ */
 public class ManageLecturesAdapter extends MyBaseAdapter { //BaseAdapter already implements Listadapter
 
     private List<Lecture> mActiveLectures;
@@ -44,11 +52,10 @@ public class ManageLecturesAdapter extends MyBaseAdapter { //BaseAdapter already
         ImageButton deleteButton = (ImageButton) lectureRow.getChildAt(1);
         deleteButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                //TODO: Make this more efficient
                 lecture.isActive = false;
                 dbObjectBuilder.updateLecture(lecture, SurveyContentProvider.SYNC_STEER_COMMAND.SYNC);
-                //TODO: Make this more efficient
                 updateMembers(null);
-                notifyDataSetChanged();
             }
         });
 
