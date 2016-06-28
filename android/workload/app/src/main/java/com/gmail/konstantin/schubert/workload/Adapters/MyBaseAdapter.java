@@ -24,9 +24,16 @@ import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
  * that all of this happens in the main thread.
  *
  * \todo: I see are two ways to improve this:
- *   * perform the updateMemebers method in a separate thread, for example with an AsyncTask
+ *   * perform the updateMembers method in a separate thread, for example with an AsyncTask
  *   * do not build java objects from the database information, instead use the database
  *   directly to populate the views.
+ *
+ * The content observer is never unregistered. This means that even if the activity is paused,
+ * adapters and views are updated. Theoretically this should prevent the view from flickering
+ * after the activity is resumed. On the other hand, this means that updateMembers() is called
+ * for ALL adapters on every database update. The implementation at hand works,
+ * but it does not seem to be the standard way of doing it.
+ * It is possible that a different implementation would be better.
  */
 abstract public class MyBaseAdapter extends BaseAdapter {
     private static final String TAG = MyBaseAdapter.class.getSimpleName();
@@ -61,10 +68,7 @@ abstract public class MyBaseAdapter extends BaseAdapter {
                     }
                 }
         );
-        // The contentobserver is never unregistered. This means that even if the activity is paused,
-        // adapters and views are updated. Theoretically this should prevent the view from flickering
-        // after the activity is resumed. On the other hand, this means that updateMembers() is called
-        // for ALL adapters on every database update...
+
 
 
     }

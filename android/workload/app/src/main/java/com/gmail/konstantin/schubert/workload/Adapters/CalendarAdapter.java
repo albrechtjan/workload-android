@@ -25,26 +25,49 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+
+/**
+ * Android adapter for the Calendar.java activity, inherits from MyBaseAdapter
+ *
+ * This adapter is used to populate the entries in the grid view. It mirrors the database information
+ * in its fields. When the database changes, the updateMembers() method is called, the fields are
+ * updated and the activity is notified. For more information, read the comments in MyBaseAdapter.
+ *
+ * \todo: Try to use the database more directly
+ */
 public class CalendarAdapter extends MyBaseAdapter {
     private static final String TAG = CalendarAdapter.class.getSimpleName();
+
     private final String sSemester;
     private Context mContext;
     private List<Week> mWeeks;
     private List<Lecture> mLectures;
 
+    /**
+     * Constructs the adapter
+     *
+     * @param context Usually the activity that the adapter belongs to
+     * @param semester The semester for which the calendar should be displayed.
+     */
     public CalendarAdapter(Context context, String semester) {
         super(context);
         mContext = context;
         sSemester = semester;
         updateMembers(null);
-
+        // As this constructor is usually called right after starting the app, it is a good plae to request a sync...
+        //\todo: the calendar activity would be an even better place...
         ContentResolver.requestSync(AccountManager.get(mContext).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, new Bundle());
     }
 
+    /**
+     * Updates the fields which mirror the database information. Is callend when database
+     * updates.
+     *
+     * @param uri the uri that describes the affected part of the database.
+     */
     public void updateMembers(Uri uri) {
-        Log.d("CalendarAdapter", "calling updateMembers()");
+        Log.d(TAG, "calling updateMembers()");
         // We need to update when any of the tables changes
-
         this.mLectures = dbObjectBuilder.getLecturesOfSemester(sSemester, true);
         this.mWeeks = getWeeks(this.mLectures);
         // in any case, the calender view needs to be updated because additional workload entries
@@ -52,6 +75,11 @@ public class CalendarAdapter extends MyBaseAdapter {
         notifyDataSetChanged();
     }
 
+    /**
+     * Returns the number of weeks.
+     *
+     * By definition this will be the number of tiles displayed.
+     */
     public int getCount() {
         return mWeeks.size();
     }
@@ -64,7 +92,14 @@ public class CalendarAdapter extends MyBaseAdapter {
         return 0;
     }
 
-
+    /**
+     * Returns the view for one calendar tile.
+     *
+     * The view is a Button which displays the start and end date of the week.
+     *
+     * @param position Index of the tile who's view will be returned.
+     *
+     */
     public View getView(int position, View convertView, ViewGroup parent) {
 
 
@@ -101,6 +136,13 @@ public class CalendarAdapter extends MyBaseAdapter {
         return weekButton;
     }
 
+    /**
+     * Gives the smallest consecutive range of weeks which contains all lecture dates for all
+     * lectures in the list.
+     *
+     * @param lectures A list of lecture objects
+     * @return A consecutive list of weeks.
+     */
     private static List<Week> getWeeks(List<Lecture> lectures) {
         if (lectures.isEmpty()) {
             // if there are not lectures, then the list of weeks is empty as well.
@@ -118,6 +160,9 @@ public class CalendarAdapter extends MyBaseAdapter {
     }
 
 
+    /**
+     * Returns the earliest week out of the weeks when the lectures start.
+     */
     private static Week firstWeek(List<Lecture> lectures) {
         List<Week> startWeeks = new ArrayList<>();
         for (Lecture lecture : lectures) {
@@ -126,6 +171,9 @@ public class CalendarAdapter extends MyBaseAdapter {
         return Collections.min(startWeeks);
     }
 
+    /**
+     * Returns the latest (last) week out of the set of weeks when the lectures end.
+     */
     private static Week lastWeek(List<Lecture> lectures) {
         List<Week> endWeeks = new ArrayList<>();
         for (Lecture lecture : lectures) {
@@ -135,6 +183,12 @@ public class CalendarAdapter extends MyBaseAdapter {
 
     }
 
+    /**
+     * Returns true if a workload entry exists for all considered lectures in the considered week.
+     * @param lectures The list of lectures to be considered.
+     * @param week The week to be considered.
+     * @return
+     */
     private boolean allLecturesHaveDataInWeek(List<Lecture> lectures, Week week) {
         for (Lecture lecture : lectures) {
             if (!lecture.hasDataInWeek(mContext, week)) {
@@ -143,6 +197,4 @@ public class CalendarAdapter extends MyBaseAdapter {
         }
         return true;
     }
-
-
 }
