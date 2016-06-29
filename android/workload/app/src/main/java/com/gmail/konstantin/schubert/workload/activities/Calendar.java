@@ -33,23 +33,25 @@ public class Calendar extends MyBaseActivity {
     Semester sSemester;
     DBObjectBuilder dbObjectBuilder;
 
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        // initialize class fields
         ContentResolver resolver = this.getContentResolver();
         dbObjectBuilder = new DBObjectBuilder(resolver);
+        // sSemester is the semester for which the calendar is displayed
+        sSemester = new Semester(get_best_semester());
 
 
         setContentView(R.layout.activity_calendar);
-        sSemester = new Semester(get_best_semester());
         final GridView gridview = (GridView) findViewById(R.id.gridview);
         gridview.setAdapter(new CalendarAdapter(this, sSemester.to_string()));
         final TextView semesterText = (TextView) findViewById(R.id.calendar_semester);
         semesterText.setText(sSemester.to_string());
 
-        // Change the adapter if next semester is selected
+        // Change the adapter if a button to change the semester is clicked
         View.OnClickListener semesterButtonListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,6 +87,18 @@ public class Calendar extends MyBaseActivity {
 
     }
 
+    /**
+     * Executes whenever the calendar activity comes into view.
+     *
+     * @inheritDoc
+     *
+     * Only here we check if the user needs to log in for the first time and if he has
+     * agreed to the privacy agreement. This assumes that the Calendar activity is the only entry
+     * point to the app, which it currently is. If there are other entry points, we would have to check
+     * there as well,
+     * \todo: Think if we can/should better move the maybe_make_first_login() and assure_privacy_agreement
+     * \todo checks to the onResume method of the MyBaseActivity class.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -94,19 +108,32 @@ public class Calendar extends MyBaseActivity {
         chooseEmptyView(gridview);
     }
 
+    /**
+     * Selects heuristically the most relevant semester for the calendar to display.
+     */
     private String get_best_semester() {
-        // If we are not sure which semester to display (because there is no saved instance)
-        // the best semester is considered the newest semester that has a lecture
-        // Otherwise it is the newest semester
         List<Semester> semesters = this.dbObjectBuilder.getSemesterList(true);
-        Collections.sort(semesters);
         if (semesters.isEmpty()) {
+            // If there are no semesters (because no lectures are active), show the current semester
             return Semester.get_current_semester_string();
         }
+        // Else show the latest semester with an active lecture.
+        Collections.sort(semesters);
         return semesters.get(semesters.size() - 1).to_string();
 
     }
 
+    /**
+     * Sets the empty view of the Activity's grid view
+     *
+     * If syncing is activated and there are no lectures (active or inactive) in the content provider,
+     * the empty view tells the user that the phone is syncing.
+     * \todo: Only say we are syncing if we actually are, do not claim it if the phone is offline
+     * If sync is deactivated, the empty view tells the user about it.
+     * Else, the empty view just says that there are no lectures in a given semester.
+     *
+     * @param gridView the view for which the empty view is being set
+     */
     private void chooseEmptyView(GridView gridView) {
         if (dbObjectBuilder.getLectureList(false).isEmpty()) { //this should be false if we have synced ever before.
             gridView.setEmptyView(findViewById(R.id.initial_sync_view));
@@ -119,8 +146,13 @@ public class Calendar extends MyBaseActivity {
         }
     }
 
+    /**
+     * Starts the AddLectureChooseSemester activity.
+     *
+     * This is an onclick listener.
+     * @param view
+     */
     public void onClickManageLectures(View view) {
-
         this.startActivity(new Intent(this, AddLectureChooseSemester.class));
     }
 
