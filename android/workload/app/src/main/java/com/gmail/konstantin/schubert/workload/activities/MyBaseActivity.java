@@ -19,14 +19,17 @@ import com.gmail.konstantin.schubert.workload.R;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 import com.gmail.konstantin.schubert.workload.sync.SyncSettingChangerService;
 
-
+/**
+ * Base class for the Activities in this app
+ */
 abstract public class MyBaseActivity extends AppCompatActivity {
 
+    /**
+     * @inheritDoc
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
     }
 
 
@@ -37,33 +40,60 @@ abstract public class MyBaseActivity extends AppCompatActivity {
         //TODO: It will be nice to replace this by a push system such as google's cloud messaging API
         ContentResolver.requestSync(AccountManager.get(this).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, new Bundle());
 
+        // check if account synchronization is enabled globally. Otherwise issue a notification.
         if (!SurveyContentProvider.isMasterSyncSettingTrue()){
             buildSyncSettingChangerIntent("Turn on Auto-Sync", "Time Monitor needs auto-sync.", "Turn on now", "turn_on_master_sync",001);
         }
+        // check if account synchronization is enabled for the account. Otherwise issue a notification.
         if (!SurveyContentProvider.isAccountSyncSettingTrue(this)){
             buildSyncSettingChangerIntent("Turn on App-Sync", "Sync must be activated for Time Monitor.", "Turn on now", "turn_on_app_sync",002);
         }
     }
 
+    /**
+     * Builds a notification that prompts the user to enable certain the synchronization settings.
+     *
+     * The notification contains a shortcut for the user to change the setting.
+     *
+     * @param contentTitle Title text of the notification
+     * @param contentText Content text of the notification
+     * @param actionText Text describing the effect of the shortcut button to the user
+     * @param specifier String that specifies the action of the shortcut,
+     *                  check the SyncSettingChangerService.java for reference
+     * @param id Android notification id, see
+     */
     private void buildSyncSettingChangerIntent(String contentTitle, String contentText, String actionText, String specifier, int id){
+
+        // Construct an intent that starts the SyncSettingChangerService when the action button of the
+        // notification is pressed. The Service will take care of applying the setting which is specified
+        // in the specifier string.
         Intent intent = new Intent(this, SyncSettingChangerService.class);
         intent.setData(Uri.parse(specifier));
+        // Wraps the intent in a PendingIntent
         PendingIntent actionPendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        //Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+
+        // Build the notification.
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_stat_sync_problem)
-          //              .setLargeIcon(largeIcon)
                         .setContentTitle(contentTitle)
+                        // make notification disappear after it is used (Should this not be a
+                        // standard setting?
                         .setAutoCancel(true)
-                        // shouldn't this be a standard setting that the notification
-                        // disappears after it is used? Am I doing something wong?
                         .setContentText(contentText)
+                        // This adds the action button with the above intent which will start a service when pressed.
+                        // the service will then change the settings.
                         .addAction(new NotificationCompat.Action(R.drawable.ic_settings_24dp, actionText, actionPendingIntent));
-
+        // Fire up the notification
         NotificationManagerCompat.from(this).notify(id,mBuilder.build());
     }
 
+    /**
+     * Takes care of setting up the options menu
+     * which is defined in xml.
+     *
+     * @inheritDoc
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -71,6 +101,9 @@ abstract public class MyBaseActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Defines the actions when a menu item on the options menu is pressed.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -97,6 +130,10 @@ abstract public class MyBaseActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Returns false if user has agreed to privacy agreement Otherwise launches intent for
+     * activity which prompts the user to agree and returns true.
+     */
     protected boolean assure_privacy_agreement() {
         SharedPreferences settings = this.getSharedPreferences("workload", Context.MODE_PRIVATE);
         if (!settings.getBoolean("privacy_agreed", false)) {
@@ -108,7 +145,10 @@ abstract public class MyBaseActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Returns false if user has logged in before. Otherwise launches intent for
+     * login activity and returns true.
+     */
     protected boolean maybe_make_first_login() {
 
         SharedPreferences settings = this.getSharedPreferences("workload", Context.MODE_PRIVATE);

@@ -23,7 +23,8 @@ import java.util.Collections;
 import java.util.List;
 
 
-/*  Activity showing a calendar holdings the weeks in a certain semester.
+/**
+ *  Activity showing a calendar holdings the weeks in a certain semester.
  * This is the usual entry point for the app. Here, the user can choose a
  * week and lecture and enter his data, switch to another semester or
  * go to the various settings menus.
@@ -33,7 +34,9 @@ public class Calendar extends MyBaseActivity {
     Semester sSemester;
     DBObjectBuilder dbObjectBuilder;
 
-    
+    /**
+     * @inheritDoc
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
