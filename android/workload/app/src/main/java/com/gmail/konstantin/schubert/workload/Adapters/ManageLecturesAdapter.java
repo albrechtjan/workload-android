@@ -63,7 +63,8 @@ public class ManageLecturesAdapter extends MyBaseAdapter {
                 int lectureID = mActiveLectures.getInt(idIndex);
                 ContentValues values = new ContentValues();
                 values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE, 0);
-                String uri = "content://" + SurveyContentProvider.AUTHORITY + "/lectures/SYNC/";
+                String uri = "content://" + SurveyContentProvider.AUTHORITY + "/lectures/";
+                uri += SurveyContentProvider.SYNC_STEER_COMMAND.SYNC +"/";
                 uri += String.valueOf(lectureID) + "/";
                 int result = mContentResolver.update(Uri.parse(uri), values, null, null);
                 if (result < 0) {

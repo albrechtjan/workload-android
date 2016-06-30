@@ -32,7 +32,7 @@ public class DBObjectBuilder {
                 null,
                 where,
                 null,
-                "ORDER BY "+SurveyContentProvider.DB_STRINGS_LECTURE.NAME
+                SurveyContentProvider.DB_STRINGS_LECTURE.NAME
         );
         return cursor;
 

@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.TextView;
 
@@ -95,12 +94,10 @@ public class Calendar extends MyBaseActivity {
      *
      * @inheritDoc
      *
-     * Only here we check if the user needs to log in for the first time and if he has
-     * agreed to the privacy agreement. This assumes that the Calendar activity is the only entry
-     * point to the app, which it currently is. If there are other entry points, we would have to check
-     * there as well,
-     * \todo: Think if we can/should better move the maybe_make_first_login() and assure_privacy_agreement
-     * \todo checks to the onResume method of the MyBaseActivity class.
+     * We check if the user needs to log in for the first time and if he has
+     * agreed to the privacy agreement. This should create a streamlined experience when
+     * first starting the app. The privacy agreement is also checked for in the activity where the
+     * user enters data.
      */
     @Override
     protected void onResume() {

@@ -20,7 +20,7 @@ import java.util.List;
 
 public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter implements Listadapter
 
-    //TODO: Check which of these members can move up into MyBaseAdapter
+
     private Context mContext;
     private Week mWeek;
     private List<Lecture> mLecturesThisWeek;

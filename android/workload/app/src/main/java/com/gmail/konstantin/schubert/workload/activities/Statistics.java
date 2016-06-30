@@ -24,26 +24,52 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+/**
+ * Activity that displays some nice graphs with information about the data which was entered.
+ *
+ * This uses the open source charting library MPChartlib.
+ * https://github.com/PhilJay/MPAndroidChart
+ *
+ * I had trouble configuring Gradle to properly pull in the source of this library for building.
+ * Therefore, I opted to simply copy the library code into the MPChartLib folder which is located
+ * in the project directory.
+ *
+ * \todo: Configure gradle to import the proper version of the MPChartLib
+ * \todo: show more, and more interesting, statistics
+ */
 public class Statistics extends MyBaseActivity {
 
     DBObjectBuilder dbObjectBuilder;
     List<Lecture> mActiveLectures;
-    Map<Lecture, Map<Integer,Double>> hoursSpentMap;
     ArrayList<Integer> mColors;
 
+    // fields which contain interesting information about the
+    // data which was entered by the user
+    Map<Lecture, Map<Integer,Double>> hoursSpentMap;
+
+    // \todo: the EnterWorkload activity already has these public final static int fields.
+    // \todo: Just use those.
     public final static int HOURS_ATTENDING = 0;
     public final static int HOURS_HOMEWORK = 1;
     public final static int HOURS_STUDYING = 2;
 
+    /**
+     * @inheritDoc
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_statistics);
         ContentResolver.requestSync(AccountManager.get(this).getAccountsByType("tu-dresden.de")[0], SurveyContentProvider.AUTHORITY, new Bundle());
 
+        // initialize the fields
         dbObjectBuilder = new DBObjectBuilder(getContentResolver());
         hoursSpentMap = new HashMap<>();
+        collectData();
 
+        // The MPAndroidChart library will cycle through the list of colors when
+        // displaying charts. To avoid showing the same color twice, we need a lot of colors.
         mColors = new ArrayList<>();
         for (int c : ColorTemplate.JOYFUL_COLORS)
             mColors.add(c);
@@ -52,18 +78,24 @@ public class Statistics extends MyBaseActivity {
         for (int c : ColorTemplate.LIBERTY_COLORS)
             mColors.add(c);
 
-        collectData();
 
+        // Every chart is a view.
+
+        // Build chart #1
         PieChart pieChartTimePerLecture = (PieChart) findViewById(R.id.pie_chart);
         buildPieChartTimePerLecture(pieChartTimePerLecture);
 
+        // Build chart #2
         PieChart pieChartTimePerActivity = (PieChart) findViewById(R.id.pie_chart_time_per_activity);
         buildPieChartTimePerActivity(pieChartTimePerActivity);
 
     }
 
 
-
+    /**
+     * Initializes the classes fields with interesting information about the data which was
+     * entered by the user.
+     */
     private void collectData(){
 
         mActiveLectures = dbObjectBuilder.getLectureList(true);
@@ -90,6 +122,14 @@ public class Statistics extends MyBaseActivity {
     }
 
 
+    /**
+     * This method defines and initializes the pie chart which displays
+     * how the user's time was distributed onto the various lectures.
+     *
+     * Please refer to the documentation of the MPAndroidChart library for more detailed documentation.
+     *
+     * @param pieChart A PieChart object is a view which holds a pie chart.
+     */
     private void buildPieChartTimePerLecture(PieChart pieChart) {
 
         pieChart.setCenterText("Distribution of time onto lectures.");
@@ -145,7 +185,14 @@ public class Statistics extends MyBaseActivity {
         l.setYEntrySpace(0f);
     }
 
-
+    /**
+     * This method defines and initializes the pie chart which displays
+     * how the user's time was distributed onto the three different kinds of activities.
+     *
+     * Please refer to the documentation of the MPAndroidChart library for more detailed documentation.
+     *
+     * @param pieChart A PieChart object is a view which holds a pie chart.
+     */
     private void buildPieChartTimePerActivity(PieChart pieChart) {
         pieChart.setCenterText("Distribution of time onto activities.");
         pieChart.setDrawHoleEnabled(true);

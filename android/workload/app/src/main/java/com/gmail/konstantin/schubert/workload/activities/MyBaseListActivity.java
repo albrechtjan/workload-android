@@ -4,6 +4,9 @@ import android.widget.HeaderViewListAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+/**
+ * Extends the MyBaseActivity.java into an activity that has a list adapter as adapter
+ */
 public abstract class MyBaseListActivity extends MyBaseActivity {
 
     private ListView mListView;

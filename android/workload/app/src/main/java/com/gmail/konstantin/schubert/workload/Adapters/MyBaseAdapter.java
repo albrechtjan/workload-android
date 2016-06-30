@@ -31,9 +31,10 @@ import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
  * The content observer is never unregistered. This means that even if the activity is paused,
  * adapters and views are updated. Theoretically this should prevent the view from flickering
  * after the activity is resumed. On the other hand, this means that updateMembers() is called
- * for ALL adapters on every database update. The implementation at hand works,
- * but it does not seem to be the standard way of doing it.
- * It is possible that a different implementation would be better.
+ * for ALL adapters on every database update.
+ * \todo THIS IS INCREDIBLY INEFFICIENT.
+ * \todo Unregister the content observer on onPause of the activity and re-register it when
+ * \todo the Activity is onResumed. During onResume, call udpateMembers, if possible in an asynchronous way.
  */
 abstract public class MyBaseAdapter extends BaseAdapter {
     private static final String TAG = MyBaseAdapter.class.getSimpleName();

@@ -11,6 +11,10 @@ import com.gmail.konstantin.schubert.workload.Week;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Activity where the workload data can be entered.
+ *
+ */
 public class EnterWorkload extends MyBaseListActivity {
     public final static String MESSAGE_YEAR = "com.gmail.konstantin.schubert.workload.YEAR";
     public final static String MESSAGE_WEEK = "com.gmail.konstantin.schubert.workload.WEEK";
@@ -24,7 +28,9 @@ public class EnterWorkload extends MyBaseListActivity {
 
     private Week mWeek;
 
-
+    /**
+     * @inheritDoc
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,9 +44,14 @@ public class EnterWorkload extends MyBaseListActivity {
         setTitle("Enter your hours");
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     protected void onResume() {
         super.onResume();
+        // Because this is the activity where the user enters his data, the privacy agreement
+        // is checked for every time the activity is loaded.
         assure_privacy_agreement();
     }
 
