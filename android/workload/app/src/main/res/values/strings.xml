@@ -24,4 +24,7 @@ Zu Zwecken der Qualitätssicherung nach § 9 SächsHSFG, hier insbesondere § 9 
         For any questions, wishes or suggestions please send an email with subject "WorkloadApp" to the FSR: <a href=" mailto:fsrphysik@mailbox.tu-dresden.de?subject=Workloadapp">fsrphysik@mailbox.tu-dresden.de</a>.
     </string>
 
+    <string name="reminder_title">Some data still missing</string>
+    <string name="reminder_text">No data has been entered yet for at least one lecture.</string>
+
 </resources>
