@@ -134,6 +134,21 @@ public class DBObjectBuilder {
         return lecturesThatWeek;
     }
 
+    /**
+     * Returns true if a workload entry exists for all considered lectures in the considered week.
+     * @param lectures The list of lectures to be considered.
+     * @param week The week to be considered.
+     * @return
+     */
+    public boolean allLecturesHaveDataInWeek(List<Lecture> lectures, Week week) {
+        for (Lecture lecture : lectures) {
+            if (!lecture.hasDataInWeek(mContentResolver, week)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public List<Lecture> getLecturesOfSemester(String semester, boolean onlyActive) {
 
         Cursor lectureCursor = getLectureCursor(onlyActive);

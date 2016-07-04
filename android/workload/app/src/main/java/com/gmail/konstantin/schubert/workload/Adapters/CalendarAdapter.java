@@ -128,7 +128,7 @@ public class CalendarAdapter extends MyBaseAdapter {
         });
 
         List<Lecture> lecturesThisWeek = this.dbObjectBuilder.getLecturesInWeek(week, true);
-        if (allLecturesHaveDataInWeek(lecturesThisWeek, week)) {
+        if (dbObjectBuilder.allLecturesHaveDataInWeek(lecturesThisWeek, week)) {
             weekButton.setBackgroundColor(ContextCompat.getColor(mContext, R.color.visited));
         }
 
@@ -183,18 +183,5 @@ public class CalendarAdapter extends MyBaseAdapter {
 
     }
 
-    /**
-     * Returns true if a workload entry exists for all considered lectures in the considered week.
-     * @param lectures The list of lectures to be considered.
-     * @param week The week to be considered.
-     * @return
-     */
-    private boolean allLecturesHaveDataInWeek(List<Lecture> lectures, Week week) {
-        for (Lecture lecture : lectures) {
-            if (!lecture.hasDataInWeek(mContext, week)) {
-                return false;
-            }
-        }
-        return true;
-    }
+
 }

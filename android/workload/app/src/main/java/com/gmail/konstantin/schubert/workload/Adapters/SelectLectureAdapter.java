@@ -41,7 +41,7 @@ public class SelectLectureAdapter extends MyBaseAdapter { //BaseAdapter implemen
             lectureRow = (RelativeLayout) inflater.inflate(R.layout.lecture_row_modern, parent, false);
         }
 
-        if (mLecturesThisWeek.get(position).hasDataInWeek(mContext, mWeek)) {
+        if (mLecturesThisWeek.get(position).hasDataInWeek(mContext.getContentResolver(), mWeek)) {
             lectureRow.setBackgroundColor(ContextCompat.getColor(mContext, R.color.visited));
         }
 

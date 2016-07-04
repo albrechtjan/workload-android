@@ -1,26 +1,36 @@
 package com.gmail.konstantin.schubert.workload;
 
-import android.app.Notification;
-import android.app.NotificationManager;
+
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.NotificationCompat;
 
 import com.gmail.konstantin.schubert.workload.activities.SelectLecture;
-import com.gmail.konstantin.schubert.workload.sync.SyncSettingChangerService;
+
+import org.joda.time.LocalDate;
+import org.joda.time.Period;
+
+import java.util.List;
 
 /**
- * Created by Konstantin Schubert on 02/07/16.
+ *
+ * Broadcast Receiver which checks if user should be alerted to enter his data.
+ *
+ * If it decides that the user should be alerted, it creates a notification to alert the user.
+ *
+ *
+ * http://stackoverflow.com/a/20263092/1375015
  */
 public class ReminderReceiver extends BroadcastReceiver {
 
 
-    http://stackoverflow.com/a/20263092/1375015
+
 
     /**
      * Entry method which is called when the AlarmManager issues a fitting intent.
@@ -33,7 +43,7 @@ public class ReminderReceiver extends BroadcastReceiver {
 
         Week weekToRemindFor = getWeekOfYesterday();
 
-        if (shouldReminderBeShown(weekToRemindFor)){
+        if (shouldReminderBeShown(context, weekToRemindFor)){
             showReminderNotification(context, weekToRemindFor);
         }
 
@@ -48,16 +58,29 @@ public class ReminderReceiver extends BroadcastReceiver {
      * @return  The week which was the current week yesterday
      */
     Week getWeekOfYesterday(){
-        //
-
+        LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minus(Period.days(1));
+        return new Week(yesterday.getYear(), yesterday.getWeekOfWeekyear());
     }
 
-    private boolean shouldReminderBeShown(Week week){
-        // if reminders are turned off in the settings, do not show one
+    /**
+     * Decides if a reminder to enter workload data should be displayed
+     *
+     * If reminders are turned off in the settings, do not show one
+     * If all lectures have an entry for the week which was the current week yesterday,
+     * do not show one
+     * @param context An Android context
+     * @param week The week for which a reminder is being considered
+     * @return
+     */
+    private boolean shouldReminderBeShown(Context context, Week week){
 
+        SharedPreferences settings = context.getSharedPreferences("workload", Context.MODE_PRIVATE);
+        boolean reminders_on = settings.getBoolean("reminders_on", true);
 
-        // If all lectures have an entry for the week which was the current week yesterday,
-        // do not show one
+        DBObjectBuilder builder = new DBObjectBuilder(context.getContentResolver());
+        List<Lecture> lectures = builder.getLecturesInWeek(week,true);
+        return builder.allLecturesHaveDataInWeek(lectures,week);
 
     }
 
@@ -90,7 +113,7 @@ public class ReminderReceiver extends BroadcastReceiver {
                         //// standard setting?
                         //.setAutoCancel(true) \todo: figure out if we need this.
                         .setContentText(context.getResources().getString(R.string.reminder_text))
-                        .setContentIntent(contentPendingIntent)
+                        .setContentIntent(contentPendingIntent);
                         ////\todo I think I could add an action that allows the user to turn off reminders
                         //.addAction(new NotificationCompat.Action(R.drawable.ic_settings_24dp, "Turn off reminders", actionPendingIntent));
         // Fire up the notification

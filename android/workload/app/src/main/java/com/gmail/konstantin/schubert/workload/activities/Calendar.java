@@ -1,6 +1,8 @@
 package com.gmail.konstantin.schubert.workload.activities;
 
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.ContentObserver;
@@ -15,6 +17,7 @@ import android.widget.TextView;
 import com.gmail.konstantin.schubert.workload.Adapters.CalendarAdapter;
 import com.gmail.konstantin.schubert.workload.DBObjectBuilder;
 import com.gmail.konstantin.schubert.workload.R;
+import com.gmail.konstantin.schubert.workload.ReminderReceiver;
 import com.gmail.konstantin.schubert.workload.Semester;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
@@ -87,6 +90,10 @@ public class Calendar extends MyBaseActivity {
                 }
         );
 
+        startAlarmManager();
+
+
+
     }
 
     /**
@@ -156,6 +163,27 @@ public class Calendar extends MyBaseActivity {
         this.startActivity(new Intent(this, AddLectureChooseSemester.class));
     }
 
+    /**
+     * Set up the AlarmManager for the weekly reminder
+     *
+     * If it has been set up already with an intent with the same request code,
+     * this will simply overwrite the previous alarm manager
+     * //\todo: make sure this is the case
+     */
+    private void startAlarmManager(){
+
+        Intent intent = new Intent(this, ReminderReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 004, intent, 0);
+        AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
+
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        calendar.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.SUNDAY);
+        calendar.set(java.util.Calendar.HOUR,19);
+        calendar.set(java.util.Calendar.MINUTE, 00);
+        calendar.set(java.util.Calendar.SECOND, 0);
+        calendar.set(java.util.Calendar.MILLISECOND, 0);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY * 7, pendingIntent);
+    }
 
 }
 

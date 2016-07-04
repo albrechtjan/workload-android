@@ -1,5 +1,6 @@
 package com.gmail.konstantin.schubert.workload;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -42,11 +43,11 @@ public class Lecture implements Serializable, Comparable<Lecture> {
         );
     }
 
-    public boolean hasDataInWeek(Context context, Week week) {
+    public boolean hasDataInWeek(ContentResolver resolver, Week week) {
         String query = SurveyContentProvider.DB_STRINGS_WORKENTRY.LECTURE_ID + "=" + String.valueOf(this._ID) + " AND "
                 + SurveyContentProvider.DB_STRINGS_WORKENTRY.YEAR + "=" + String.valueOf(week.year()) + " AND "
                 + SurveyContentProvider.DB_STRINGS_WORKENTRY.WEEK + "=" + String.valueOf(week.week());
-        Cursor cursor = context.getContentResolver().query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/sync/any/"), null, query, null, null);
+        Cursor cursor = resolver.query(Uri.parse("content://" + SurveyContentProvider.AUTHORITY + "/workentries/sync/any/"), null, query, null, null);
         boolean hasData = cursor.getCount() != 0;
         cursor.close();
         return hasData;

@@ -70,6 +70,13 @@
             android:syncable="true" >
         </provider>
 
+        <!--
+            A broadcast receiver which will issue a reminder notification if
+            entries are missing data for the week which was the current week yesterday.
+            Can be turned off in the settings.
+        -->
+        <receiver android:name=".ReminderReceiver"></receiver>
+
 
         <!--
             All off the app's Activities are registered here.
