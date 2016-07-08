@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.TextView;
@@ -23,6 +24,7 @@ import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.StringTokenizer;
 
 
 /**
@@ -173,16 +175,21 @@ public class Calendar extends MyBaseActivity {
     private void startAlarmManager(){
 
         Intent intent = new Intent(this, ReminderReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 004, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 004, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
 
         java.util.Calendar calendar = java.util.Calendar.getInstance();
-        calendar.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.SUNDAY);
-        calendar.set(java.util.Calendar.HOUR,19);
-        calendar.set(java.util.Calendar.MINUTE, 00);
+        Integer i = calendar.get(java.util.Calendar.HOUR_OF_DAY);
+        Log.d("Calendar", "Current hour of day: "+ i.toString());
+        //calendar.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.SUNDAY);
+        calendar.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.TUESDAY); // todo changed for testing
+        calendar.set(java.util.Calendar.HOUR_OF_DAY,23); // todo changed for testing
+        calendar.set(java.util.Calendar.MINUTE, 18); // todo changed for testing
         calendar.set(java.util.Calendar.SECOND, 0);
         calendar.set(java.util.Calendar.MILLISECOND, 0);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY * 7, pendingIntent);
+        //am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY * 7, pendingIntent);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_FIFTEEN_MINUTES / 15, pendingIntent); // todo changed for testing
+        Log.d("Calendar", "setting up alarm manager");
     }
 
 }

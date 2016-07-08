@@ -7,9 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.gmail.konstantin.schubert.workload.activities.SelectLecture;
 
@@ -40,6 +40,8 @@ public class ReminderReceiver extends BroadcastReceiver {
      */
     @Override
     public void onReceive(Context context, Intent intent){
+
+        Log.d("ReminderReceiver", "onReceive called");
 
         Week weekToRemindFor = getWeekOfYesterday();
 
@@ -80,7 +82,8 @@ public class ReminderReceiver extends BroadcastReceiver {
 
         DBObjectBuilder builder = new DBObjectBuilder(context.getContentResolver());
         List<Lecture> lectures = builder.getLecturesInWeek(week,true);
-        return builder.allLecturesHaveDataInWeek(lectures,week);
+        boolean data_missing = ! builder.allLecturesHaveDataInWeek(lectures,week);
+        return reminders_on && data_missing;
 
     }
 
