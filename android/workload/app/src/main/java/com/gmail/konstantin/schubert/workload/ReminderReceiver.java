@@ -105,16 +105,14 @@ public class ReminderReceiver extends BroadcastReceiver {
         intent.putExtra(SelectLecture.MESSAGE_WEEK, week.week());
 
         // Wraps the intent in a PendingIntent
-        PendingIntent contentPendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent contentPendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Build the notification.
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.ic_stat_sync_problem)
                         .setContentTitle(context.getResources().getString(R.string.reminder_title))
-                        //// make notification disappear after it is used (Should this not be a
-                        //// standard setting?
-                        //.setAutoCancel(true) \todo: figure out if we need this.
+                        .setAutoCancel(true)
                         .setContentText(context.getResources().getString(R.string.reminder_text))
                         .setContentIntent(contentPendingIntent);
                         ////\todo I think I could add an action that allows the user to turn off reminders
