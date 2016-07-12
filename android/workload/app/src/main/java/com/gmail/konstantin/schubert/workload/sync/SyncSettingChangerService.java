@@ -9,7 +9,9 @@ import android.support.v4.app.NotificationManagerCompat;
 import com.gmail.konstantin.schubert.workload.SurveyContentProvider;
 
 /**
- * Created by kon on 15/04/16.
+ * Service which changes Android's sync settings for the app's account.
+ *
+ * This is invoked from a notification which alerts the user that the settings are unsuitable.
  */
 public class SyncSettingChangerService extends IntentService {
 

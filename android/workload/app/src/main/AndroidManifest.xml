@@ -53,11 +53,19 @@
 
         <!--
             Service which can change some synchronization settings in Androids account framework.
-            The app needs a service for this because it needs to be launched from a notification and
-            a notification can start only start a service.
+            The app needs a service for this because it needs to be launched from a notification.
         -->
         <service
             android:name=".sync.SyncSettingChangerService"
+            android:exported="false"/>
+
+
+        <!--
+            Service which turns of reminders in the app settings.
+            The app needs a service for this because it needs to be launched from a notification.
+        -->
+        <service
+            android:name=".ReminderSettingChangerService"
             android:exported="false"/>
 
         <!--

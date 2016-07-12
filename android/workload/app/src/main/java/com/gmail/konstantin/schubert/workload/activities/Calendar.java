@@ -31,7 +31,7 @@ import java.util.StringTokenizer;
  *  Activity showing a calendar holdings the weeks in a certain semester.
  * This is the usual entry point for the app. Here, the user can choose a
  * week and lecture and enter his data, switch to another semester or
- * go to the various settings menus.
+ * go to the various menus.
  */
 public class Calendar extends MyBaseActivity {
 
@@ -181,14 +181,13 @@ public class Calendar extends MyBaseActivity {
         java.util.Calendar calendar = java.util.Calendar.getInstance();
         Integer i = calendar.get(java.util.Calendar.HOUR_OF_DAY);
         Log.d("Calendar", "Current hour of day: "+ i.toString());
-        //calendar.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.SUNDAY);
-        calendar.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.TUESDAY); // todo changed for testing
-        calendar.set(java.util.Calendar.HOUR_OF_DAY,23); // todo changed for testing
-        calendar.set(java.util.Calendar.MINUTE, 18); // todo changed for testing
+        calendar.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.SUNDAY);
+        calendar.set(java.util.Calendar.HOUR_OF_DAY,19);
+        calendar.set(java.util.Calendar.MINUTE, 12);
         calendar.set(java.util.Calendar.SECOND, 0);
         calendar.set(java.util.Calendar.MILLISECOND, 0);
-        //am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY * 7, pendingIntent);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_FIFTEEN_MINUTES / 15, pendingIntent); // todo changed for testing
+        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY * 7, pendingIntent);
+        //am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_FIFTEEN_MINUTES / 30, pendingIntent); //  for testing
         Log.d("Calendar", "setting up alarm manager");
     }
 

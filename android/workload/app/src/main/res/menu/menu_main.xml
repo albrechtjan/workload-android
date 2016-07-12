@@ -9,17 +9,26 @@
         app:showAsAction="ifRoom"
         android:icon="@drawable/ic_library_books_white_24px"
         />
-    <item android:id="@+id/action_statistics"
+    <item
+        android:id="@+id/action_statistics"
         android:title="@string/action_statistics"
         android:orderInCategory="100"
         app:showAsAction="ifRoom"
         android:icon="@drawable/ic_show_chart_white_24px1"
         />
     <item
+        android:id="@+id/action_reminder_toggle"
+        android:title="@string/action_reminder_toggle"
+        app:showAsAction="never"
+        android:checkable="true"
+        android:checked="true"/>
+
+    <item
         android:id="@+id/action_privacy_agreement"
         android:title="@string/action_privacy_agreement"
         android:orderInCategory="100"
         app:showAsAction="never" />
+
     <item
         android:id="@+id/about"
         android:title="@string/action_about"
