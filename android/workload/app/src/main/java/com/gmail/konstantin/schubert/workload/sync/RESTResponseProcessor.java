@@ -50,16 +50,13 @@ public class RESTResponseProcessor {
     static public List<Lecture> lectureListFromJson(String jsonList) throws IOException {
         JsonReader reader = new JsonReader(new StringReader(jsonList));
         List<Lecture> lectures = new ArrayList();
-        try {
-            reader.beginArray();
-            while (reader.hasNext()) {
-                lectures.add(buildLecture(reader));
-            }
-            reader.endArray();
-            reader.close();
-        } catch (MalformedJsonException e) {
-            throw new MalformedJsonException(jsonList);
+
+        reader.beginArray();
+        while (reader.hasNext()) {
+            lectures.add(buildLecture(reader));
         }
+        reader.endArray();
+        reader.close();
         return lectures;
     }
 

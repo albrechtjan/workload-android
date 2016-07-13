@@ -25,8 +25,15 @@ import java.util.Map;
 public class Authenticator extends AbstractAccountAuthenticator {
 
     private static final String TAG = Authenticator.class.getSimpleName();
-    //the following (parts of) key names also work as bundle keys for the httpcookie
-    public static final String NAME_COOKIE_DJANGO = "csrftoken";
+
+    public static final String NAME_COOKIE_DJANGO = "sessionid";
+    <-- I am also sending the shibboleth cookie every time
+    <-- this might be the reaoson why the website is creating a new django session for every request
+            <-- is it also doing that on the browser interface when the shibboleth token is present in the browser?
+        <-- then maybe I should fix it in the browser.
+            If it does not happen in the browser, then why does it happen with the app?
+    does it maybe not recognize the django session token as it is sent by the app?
+    maybe for some csrf reasons?
     Context mContext;
 
     /**

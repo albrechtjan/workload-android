@@ -76,6 +76,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     }
 
+    /**
+     * Checks if the Web service redirected us to the shibboleth login page.
+     *
+     * The way the web service is set up currently, this is the way
+     * a session timeout is indicated.
+     * If we get a html response, we assume that it is the login page.
+     * BEWARE: It might also be an error page if Android is in debug mode.
+     * In this case we will misinterpret it
+     * @param response
+     * @return
+     */
+    private boolean gotLoginRedirect(String response){
+        return response.contains("<html>");
+    }
+
+
 
     /**
      * Downloads all information about the available and user-active lectures from the remote and
@@ -83,50 +99,60 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      *
      * \todo: remove duplicate code with other methods in this class
      */
-    private void get_table_entries_lectures(Account account) throws IOException, AuthenticatorException {
+    private void get_table_entries_lectures(Account account) throws IOException, AuthenticatorException, OperationCanceledException {
         // Delete anything local that is not in remote
         // Add anything to local that is in remote but not in local (as inactive)
-        try {
-            ArrayList<NameValuePair> headers = buildAuthHeaders(null, account);
-            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl + "api/lectures/all/", headers, null);
 
-            String response = mRestClient.response;
-            //\todo: I do not like the usage of a public fields.
-            //\todo The Exectute() function should return the response.
-            List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
-            mRestResponseProcessor.update_lectures_from_remote(remoteLectures);
-        } catch (IOException e) {
-            // We assume that the authentication witht the web service failed.
-            // \todo: Make sure that this does not fire if the server is simply unavailable.
-            throw new AuthenticatorException(e);
-        } catch (Exception e) {
+        ArrayList<NameValuePair> headers = buildAuthHeaders(null, account);
+
+        try{
+            mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl + "api/lectures/all/", headers, null);
+        } catch (Exception e){
+            Log.d(TAG, "caught exception in rest client:"+ e.toString());
             throw new IOException();
         }
+
+        if (gotLoginRedirect(mRestClient.response)){
+            throw new AuthenticatorException();
+        }
+
+
+
+        String response = mRestClient.response;
+        //\todo: I do not like the usage of a public fields.
+        //\todo The Exectute() function should return the response.
+        List<Lecture> remoteLectures = RESTResponseProcessor.lectureListFromJson(response);
+        mRestResponseProcessor.update_lectures_from_remote(remoteLectures);
+
     }
 
     /**
      * Downloads all of the user's workload entries which are stored on the remote and updates
      * the local tables accordingly, if necessary.
      */
-    private void get_table_entries_workentries(Account account) throws IOException, AuthenticatorException {
+    private void get_table_entries_workentries(Account account) throws IOException, AuthenticatorException, OperationCanceledException {
         // Delete any local entry that does not exist on the remote, unless it is pending for sync.
         // Add any entries which do not exist on local, but do exist on the remote,
         // to the local tables.
-        try {
+
             ArrayList<NameValuePair> headers = buildAuthHeaders(null, account);
+        try {
             mRestClient.Execute(RestClient.RequestMethod.GET, baseUrl + "api/entries/active/", headers, null);
-            String response = mRestClient.response;
-            //\todo: I do not like the usage of a public fields.
-            //\todo The Exectute() function should return the response.
-            List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
-            mRestResponseProcessor.update_workloadentries_from_remote(remoteEntries);
-        } catch (IOException e) {
-            // We assume that the authentication witht the web service failed.
-            // \todo: Make sure that this does not fire if the server is simply unavailable.
-            throw new AuthenticatorException(e);
-        } catch (Exception e) {
+        } catch (Exception e){
+            Log.d(TAG, "caught exception in rest client:"+ e.toString());
             throw new IOException();
         }
+        if (gotLoginRedirect(mRestClient.response)){
+            throw new AuthenticatorException();
+        }
+
+
+        String response = mRestClient.response;
+        //\todo: I do not like the usage of a public fields.
+        //\todo The Exectute() function should return the response.
+        List<WorkloadEntry> remoteEntries = RESTResponseProcessor.entryListFromJson(response);
+
+        mRestResponseProcessor.update_workloadentries_from_remote(remoteEntries);
 
     }
 
@@ -141,26 +167,30 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      *         cases
      * @throws IOException
      */
-    private void post_workentry(WorkloadEntry workloadEntry, Account account) throws IOException, AuthenticatorException {
+    private void post_workentry(WorkloadEntry workloadEntry, Account account) throws IOException, AuthenticatorException, OperationCanceledException {
+
+        String url = baseUrl;
+        url += "api/entries/active/year/" + workloadEntry.week.year() + "/";
+        url += workloadEntry.week.week() + "/";
+        url += "lectures/" + workloadEntry.lecture_id + "/";
+
+        ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString(), account);
+
+        ArrayList<NameValuePair> urlArgs = new ArrayList<>();
+        urlArgs.add(new BasicNameValuePair("hoursInLecture", String.valueOf(workloadEntry.getHoursInLecture())));
+        urlArgs.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
+        urlArgs.add(new BasicNameValuePair("hoursStudying", String.valueOf(workloadEntry.getHoursStudying())));
         try {
-            String url = baseUrl;
-            url += "api/entries/active/year/" + workloadEntry.week.year() + "/";
-            url += workloadEntry.week.week() + "/";
-            url += "lectures/" + workloadEntry.lecture_id + "/";
-
-            ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString(), account);
-
-            ArrayList<NameValuePair> urlArgs = new ArrayList<>();
-            urlArgs.add(new BasicNameValuePair("hoursInLecture", String.valueOf(workloadEntry.getHoursInLecture())));
-            urlArgs.add(new BasicNameValuePair("hoursForHomework", String.valueOf(workloadEntry.getHoursForHomework())));
-            urlArgs.add(new BasicNameValuePair("hoursStudying", String.valueOf(workloadEntry.getHoursStudying())));
             mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, urlArgs);
-
-        //\todo: Catch an IOException and re-throw it as an AuthenticatorException, as we do it for
-        //\todo the get_...() methods
-        } catch (Exception e) {
+        } catch (Exception e){
             throw new IOException();
         }
+
+        if (gotLoginRedirect(mRestClient.response)){
+            throw new AuthenticatorException();
+        }
+
+
 
         String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
         // when calling updateWorkloadEntry, we are also doing an update of the time entries, but they should be correct, so it should be fine.
@@ -185,19 +215,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      *         cases
      * @throws IOException
      */
-    private void patch_lecture(Lecture lectureToPatch, Account account) throws IOException, AuthenticatorException {
+    private void patch_lecture(Lecture lectureToPatch, Account account) throws IOException, AuthenticatorException, OperationCanceledException {
         // \todo: remove duplicate code with post_workentry
+
+        String url = baseUrl;
+        url += "api/lectures/all/" + lectureToPatch._ID + "/";
+        ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString(), account);
+        ArrayList<NameValuePair> urlArgs = new ArrayList<>();
+        urlArgs.add(new BasicNameValuePair("isActive", String.valueOf(lectureToPatch.isActive)));
         try {
-            String url = baseUrl;
-            url += "api/lectures/all/" + lectureToPatch._ID + "/";
-            ArrayList<NameValuePair> headers = buildAuthHeaders(url.toString(), account);
-            ArrayList<NameValuePair> urlArgs = new ArrayList<>();
-            urlArgs.add(new BasicNameValuePair("isActive", String.valueOf(lectureToPatch.isActive)));
             mRestClient.Execute(RestClient.RequestMethod.POST, url, headers, urlArgs);
-        //\todo: Catch an IOException and re-throw it as an AuthenticatorException, as we do it for
-        //\todo the get_...() methods
         } catch (Exception e) {
             throw new IOException();
+        }
+
+        if (gotLoginRedirect(mRestClient.response)){
+            throw new AuthenticatorException();
         }
 
         String response = mRestClient.response; //TODO: I do not like this. The function should return the response.
@@ -206,11 +239,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             // retry later
             // \todo mark the row in the content provider for retry.
             throw new IOException();
-        } else if (response.contains("DOCTYPE html")) {
-            // The remote and is in debug mode and we got an error message most likely
-            // \todo: Handle this?
-            //TODO: Check for and handle server errors.
-            // \todo mark the row in the content provider for retry.
         } else {
             // we succeeded and now we stop the sync
             dbObjectBuilder.updateLecture(lectureToPatch, SurveyContentProvider.SYNC_STEER_COMMAND.STOPSYNC);
@@ -246,6 +274,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 NameValuePair referer = new BasicNameValuePair("Referer", refererUrl);
                 headers.add(referer);
             }
+            Log.d(TAG, "Auth headers are:" + headers.toString());
+
             return headers;
         } else {
             return null;
@@ -267,6 +297,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         //TODO: However, I must make sure the release the provider on time ? No I think the sync framework does this for me.
 
         try {
+
+
 
             get_table_entries_lectures(account);
             get_table_entries_workentries(account);
@@ -298,6 +330,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             Log.d(TAG, "Sucessfully finalized sync");
 
+
         } catch (AuthenticatorException e) {
             try {
                 Log.d(TAG, "Invalidating AuthToken");
@@ -310,7 +343,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 Log.d(TAG, "Unable to invalidate Auth Token because we are not able to get it. Maybe it is already invalidated?");
             }
         } catch (IOException e) {
-            Log.e(TAG, "IOException in onPerformSync.", e);
+            Log.e(TAG, "IOException in onPerformSync. This should not happen.", e);
+        } catch (OperationCanceledException e){
+            Log.e(TAG, "OperationCanceledException in onPerformSync. This should not happen.", e);
         }
 
     }
