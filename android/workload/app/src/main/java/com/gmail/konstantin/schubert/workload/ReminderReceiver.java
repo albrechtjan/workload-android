@@ -102,6 +102,7 @@ public class ReminderReceiver extends BroadcastReceiver {
      */
     private void showReminderNotification(Context context, Week week){
 
+        Log.d(this.getClass().getName(), "AlarmManager has fired");
         // Building the content intent
         Intent intent = new Intent(context, SelectLecture.class);
         intent.putExtra(SelectLecture.MESSAGE_YEAR, week.year());

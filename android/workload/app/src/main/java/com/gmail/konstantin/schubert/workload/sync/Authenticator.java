@@ -27,6 +27,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     private static final String TAG = Authenticator.class.getSimpleName();
 
     public static final String NAME_COOKIE_DJANGO = "sessionid";
+    /**
     <-- I am also sending the shibboleth cookie every time
     <-- this might be the reaoson why the website is creating a new django session for every request
             <-- is it also doing that on the browser interface when the shibboleth token is present in the browser?
@@ -34,6 +35,9 @@ public class Authenticator extends AbstractAccountAuthenticator {
             If it does not happen in the browser, then why does it happen with the app?
     does it maybe not recognize the django session token as it is sent by the app?
     maybe for some csrf reasons?
+    It is not a killer, but it might be a problem one day and also I would like to understand why this happens. It would be good to understand that and fix it
+    */
+            
     Context mContext;
 
     /**
@@ -49,18 +53,18 @@ public class Authenticator extends AbstractAccountAuthenticator {
     /**
      * Looks for the Django session cookie in the cookieString.
      *
-     * Returns it in a map if it finds it.
-     * Returns null if at least one cookie is missing
+     * Returns it if it finds it.
+     * Returns null if it does not find it.
      *
      */
-    public static Map<String, HttpCookie> getCookiesFromCookieString(String cookieString) {
+    public static String getCookieFromCookieString(String cookieString) {
 
-        Map<String, HttpCookie> cookies = new HashMap<>();
-
+        Log.d(TAG, "Cookie string is " + cookieString);
         for (String cookieSubString : cookieString.split(";")) {
+            Log.d(TAG, "SubString is " + cookieSubString);
             if (cookieSubString.contains(Authenticator.NAME_COOKIE_DJANGO)) {
-                cookies.put(Authenticator.NAME_COOKIE_DJANGO, HttpCookie.parse(cookieSubString).get(0));
-                return cookies;
+                Log.d(TAG, "returning django session cookie:" + cookieSubString);
+                return cookieSubString;
             }
         }
         return null;

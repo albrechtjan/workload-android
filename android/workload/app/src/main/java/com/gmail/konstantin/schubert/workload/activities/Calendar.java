@@ -175,19 +175,34 @@ public class Calendar extends MyBaseActivity {
     private void startAlarmManager(){
 
         Intent intent = new Intent(this, ReminderReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 004, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 004, intent, 0);
+        //\todo Try FLAG_UPDATE_CURRENT in the last argument
         AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
 
-        java.util.Calendar calendar = java.util.Calendar.getInstance();
-        Integer i = calendar.get(java.util.Calendar.HOUR_OF_DAY);
-        Log.d("Calendar", "Current hour of day: "+ i.toString());
+        java.util.Calendar calendar = java.util.Calendar.getInstance(); // instantiated with current time
         calendar.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.SUNDAY);
         calendar.set(java.util.Calendar.HOUR_OF_DAY,19);
         calendar.set(java.util.Calendar.MINUTE, 12);
         calendar.set(java.util.Calendar.SECOND, 0);
         calendar.set(java.util.Calendar.MILLISECOND, 0);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY * 7, pendingIntent);
-        //am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_FIFTEEN_MINUTES / 30, pendingIntent); //  for testing
+        long interval = AlarmManager.INTERVAL_DAY * 7;
+
+        // DEBUGGING:
+        //calendar.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.MONDAY);
+        //calendar.set(java.util.Calendar.HOUR_OF_DAY,1);
+        //calendar.set(java.util.Calendar.MINUTE, 42);
+        //long interval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+
+
+        if(calendar.before(java.util.Calendar.getInstance())) {
+            // if reminder moment is in the past, set the alarm for next week
+            calendar.setTimeInMillis(calendar.getTimeInMillis() + interval);
+            // if this condition is executed between the moment that the weekly alarm is fired
+            // and the moment that the broadcast receiver is started, this might cancel the
+            // PendingIntent and cause the notification not to be shown for the given week.
+            // This seems like a very minos issue though.
+        }
+        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),interval , pendingIntent); //  for testing
         Log.d("Calendar", "setting up alarm manager");
     }
 

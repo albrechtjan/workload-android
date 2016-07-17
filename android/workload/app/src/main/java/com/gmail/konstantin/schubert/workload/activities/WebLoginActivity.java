@@ -42,16 +42,16 @@ public class WebLoginActivity extends Activity {
                 String cookieStrings = CookieManager.getInstance().getCookie(url);
                 if (cookieStrings == null) return;
 
-
-                if (Authenticator.getCookiesFromCookieString(cookieStrings) != null) {
+                String django_session_cookie = Authenticator.getCookieFromCookieString(cookieStrings);
+                if (django_session_cookie != null) {
                     if (mAccountAuthenticatorResponse == null) {
                         AccountManager accountManager = AccountManager.get(WebLoginActivity.this);
-                        accountManager.setAuthToken(SurveyContentProvider.GetOrCreateSyncAccount(WebLoginActivity.this), "session_ID_token", cookieStrings);
+                        accountManager.setAuthToken(SurveyContentProvider.GetOrCreateSyncAccount(WebLoginActivity.this), "session_ID_token", django_session_cookie);
                     } else {
                         Bundle response = new Bundle();
                         response.putString(AccountManager.KEY_ACCOUNT_NAME, getResources().getString(R.string.account_name));
                         response.putString(AccountManager.KEY_ACCOUNT_TYPE, getResources().getString(R.string.account_type));
-                        response.putString(AccountManager.KEY_AUTHTOKEN, cookieStrings);
+                        response.putString(AccountManager.KEY_AUTHTOKEN, django_session_cookie);
                         mAccountAuthenticatorResponse.onResult(response);
                     }
                     finish();
