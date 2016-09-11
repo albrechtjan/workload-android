@@ -60,6 +60,7 @@ public class ManageLecturesAdapter extends MyBaseAdapter {
         ImageButton deleteButton = (ImageButton) lectureRow.getChildAt(1);
         deleteButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                mActiveLectures.moveToPosition(position);
                 int lectureID = mActiveLectures.getInt(idIndex);
                 ContentValues values = new ContentValues();
                 values.put(SurveyContentProvider.DB_STRINGS_LECTURE.ISACTIVE, 0);

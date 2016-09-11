@@ -202,7 +202,7 @@ public class Calendar extends MyBaseActivity {
             // PendingIntent and cause the notification not to be shown for the given week.
             // This seems like a very minos issue though.
         }
-        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),interval , pendingIntent); //  for testing
+        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), interval, pendingIntent); //  for testing
         Log.d("Calendar", "setting up alarm manager");
     }
 
