@@ -10,8 +10,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:divider="@color/primary_brightish"
-        android:dividerHeight="1px"/>
-        <!--android:drawSelectorOnTop="false" />-->
+        android:dividerHeight="1px"
+        android:paddingBottom="88dp"
+        android:clipToPadding="false"/>
+        <!-- create padding below list so that the
+        floating action button does not cover the last list item-->
+
 
 
 
