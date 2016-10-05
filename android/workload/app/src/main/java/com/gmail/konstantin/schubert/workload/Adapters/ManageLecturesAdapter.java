@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -57,7 +58,7 @@ public class ManageLecturesAdapter extends MyBaseAdapter {
         TextView label = (TextView) lectureRow.getChildAt(0);
         label.setText(mActiveLectures.getString(nameIndex));
 
-        ImageButton deleteButton = (ImageButton) lectureRow.getChildAt(1);
+        LinearLayout deleteButton = (LinearLayout) lectureRow.getChildAt(1);
         deleteButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 mActiveLectures.moveToPosition(position);
