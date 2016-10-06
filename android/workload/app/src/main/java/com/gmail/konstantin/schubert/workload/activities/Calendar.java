@@ -200,9 +200,9 @@ public class Calendar extends MyBaseActivity {
             // if this condition is executed between the moment that the weekly alarm is fired
             // and the moment that the broadcast receiver is started, this might cancel the
             // PendingIntent and cause the notification not to be shown for the given week.
-            // This seems like a very minos issue though.
+            // This seems like a very minor issue though.
         }
-        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), interval, pendingIntent); //  for testing
+        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), interval, pendingIntent);
         Log.d("Calendar", "setting up alarm manager");
     }
 
