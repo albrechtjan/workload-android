@@ -42,3 +42,6 @@ It is documented [here](documentation/SyncLogic.md).
 
 Just install from the play store: https://play.google.com/store/apps/details?id=com.gmail.konstantin.schubert.workload
 
+## License
+
+See the [LICENSE](LICENSE.md) file for license rights and limitations (GNU AGPL).
